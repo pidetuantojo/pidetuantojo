@@ -17,7 +17,8 @@
       "Bash(find \"C:\\\\Users\\\\LENOVO\\\\Documents\\\\projects\\\\antojo-express\\\\src\" -name \"*.tsx\" -o -name \"*.ts\" | xargs grep -l -i \"adicional\" 2>/dev/null)",
       "Bash(cd \"C:\\\\Users\\\\LENOVO\\\\Desktop\\\\projects\\\\antojo-app\" && npm install @dnd-kit/core)",
       "Bash(cd \"C:\\\\Users\\\\LENOVO\\\\Desktop\\\\projects\\\\antojo-app\" && firebase deploy --only firestore:indexes,firestore:rules 2>&1)",
-      "Bash(cd \"C:\\\\Users\\\\LENOVO\\\\Desktop\\\\projects\\\\antojo-app\" && npx firebase-tools@13 deploy --only firestore:rules 2>&1)"
+      "Bash(cd \"C:\\\\Users\\\\LENOVO\\\\Desktop\\\\projects\\\\antojo-app\" && npx firebase-tools@13 deploy --only firestore:rules 2>&1)",
+      "Bash(cd \"C:/Users/LENOVO/Desktop/projects/antojo-app\" && npm install -D vitest jsdom)"
     ]
   }
 }

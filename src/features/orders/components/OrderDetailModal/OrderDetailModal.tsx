@@ -63,7 +63,8 @@ export function OrderDetailModal({
 
   if (!isOpen || !order) return null;
 
-  const paymentEmoji = PAYMENT_EMOJI[order.paymentMethod] ?? '💰';
+  const normalizedPayment = order.paymentMethod.charAt(0).toUpperCase() + order.paymentMethod.slice(1).toLowerCase();
+  const paymentEmoji = PAYMENT_EMOJI[normalizedPayment] ?? '💰';
   const deliveryEmoji = order.deliveryType ? (DELIVERY_EMOJI[order.deliveryType] ?? '📦') : null;
 
   return (

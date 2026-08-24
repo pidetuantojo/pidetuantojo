@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const status = searchParams.get('status') ?? undefined;
     const page = Number(searchParams.get('page') ?? '1');
+    qu;
 
     const result = await getOrders({ status, page });
 
@@ -77,10 +78,7 @@ export async function getOrderById(id: string): Promise<Order> {
   return data.data;
 }
 
-export async function updateOrderStatus(
-  id: string,
-  status: Order['status']
-): Promise<Order> {
+export async function updateOrderStatus(id: string, status: Order['status']): Promise<Order> {
   const { data } = await apiClient.patch<{ data: Order }>(`/orders/${id}/status`, { status });
   return data.data;
 }
@@ -97,11 +95,15 @@ import { z } from 'zod';
 export const createOrderSchema = z.object({
   customerName: z.string().min(2),
   customerPhone: z.string().optional(),
-  items: z.array(z.object({
-    menuItemId: z.string(),
-    quantity: z.number().int().positive(),
-    notes: z.string().optional(),
-  })).min(1, 'Debe incluir al menos un item'),
+  items: z
+    .array(
+      z.object({
+        menuItemId: z.string(),
+        quantity: z.number().int().positive(),
+        notes: z.string().optional(),
+      })
+    )
+    .min(1, 'Debe incluir al menos un item'),
 });
 
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
@@ -154,16 +156,16 @@ export async function createMenuItemAction(formData: FormData) {
   }
 
   await createMenuItem(parsed.data);
-  revalidatePath('/menu');  // Invalida cache de la ruta
+  revalidatePath('/menu'); // Invalida cache de la ruta
   return { success: true };
 }
 ```
 
 ### Cuándo usar Server Actions vs API Routes
 
-| Caso | Preferir |
-|------|----------|
-| Mutaciones desde formularios Next.js | Server Actions |
-| Endpoints consumidos por apps externas / mobile | API Routes |
-| Fetch de datos en Server Components | `async/await` directo en el componente |
-| Mutaciones con React Query desde Client Components | API Routes + React Query |
+| Caso                                               | Preferir                               |
+| -------------------------------------------------- | -------------------------------------- |
+| Mutaciones desde formularios Next.js               | Server Actions                         |
+| Endpoints consumidos por apps externas / mobile    | API Routes                             |
+| Fetch de datos en Server Components                | `async/await` directo en el componente |
+| Mutaciones con React Query desde Client Components | API Routes + React Query               |

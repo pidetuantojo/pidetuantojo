@@ -47,7 +47,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
   },
 
   addItem: (item) => {
-    const cartId = `${item.productId}-${Date.now()}`;
+    const cartId = crypto.randomUUID();
     const additionalsTotal = item.additionals.reduce((acc, a) => acc + a.price, 0);
     const subtotal = (item.unitPrice + additionalsTotal) * item.quantity;
     set((s) => ({ items: [...s.items, { ...item, cartId, subtotal }] }));

@@ -135,9 +135,9 @@ export function ManualOrderModal({
     try {
       const items: OrderItem[] = cart.map((l) => {
         const addPrice = l.selectedAdicionales.reduce((s, a) => s + a.price, 0);
-        const unitPrice = l.product.price + addPrice;
+        const unitPrice = l.product.price;
         const additionals: Additional[] = l.selectedAdicionales.map((a) => ({ name: a.name, price: a.price }));
-        return { productId: l.product.id, productName: l.product.name, quantity: l.quantity, unitPrice, subtotal: unitPrice * l.quantity, additionals };
+        return { productId: l.product.id, productName: l.product.name, quantity: l.quantity, unitPrice, subtotal: (unitPrice + addPrice) * l.quantity, additionals };
       });
 
       await ordersService.create({
