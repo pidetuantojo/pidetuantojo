@@ -120,6 +120,7 @@ export function MenuListLayout({ categories, products, primaryColor, secondaryCo
 
                     {/* Add button */}
                     <button
+                      aria-label="Añadir al pedido"
                       onClick={(e) => { e.stopPropagation(); product.isAvailable && onSelect(product); }}
                       disabled={!product.isAvailable}
                       style={{
