@@ -8,6 +8,7 @@ import { AppLoader } from '@/components/ui/AppLoader';
 import { ROUTES } from '@/constants/routes';
 
 const VIEW_ALLOWED_ROUTES = [ROUTES.dashboard.pedidos, ROUTES.dashboard.contabilidad];
+// Contabilidad: /dashboard/contabilidad
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
