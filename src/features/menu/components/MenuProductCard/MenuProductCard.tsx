@@ -118,7 +118,7 @@ export function MenuProductCard({ product, primaryColor, secondaryColor, accentC
         )}
 
         <button
-          onClick={(e) => { e.stopPropagation(); isAvailable && onSelect(product); }}
+          onClick={(e) => { e.stopPropagation(); if (isAvailable) onSelect(product); }}
           disabled={!isAvailable}
           style={{
             width: '100%', border: 0, borderRadius: 999, padding: 15,

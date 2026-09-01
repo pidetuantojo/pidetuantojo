@@ -116,17 +116,6 @@ function Field({
   );
 }
 
-function Divider({ label }: { label: string }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '4px 0' }}>
-      <div style={{ flex: 1, height: 1, background: '#EFE7DF' }} />
-      <span style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.08em', color: '#c4b8af', textTransform: 'uppercase' }}>
-        {label}
-      </span>
-      <div style={{ flex: 1, height: 1, background: '#EFE7DF' }} />
-    </div>
-  );
-}
 
 function BackButton({ onClick }: { onClick: () => void }) {
   return (
@@ -521,7 +510,7 @@ interface ListViewProps {
   onEdit: (user: AppUser) => void;
 }
 
-function ListView({ restaurantId: _, users, isLoading, onAdd, onEdit }: ListViewProps) {
+function ListView({ users, isLoading, onAdd, onEdit }: ListViewProps) {
   const atLimit = users.length >= MAX_VIEW_USERS;
 
   return (
