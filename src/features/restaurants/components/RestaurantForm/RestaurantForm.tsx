@@ -36,7 +36,7 @@ function toMin(t: string) {
   return h * 60 + m;
 }
 function fmtHour(t: string) {
-  let [h, m] = t.split(':').map(Number);
+  const [h, m] = t.split(':').map(Number);
   const ap = h < 12 ? 'a.m.' : 'p.m.';
   let hh = h % 12;
   if (hh === 0) hh = 12;
