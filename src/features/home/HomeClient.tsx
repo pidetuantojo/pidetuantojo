@@ -98,24 +98,24 @@ export function HomeClient({ restaurants }: HomeClientProps) {
 
   // Derivar opciones de los propios restaurantes
   const depOptions = useMemo(() => {
-    const deps = [...new Set(restaurants.map((r) => r.department).filter(Boolean) as string[])].sort();
+    const deps = Array.from(new Set(restaurants.map((r) => r.department).filter(Boolean) as string[])).sort();
     return [{ value: '', label: 'Todos los departamentos' }, ...deps.map((d) => ({ value: d, label: d }))];
   }, [restaurants]);
 
   const cityOptions = useMemo(() => {
-    const cities = [
-      ...new Set(
+    const cities = Array.from(
+      new Set(
         restaurants
           .filter((r) => !dep || r.department === dep)
           .map((r) => r.city)
           .filter(Boolean) as string[]
-      ),
-    ].sort();
+      )
+    ).sort();
     return [{ value: '', label: 'Todas las ciudades' }, ...cities.map((c) => ({ value: c, label: c }))];
   }, [restaurants, dep]);
 
   const catOptions = useMemo(() => {
-    const cats = [...new Set(restaurants.map((r) => r.category).filter(Boolean) as string[])].sort();
+    const cats = Array.from(new Set(restaurants.map((r) => r.category).filter(Boolean) as string[])).sort();
     return [{ value: '', label: 'Todas las categorías' }, ...cats.map((c) => ({ value: c, label: c }))];
   }, [restaurants]);
 
