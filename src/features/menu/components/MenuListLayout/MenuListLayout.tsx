@@ -11,12 +11,13 @@ interface MenuListLayoutProps {
   products: Product[];
   primaryColor: string;
   secondaryColor: string;
+  restaurantClosed?: boolean;
   onSelect: (product: Product) => void;
 }
 
 const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
 
-export function MenuListLayout({ categories, products, primaryColor, secondaryColor, onSelect }: MenuListLayoutProps) {
+export function MenuListLayout({ categories, products, primaryColor, secondaryColor, restaurantClosed, onSelect }: MenuListLayoutProps) {
   // All categories open by default
   const [openIds, setOpenIds] = useState<Set<string>>(() => new Set(categories.slice(0, 1).map((c) => c.id)));
 
@@ -68,13 +69,13 @@ export function MenuListLayout({ categories, products, primaryColor, secondaryCo
                 {catProducts.map((product) => (
                   <div
                     key={product.id}
-                    onClick={() => product.isAvailable && onSelect(product)}
+                    onClick={() => product.isAvailable && !restaurantClosed && onSelect(product)}
                     style={{
                       display: 'flex', alignItems: 'center', gap: 13,
                       background: '#fff', borderRadius: 16, padding: '12px 14px',
                       boxShadow: '0 4px 14px -10px rgba(0,0,0,.3)',
                       opacity: product.isAvailable ? 1 : 0.55,
-                      cursor: product.isAvailable ? 'pointer' : 'default',
+                      cursor: (product.isAvailable && !restaurantClosed) ? 'pointer' : 'default',
                     }}
                   >
                     {/* Image */}
@@ -121,14 +122,15 @@ export function MenuListLayout({ categories, products, primaryColor, secondaryCo
                     {/* Add button */}
                     <button
                       aria-label="Añadir al pedido"
-                      onClick={(e) => { e.stopPropagation(); if (product.isAvailable) onSelect(product); }}
-                      disabled={!product.isAvailable}
+                      onClick={(e) => { e.stopPropagation(); if (product.isAvailable && !restaurantClosed) onSelect(product); }}
+                      disabled={!product.isAvailable || restaurantClosed}
                       style={{
                         width: 40, height: 40, flexShrink: 0,
-                        border: 0, borderRadius: 999, cursor: product.isAvailable ? 'pointer' : 'not-allowed',
-                        background: primaryColor,
+                        border: 0, borderRadius: 999,
+                        cursor: (product.isAvailable && !restaurantClosed) ? 'pointer' : 'not-allowed',
+                        background: (product.isAvailable && !restaurantClosed) ? primaryColor : '#d8d2cc',
                         display: 'grid', placeItems: 'center',
-                        boxShadow: `0 8px 16px -8px ${primaryColor}`,
+                        boxShadow: (product.isAvailable && !restaurantClosed) ? `0 8px 16px -8px ${primaryColor}` : 'none',
                       }}
                     >
                       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round">

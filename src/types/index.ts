@@ -22,6 +22,17 @@ export interface RestaurantTheme {
   bgColor: string;
 }
 
+export interface DaySchedule {
+  open: string;  // "09:00"
+  close: string; // "19:00"
+}
+
+// 0 = domingo, 1 = lunes, ..., 6 = sábado
+// null = cerrado ese día
+export type OpeningHours = {
+  [day: number]: DaySchedule | null | undefined;
+};
+
 export interface Restaurant {
   id: string;
   slug: string;
@@ -32,8 +43,11 @@ export interface Restaurant {
   logo: string;
   bannerImage?: string;
   theme: RestaurantTheme;
+  // Categoría (tipo de cocina)
+  category?: string;
   // Ubicación
   address?: string;
+  department?: string;
   city?: string;
   mapUrl?: string;
   mapEmbed?: string;
@@ -44,6 +58,8 @@ export interface Restaurant {
   menuLayout?: 'cards' | 'list';
   // Modo de domicilios
   deliveryMode?: 'manual' | 'zones';
+  // Horario de atención
+  openingHours?: OpeningHours;
   adminUserId: string;
   isActive: boolean;
   createdAt: string;

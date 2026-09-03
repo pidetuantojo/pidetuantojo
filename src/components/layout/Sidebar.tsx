@@ -178,6 +178,8 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
         padding: collapsed ? '26px 10px' : '26px 18px',
         fontFamily: sg,
         overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       {/* Logo */}
@@ -244,7 +246,7 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
       )}
 
       {/* Nav */}
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <nav style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, overflowY: 'auto' }}>
         {links.map(({ href, label, icon }) => {
           const active = pathname === href;
           return (
@@ -272,7 +274,7 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
       </nav>
 
       {/* Bottom */}
-      <div style={{ marginTop: 'auto' }}>
+      <div style={{ marginTop: 12, flexShrink: 0 }}>
         {/* Toggle collapse — solo desktop */}
         <button
           onClick={onToggleCollapse}

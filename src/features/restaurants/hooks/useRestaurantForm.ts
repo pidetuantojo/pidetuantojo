@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { z } from 'zod';
 
 import { slugify } from '@/lib/utils';
-import type { Restaurant, UpdateRestaurantData, CreateRestaurantData } from '@/types';
+import type { Restaurant, UpdateRestaurantData, CreateRestaurantData, OpeningHours } from '@/types';
 
-import type { RestaurantFormData } from '../types/restaurant.types';
+import type { RestaurantFormData, DayHoursForm } from '../types/restaurant.types';
 
 const baseSchema = z.object({
   name: z.string().min(2, 'Mínimo 2 caracteres'),
@@ -15,6 +15,9 @@ const baseSchema = z.object({
   description: z.string().min(10, 'Mínimo 10 caracteres'),
   phone: z.string().min(7, 'Teléfono inválido'),
   logo: z.string().min(1, 'El logo es requerido'),
+  category: z.string().min(1, 'La categoría es requerida'),
+  department: z.string().min(1, 'El departamento es requerido'),
+  city: z.string().min(1, 'La ciudad es requerida'),
 });
 
 const createSchema = baseSchema.extend({
@@ -22,6 +25,34 @@ const createSchema = baseSchema.extend({
   adminEmail: z.string().email('Email inválido'),
   adminPassword: z.string().min(6, 'Mínimo 6 caracteres'),
 });
+
+function defaultOpeningHours(): DayHoursForm[] {
+  return Array.from({ length: 7 }, () => ({ on: false, open: '09:00', close: '19:00' }));
+}
+
+function firebaseToHoursForm(openingHours?: OpeningHours): DayHoursForm[] {
+  return Array.from({ length: 7 }, (_, i) => {
+    const day = openingHours?.[i];
+    return {
+      on: !!day,
+      open: day?.open ?? '09:00',
+      close: day?.close ?? '19:00',
+    };
+  });
+}
+
+function hoursFormToFirebase(hoursForm: DayHoursForm[]): OpeningHours {
+  const result: OpeningHours = {};
+  hoursForm.forEach((day, index) => {
+    result[index] = day.on ? { open: day.open, close: day.close } : null;
+  });
+  return result;
+}
+
+function extractEmbedUrl(value: string): string {
+  const match = value.match(/src=["'\u201c\u201d]([^"'\u201c\u201d]+)["'\u201c\u201d]/);
+  return match ? match[1] : value;
+}
 
 const defaultValues: RestaurantFormData = {
   name: '',
@@ -36,7 +67,9 @@ const defaultValues: RestaurantFormData = {
   accentColor: '#FFE0CC',
   bgColor: '#FBF3EF',
   isActive: true,
+  category: '',
   address: '',
+  department: '',
   city: '',
   mapUrl: '',
   mapEmbed: '',
@@ -44,15 +77,11 @@ const defaultValues: RestaurantFormData = {
   facebook: '',
   menuLayout: 'cards',
   deliveryMode: 'manual',
+  openingHours: defaultOpeningHours(),
   adminName: '',
   adminEmail: '',
   adminPassword: '',
 };
-
-function extractEmbedUrl(value: string): string {
-  const match = value.match(/src=["'\u201c\u201d]([^"'\u201c\u201d]+)["'\u201c\u201d]/);
-  return match ? match[1] : value;
-}
 
 export function useRestaurantForm(restaurant?: Restaurant) {
   const isEditing = !!restaurant;
@@ -72,7 +101,9 @@ export function useRestaurantForm(restaurant?: Restaurant) {
       accentColor: restaurant.theme.accentColor,
       bgColor: restaurant.theme.bgColor ?? '#FBF3EF',
       isActive: restaurant.isActive,
+      category: restaurant.category ?? '',
       address: restaurant.address ?? '',
+      department: restaurant.department ?? '',
       city: restaurant.city ?? '',
       mapUrl: restaurant.mapUrl ?? '',
       mapEmbed: restaurant.mapEmbed ?? '',
@@ -80,6 +111,7 @@ export function useRestaurantForm(restaurant?: Restaurant) {
       facebook: restaurant.facebook ?? '',
       menuLayout: restaurant.menuLayout ?? 'cards',
       deliveryMode: restaurant.deliveryMode ?? 'manual',
+      openingHours: firebaseToHoursForm(restaurant.openingHours),
       adminName: '',
       adminEmail: '',
       adminPassword: '',
@@ -97,11 +129,23 @@ export function useRestaurantForm(restaurant?: Restaurant) {
       if (field === 'name' && !isEditing) {
         next.slug = slugify(value as string);
       }
+      // Resetear ciudad cuando cambia el departamento
+      if (field === 'department') {
+        next.city = '';
+      }
       return next;
     });
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
+  }
+
+  function setDayHours(dayIndex: number, patch: Partial<DayHoursForm>) {
+    setData((prev) => {
+      const next = [...prev.openingHours];
+      next[dayIndex] = { ...next[dayIndex], ...patch };
+      return { ...prev, openingHours: next };
+    });
   }
 
   function validate(): boolean {
@@ -121,6 +165,8 @@ export function useRestaurantForm(restaurant?: Restaurant) {
   }
 
   function toCreateData(): Omit<CreateRestaurantData, 'adminUserId'> {
+    const hours = hoursFormToFirebase(data.openingHours);
+    const hasAnyHours = Object.values(hours).some((v) => v !== null);
     return {
       name: data.name,
       slug: data.slug,
@@ -136,7 +182,9 @@ export function useRestaurantForm(restaurant?: Restaurant) {
         bgColor: data.bgColor,
       },
       isActive: data.isActive,
+      ...(data.category ? { category: data.category } : {}),
       ...(data.address ? { address: data.address } : {}),
+      ...(data.department ? { department: data.department } : {}),
       ...(data.city ? { city: data.city } : {}),
       ...(data.mapUrl ? { mapUrl: data.mapUrl } : {}),
       ...(data.mapEmbed ? { mapEmbed: extractEmbedUrl(data.mapEmbed) } : {}),
@@ -144,6 +192,7 @@ export function useRestaurantForm(restaurant?: Restaurant) {
       ...(data.facebook ? { facebook: data.facebook } : {}),
       menuLayout: data.menuLayout,
       deliveryMode: data.deliveryMode,
+      ...(hasAnyHours ? { openingHours: hours } : {}),
       adminEmail: data.adminEmail,
       adminPassword: data.adminPassword,
       adminName: data.adminName,
@@ -151,6 +200,8 @@ export function useRestaurantForm(restaurant?: Restaurant) {
   }
 
   function toUpdateData(): UpdateRestaurantData {
+    const hours = hoursFormToFirebase(data.openingHours);
+    const hasAnyHours = Object.values(hours).some((v) => v !== null);
     return {
       name: data.name,
       ...(data.tagline ? { tagline: data.tagline } : {}),
@@ -165,7 +216,9 @@ export function useRestaurantForm(restaurant?: Restaurant) {
         bgColor: data.bgColor,
       },
       isActive: data.isActive,
+      ...(data.category ? { category: data.category } : {}),
       ...(data.address ? { address: data.address } : {}),
+      ...(data.department ? { department: data.department } : {}),
       ...(data.city ? { city: data.city } : {}),
       ...(data.mapUrl ? { mapUrl: data.mapUrl } : {}),
       ...(data.mapEmbed ? { mapEmbed: extractEmbedUrl(data.mapEmbed) } : {}),
@@ -173,8 +226,9 @@ export function useRestaurantForm(restaurant?: Restaurant) {
       ...(data.facebook ? { facebook: data.facebook } : {}),
       menuLayout: data.menuLayout,
       deliveryMode: data.deliveryMode,
+      ...(hasAnyHours ? { openingHours: hours } : {}),
     };
   }
 
-  return { data, errors, handleChange, validate, toCreateData, toUpdateData, isEditing };
+  return { data, errors, handleChange, setDayHours, validate, toCreateData, toUpdateData, isEditing };
 }

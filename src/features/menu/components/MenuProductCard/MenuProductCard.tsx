@@ -13,14 +13,16 @@ interface MenuProductCardProps {
   secondaryColor: string;
   accentColor: string;
   categoryName?: string;
+  restaurantClosed?: boolean;
   onSelect: (product: Product) => void;
 }
 
 const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
 const sm = "var(--font-space-mono, monospace)";
 
-export function MenuProductCard({ product, primaryColor, secondaryColor, accentColor, categoryName, onSelect }: MenuProductCardProps) {
+export function MenuProductCard({ product, primaryColor, secondaryColor, accentColor, categoryName, restaurantClosed, onSelect }: MenuProductCardProps) {
   const { name, description, price, image, tag, isAvailable } = product;
+  const canAdd = isAvailable && !restaurantClosed;
 
   const items = useCartStore((s) => s.items);
   const qtyInCart = items
@@ -29,14 +31,14 @@ export function MenuProductCard({ product, primaryColor, secondaryColor, accentC
 
   return (
     <div
-      onClick={() => isAvailable && onSelect(product)}
+      onClick={() => canAdd && onSelect(product)}
       style={{
         background: '#fff',
         borderRadius: 22,
         overflow: 'hidden',
         boxShadow: '0 8px 26px -18px rgba(0,0,0,.3)',
         opacity: isAvailable ? 1 : 0.7,
-        cursor: isAvailable ? 'pointer' : 'default',
+        cursor: canAdd ? 'pointer' : 'default',
       }}
     >
       {/* imagen */}
@@ -118,18 +120,19 @@ export function MenuProductCard({ product, primaryColor, secondaryColor, accentC
         )}
 
         <button
-          onClick={(e) => { e.stopPropagation(); if (isAvailable) onSelect(product); }}
-          disabled={!isAvailable}
+          onClick={(e) => { e.stopPropagation(); if (canAdd) onSelect(product); }}
+          disabled={!canAdd}
           style={{
             width: '100%', border: 0, borderRadius: 999, padding: 15,
-            cursor: isAvailable ? 'pointer' : 'not-allowed',
-            fontFamily: sg, fontWeight: 700, fontSize: 15, color: '#fff',
-            background: primaryColor,
-            boxShadow: `0 10px 22px -10px ${primaryColor}`,
+            cursor: canAdd ? 'pointer' : 'not-allowed',
+            fontFamily: sg, fontWeight: 700, fontSize: 15,
+            color: canAdd ? '#fff' : '#a09890',
+            background: canAdd ? primaryColor : '#e8e3dd',
+            boxShadow: canAdd ? `0 10px 22px -10px ${primaryColor}` : 'none',
             opacity: isAvailable ? 1 : 0.5,
           }}
         >
-          + Añadir al pedido
+          {restaurantClosed ? 'Restaurante cerrado' : '+ Añadir al pedido'}
         </button>
       </div>
     </div>

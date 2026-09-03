@@ -42,6 +42,19 @@ interface MenuPageProps {
 const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
 const sm = "var(--font-space-mono, monospace)";
 
+function checkRestaurantOpen(openingHours?: Restaurant['openingHours']): boolean {
+  if (!openingHours) return true;
+  const anyDefined = Object.values(openingHours).some((v) => v !== null && v !== undefined);
+  if (!anyDefined) return true;
+  const now = new Date();
+  const today = openingHours[now.getDay()];
+  if (!today) return false;
+  const mins = now.getHours() * 60 + now.getMinutes();
+  const o = today.open.split(':').map(Number).reduce((h, m) => h * 60 + m);
+  const c = today.close.split(':').map(Number).reduce((h, m) => h * 60 + m);
+  return c <= o ? (mins >= o || mins < c) : (mins >= o && mins < c);
+}
+
 export function MenuPage({ restaurant, categories, products, adicionales, receivedStatusId, deliveryZones, deliveryMode }: MenuPageProps) {
   const initCart = useCartStore((s) => s.initCart);
   const setCartOpen = useCartStore((s) => s.setCartOpen);
@@ -70,6 +83,8 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
   const layout = restaurant.menuLayout ?? 'cards';
   const visibleProducts = products.filter((p) => p.categoryId === activeCategoryId && p.isActive);
   const categoryMap = new Map(categories.map((c) => [c.id, c]));
+  const isOpen = checkRestaurantOpen(restaurant.openingHours);
+  const restaurantClosed = !isOpen;
 
   return (
     <div style={{ minHeight: '100vh', background: '#e8e3dd', fontFamily: sg }}>
@@ -139,6 +154,29 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
       {/* Anchor para nav */}
       <div id="menu" />
 
+      {/* Banner cerrado */}
+      {restaurantClosed && (
+        <div style={{
+          margin: '12px 16px 0',
+          borderRadius: 14,
+          padding: '12px 16px',
+          background: '#f0ece7',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+        }}>
+          <span style={{ fontSize: 18, flexShrink: 0 }}>🔒</span>
+          <div>
+            <div style={{ fontFamily: sg, fontWeight: 700, fontSize: 13, color: '#6b6059' }}>
+              Restaurante cerrado
+            </div>
+            <div style={{ fontFamily: sg, fontSize: 12, color: '#9a9088', marginTop: 2 }}>
+              Podés ver el menú, pero no se pueden realizar pedidos por el momento.
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Layout: Tarjetas */}
       {layout === 'cards' && (
         <>
@@ -165,6 +203,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
                   secondaryColor={sec}
                   accentColor={acc}
                   categoryName={categoryMap.get(product.categoryId)?.name}
+                  restaurantClosed={restaurantClosed}
                   onSelect={setSelectedProduct}
                 />
               ))
@@ -180,12 +219,13 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
           products={products}
           primaryColor={pri}
           secondaryColor={sec}
+          restaurantClosed={restaurantClosed}
           onSelect={setSelectedProduct}
         />
       )}
 
       {/* Fixed bottom cart bar */}
-      {count > 0 && (
+      {count > 0 && !restaurantClosed && (
         <div style={{
           position: 'fixed', bottom: 0, zIndex: 30,
           left: 'max(0px, calc(50vw - 240px))',
@@ -255,7 +295,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
       )}
 
       {/* Spacer para que el fixed bar no tape contenido */}
-      {count > 0 && <div style={{ height: 120 }} />}
+      {count > 0 && !restaurantClosed && <div style={{ height: 120 }} />}
 
       {/* Ubicación */}
       {(restaurant.address || restaurant.mapEmbed) && (
