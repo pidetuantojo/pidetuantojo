@@ -188,7 +188,7 @@ export function ManualOrderModal({
           </div>
           <button
             onClick={onClose}
-            style={{ marginLeft: 'auto', width: 34, height: 34, borderRadius: 10, border: 0, background: '#F5F0EB', display: 'grid', placeItems: 'center', cursor: 'pointer' }}
+            style={{ marginLeft: 'auto', width: 34, height: 34, borderRadius: 999, border: 0, background: '#F5F0EB', display: 'grid', placeItems: 'center', cursor: 'pointer' }}
           >
             <X style={{ width: 16, height: 16, color: '#5a5048' }} />
           </button>
@@ -366,7 +366,7 @@ export function ManualOrderModal({
                   const active = deliveryType === t.value;
                   return (
                     <button key={t.value} type="button" onClick={() => setDeliveryType(t.value)}
-                      style={{ padding: '10px 12px', borderRadius: 12, border: `2px solid ${active ? '#FF6A1A' : '#EFE7DF'}`, background: '#fff', color: active ? '#FF6A1A' : '#5a5048', fontFamily: sg, fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all .12s' }}>
+                      style={{ padding: '10px 12px', borderRadius: 999, border: `2px solid ${active ? '#FF6A1A' : '#EFE7DF'}`, background: '#fff', color: active ? '#FF6A1A' : '#5a5048', fontFamily: sg, fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all .12s' }}>
                       <span>{t.emoji}</span> {t.label}
                     </button>
                   );
@@ -392,7 +392,7 @@ export function ManualOrderModal({
                   const active = paymentMethod === m.value;
                   return (
                     <button key={m.value} type="button" onClick={() => setPaymentMethod(m.value)}
-                      style={{ padding: '10px 12px', borderRadius: 12, border: `2px solid ${active ? '#FF6A1A' : '#EFE7DF'}`, background: '#fff', color: active ? '#FF6A1A' : '#5a5048', fontFamily: sg, fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all .12s' }}>
+                      style={{ padding: '10px 12px', borderRadius: 999, border: `2px solid ${active ? '#FF6A1A' : '#EFE7DF'}`, background: '#fff', color: active ? '#FF6A1A' : '#5a5048', fontFamily: sg, fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all .12s' }}>
                       <span>{m.emoji}</span> {m.value}
                     </button>
                   );
@@ -419,7 +419,7 @@ export function ManualOrderModal({
             onClick={handleSubmit}
             disabled={isSaving || cart.length === 0}
             style={{
-              width: '100%', border: 0, borderRadius: 14, padding: '14px 0',
+              width: '100%', border: 0, borderRadius: 999, padding: '14px 0',
               fontFamily: sg, fontWeight: 700, fontSize: 15, color: '#fff',
               background: cart.length === 0 || isSaving ? '#d1c5bd' : 'linear-gradient(135deg, #FF8A2B, #FF6A1A)',
               cursor: cart.length === 0 || isSaving ? 'not-allowed' : 'pointer',

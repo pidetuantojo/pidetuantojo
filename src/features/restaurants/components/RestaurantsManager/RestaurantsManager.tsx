@@ -86,7 +86,7 @@ export function RestaurantsManager() {
           style={{
             display: 'flex', alignItems: 'center', gap: 9, fontFamily: sg,
             fontWeight: 600, fontSize: 14, color: '#fff', border: 0,
-            borderRadius: 12, padding: '13px 20px', cursor: 'pointer',
+            borderRadius: 999, padding: '13px 20px', cursor: 'pointer',
             background: 'linear-gradient(135deg, #FF8A2B, #FF6A1A 55%, #EA3B2E)',
             boxShadow: '0 10px 24px -8px rgba(234,59,46,.5)',
           }}
@@ -170,7 +170,7 @@ export function RestaurantsManager() {
             style={{
               fontFamily: sg, fontWeight: 600, fontSize: 14,
               color: '#6b7280', background: '#f3f4f6',
-              border: 0, borderRadius: 10, padding: '10px 20px', cursor: 'pointer',
+              border: 0, borderRadius: 999, padding: '10px 20px', cursor: 'pointer',
             }}
           >
             Cancelar
@@ -180,7 +180,7 @@ export function RestaurantsManager() {
             style={{
               fontFamily: sg, fontWeight: 600, fontSize: 14,
               color: '#fff', background: '#EF4444',
-              border: 0, borderRadius: 10, padding: '10px 20px', cursor: 'pointer',
+              border: 0, borderRadius: 999, padding: '10px 20px', cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 7,
             }}
           >

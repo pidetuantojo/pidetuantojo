@@ -29,7 +29,7 @@ export function ProductCard({
 
   const iconBtn: React.CSSProperties = {
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    width: 34, height: 34, borderRadius: 9, border: 'none',
+    width: 34, height: 34, borderRadius: 999, border: 'none',
     background: 'transparent', cursor: 'pointer', transition: 'background .12s',
   };
 

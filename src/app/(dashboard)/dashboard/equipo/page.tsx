@@ -177,7 +177,7 @@ function ActionButton({
       style={{
         ...styles[variant],
         padding: '10px 20px',
-        borderRadius: 10,
+        borderRadius: 999,
         fontFamily: sg,
         fontSize: 14,
         fontWeight: 600,
@@ -552,7 +552,7 @@ function ListView({ users, isLoading, onAdd, onEdit }: ListViewProps) {
               onClick={() => onEdit(u)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 14,
-                borderRadius: 14, border: '1px solid #EFE7DF', background: '#fff',
+                borderRadius: 999, border: '1px solid #EFE7DF', background: '#fff',
                 padding: '14px 18px', width: '100%', cursor: 'pointer',
                 textAlign: 'left', transition: 'border-color .15s, box-shadow .15s',
                 fontFamily: sg,

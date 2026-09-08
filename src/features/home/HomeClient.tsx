@@ -410,7 +410,7 @@ export function HomeClient({ restaurants }: HomeClientProps) {
                 <div style={{ fontFamily: sg, fontSize: 13, color: '#8a7f76' }}>Probá otra ciudad o quitá un filtro.</div>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                 {filtered.map(({ r, st }) => (
                   <MobileCard key={r.id} restaurant={r} st={st} />
                 ))}
@@ -515,64 +515,91 @@ function MobileCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open:
 
   return (
     <Link href={`/${r.slug}`} style={{ textDecoration: 'none' }}>
-      <div style={{ background: '#fff', border: '1px solid #EFE7DF', borderRadius: 18, padding: 14, boxShadow: '0 6px 18px -16px rgba(27,21,18,.4)', cursor: 'pointer' }}>
-        <div style={{ display: 'flex', gap: 13, alignItems: 'center' }}>
-          {/* Logo square */}
-          <div style={{ width: 56, height: 56, borderRadius: 15, overflow: 'hidden', flexShrink: 0, border: '1px solid #F1EAE3' }}>
+      <div className="rcard" style={{ background: '#fff', borderRadius: 20, padding: '10px 10px 14px', boxShadow: '0 10px 28px -18px rgba(27,21,18,.5)', border: '1.5px solid #E7DED6' }}>
+        {/* Cover photo */}
+        <div style={{ position: 'relative', height: 180, borderRadius: 14, overflow: 'hidden' }}>
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: r.bannerImage
+              ? `url('${r.bannerImage}') center/cover no-repeat`
+              : `linear-gradient(135deg,${pri},${sec})`,
+            filter: st.open ? 'none' : 'saturate(.55)',
+          }} />
+          {!r.bannerImage && (
             <div style={{
-              width: '100%', height: '100%',
-              background: r.logo ? `#fff url('${r.logo}') center/contain no-repeat` : `linear-gradient(135deg,${pri},${sec})`,
+              position: 'absolute', inset: 0,
               display: 'grid', placeItems: 'center',
-              fontFamily: sg, fontWeight: 700, fontSize: 20, color: 'rgba(255,255,255,.95)',
+              fontFamily: sg, fontWeight: 700, fontSize: 72,
+              color: 'rgba(255,255,255,.9)', letterSpacing: '-.03em',
             }}>
-              {!r.logo && r.name.charAt(0)}
+              {r.name.charAt(0)}
             </div>
-          </div>
-
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-              <h4 style={{ fontFamily: sg, fontWeight: 700, fontSize: 16, letterSpacing: '-.01em', color: '#1B1512', margin: 0, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {r.name}
-              </h4>
-              <span style={{
-                flexShrink: 0, fontFamily: sm, fontSize: 8.5, fontWeight: 700, letterSpacing: '.05em',
-                borderRadius: 999, padding: '4px 8px',
-                color: st.open ? '#1F5130' : '#8a7f76',
-                background: st.open ? '#D9F2E2' : '#EDE7E0',
-              }}>
-                {st.open ? 'ABIERTO' : 'CERRADO'}
-              </span>
-            </div>
-
-            {r.category && (
-              <div style={{ fontFamily: sg, fontSize: 12, color: '#9a9088', marginBottom: 8 }}>{r.category}</div>
-            )}
-
-            {(r.city || r.department) && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: sg, fontSize: 11.5, color: '#8a7f76', marginBottom: 4 }}>
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#c0b5ab" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {[r.city, r.department].filter(Boolean).join(', ')}
-                </span>
-              </div>
-            )}
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#c0b5ab" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-              <span style={{ fontFamily: sm, fontSize: 10, color: st.open ? '#2C7A52' : '#a89e95' }}>
-                {st.label}
-              </span>
-            </div>
-          </div>
-
+          )}
           <span style={{
-            width: 34, height: 34, flexShrink: 0, display: 'grid', placeItems: 'center', borderRadius: 11,
-            color: st.open ? '#FF6A1A' : '#b3a89e',
-            background: st.open ? '#FFF1E9' : '#F4EFE9',
+            position: 'absolute', top: 12, left: 12,
+            display: 'flex', alignItems: 'center', gap: 6,
+            fontFamily: sm, fontWeight: 700, fontSize: 10, letterSpacing: '.06em',
+            borderRadius: 999, padding: '5px 11px 5px 9px',
+            color: '#fff',
+            background: st.open ? '#16A34A' : 'rgba(27,21,18,.72)',
+            border: st.open ? 'none' : '1px solid rgba(255,255,255,.22)',
+            backdropFilter: st.open ? 'none' : 'blur(6px)',
           }}>
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            <span style={{
+              width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
+              background: 'rgba(255,255,255,.7)',
+            }} />
+            {st.open ? 'Abierto' : 'Cerrado'}
           </span>
         </div>
+
+        {/* Logo + Name + Category */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 8px 0' }}>
+          <div style={{ width: 60, height: 60, borderRadius: '50%', flexShrink: 0, background: '#fff', overflow: 'hidden', boxShadow: '0 4px 14px -4px rgba(0,0,0,.22)', border: '1px solid #F1EAE3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {r.logo ? (
+              <img src={r.logo} alt={r.name} style={{ width: '72%', height: '72%', objectFit: 'contain', display: 'block' }} />
+            ) : (
+              <div style={{ width: '100%', height: '100%', background: `linear-gradient(135deg,${pri},${sec})`, display: 'grid', placeItems: 'center', fontFamily: sg, fontWeight: 700, fontSize: 22, color: '#fff' }}>
+                {r.name.charAt(0)}
+              </div>
+            )}
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <h4 style={{ fontFamily: sg, fontWeight: 700, fontSize: 18, letterSpacing: '-.01em', color: '#1B1512', margin: 0, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {r.name}
+            </h4>
+            {r.category && (
+              <div style={{ fontFamily: sg, fontSize: 13, color: '#9a9088', marginTop: 2 }}>{r.category}</div>
+            )}
+          </div>
+        </div>
+
+        {/* Info rows */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 7, padding: '12px 8px 0' }}>
+          {(r.city || r.department) && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#c0b5ab" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span style={{ fontFamily: sg, fontSize: 12.5, color: '#6f655d', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {[r.city, r.department].filter(Boolean).join(', ')}
+              </span>
+            </div>
+          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke={st.open ? '#c0b5ab' : '#D97706'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            <span style={{ fontFamily: sg, fontWeight: st.open ? 400 : 600, fontSize: 12.5, color: st.open ? '#6f655d' : '#B45309' }}>{st.label}</span>
+          </div>
+        </div>
+
+        {/* CTA */}
+        <button style={{
+          display: 'block', width: 'calc(100% - 16px)', margin: '14px 8px 0',
+          fontFamily: sg, fontWeight: 700, fontSize: 14, color: '#fff',
+          background: 'linear-gradient(135deg,#FF8A2B,#FF6A1A 55%,#EA3B2E)',
+          border: 'none', borderRadius: 999, padding: 13,
+          cursor: 'pointer', boxShadow: '0 8px 18px -10px rgba(234,59,46,.5)',
+        }}>
+          Ver Menú
+        </button>
       </div>
     </Link>
   );

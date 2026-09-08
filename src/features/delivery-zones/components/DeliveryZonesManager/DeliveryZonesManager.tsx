@@ -150,7 +150,7 @@ export function DeliveryZonesManager() {
           onClick={openAdd}
           style={{
             display: 'flex', alignItems: 'center', gap: 8,
-            padding: '10px 18px', borderRadius: 12, border: 'none',
+            padding: '10px 18px', borderRadius: 999, border: 'none',
             background: COLOR_PRIMARY, color: '#fff',
             fontFamily: sg, fontWeight: 700, fontSize: 14, cursor: 'pointer',
           }}
@@ -211,7 +211,7 @@ export function DeliveryZonesManager() {
               <button
                 onClick={cancelForm}
                 style={{
-                  flex: 1, padding: '10px', borderRadius: 10,
+                  flex: 1, padding: '10px', borderRadius: 999,
                   border: `1.5px solid ${COLOR_BORDER}`, background: '#fff',
                   fontFamily: sg, fontWeight: 600, fontSize: 14, color: COLOR_MUTED,
                   cursor: 'pointer',
@@ -223,7 +223,7 @@ export function DeliveryZonesManager() {
                 onClick={handleSave}
                 disabled={isPending}
                 style={{
-                  flex: 2, padding: '10px', borderRadius: 10, border: 'none',
+                  flex: 2, padding: '10px', borderRadius: 999, border: 'none',
                   background: COLOR_PRIMARY, color: '#fff',
                   fontFamily: sg, fontWeight: 700, fontSize: 14,
                   cursor: isPending ? 'default' : 'pointer',
@@ -265,7 +265,7 @@ export function DeliveryZonesManager() {
               onClick={openAdd}
               style={{
                 fontFamily: sg, fontWeight: 700, fontSize: 13, color: COLOR_PRIMARY,
-                background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                background: 'none', border: 'none', cursor: 'pointer', padding: 0, borderRadius: 999,
               }}
             >
               + Agregar primera zona
@@ -344,7 +344,7 @@ function ZoneRow({ zone, onEdit, onToggleActive, onDelete, isToggling, isDeletin
           disabled={isToggling}
           title={zone.isActive ? 'Desactivar' : 'Activar'}
           style={{
-            width: 32, height: 32, borderRadius: 8, border: 'none', background: 'none',
+            width: 32, height: 32, borderRadius: 999, border: 'none', background: 'none',
             cursor: isToggling ? 'default' : 'pointer', display: 'grid', placeItems: 'center',
             color: '#9a8f86', opacity: isToggling ? 0.5 : 1,
           }}
@@ -367,7 +367,7 @@ function ZoneRow({ zone, onEdit, onToggleActive, onDelete, isToggling, isDeletin
           onClick={() => onEdit(zone)}
           title="Editar"
           style={{
-            width: 32, height: 32, borderRadius: 8, border: 'none', background: 'none',
+            width: 32, height: 32, borderRadius: 999, border: 'none', background: 'none',
             cursor: 'pointer', display: 'grid', placeItems: 'center', color: '#9a8f86',
           }}
         >
@@ -383,7 +383,7 @@ function ZoneRow({ zone, onEdit, onToggleActive, onDelete, isToggling, isDeletin
           disabled={isDeleting}
           title="Eliminar"
           style={{
-            width: 32, height: 32, borderRadius: 8, border: 'none', background: 'none',
+            width: 32, height: 32, borderRadius: 999, border: 'none', background: 'none',
             cursor: isDeleting ? 'default' : 'pointer', display: 'grid', placeItems: 'center',
             color: '#9a8f86', opacity: isDeleting ? 0.5 : 1,
           }}

@@ -96,7 +96,7 @@ export function AdicionalesManager({ restaurantId }: Props) {
           style={{
             display: 'flex', alignItems: 'center', gap: 7,
             background: '#FF6A1A', color: '#fff', border: 'none',
-            borderRadius: 12, padding: '10px 18px', fontFamily: sg,
+            borderRadius: 999, padding: '10px 18px', fontFamily: sg,
             fontWeight: 600, fontSize: 14, cursor: 'pointer', flexShrink: 0,
           }}
         >
@@ -171,7 +171,7 @@ export function AdicionalesManager({ restaurantId }: Props) {
             <button
               onClick={cancel}
               style={{
-                padding: '9px 18px', border: '1.5px solid #E7DED6', borderRadius: 10,
+                padding: '9px 18px', border: '1.5px solid #E7DED6', borderRadius: 999,
                 background: '#fff', fontFamily: sg, fontWeight: 600, fontSize: 13,
                 color: '#5a5048', cursor: 'pointer',
               }}
@@ -182,7 +182,7 @@ export function AdicionalesManager({ restaurantId }: Props) {
               onClick={handleSave}
               disabled={isPending}
               style={{
-                padding: '9px 18px', border: 'none', borderRadius: 10,
+                padding: '9px 18px', border: 'none', borderRadius: 999,
                 background: '#FF6A1A', fontFamily: sg, fontWeight: 600, fontSize: 13,
                 color: '#fff', cursor: 'pointer', opacity: isPending ? 0.6 : 1,
               }}
@@ -244,7 +244,7 @@ export function AdicionalesManager({ restaurantId }: Props) {
                 <button
                   onClick={() => handleToggle(a)}
                   title={a.isActive ? 'Desactivar' : 'Activar'}
-                  style={{ padding: 8, borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer' }}
+                  style={{ padding: 8, borderRadius: 999, border: 'none', background: 'none', cursor: 'pointer' }}
                 >
                   {a.isActive
                     ? <Check size={16} color="#22c55e" />
@@ -253,14 +253,14 @@ export function AdicionalesManager({ restaurantId }: Props) {
                 </button>
                 <button
                   onClick={() => openEdit(a)}
-                  style={{ padding: 8, borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer' }}
+                  style={{ padding: 8, borderRadius: 999, border: 'none', background: 'none', cursor: 'pointer' }}
                 >
                   <Edit2 size={15} color="#9a8f86" />
                 </button>
                 <button
                   onClick={() => handleDelete(a)}
                   disabled={deleteMutation.isPending}
-                  style={{ padding: 8, borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer' }}
+                  style={{ padding: 8, borderRadius: 999, border: 'none', background: 'none', cursor: 'pointer' }}
                 >
                   <Trash2 size={15} color="#f87171" />
                 </button>

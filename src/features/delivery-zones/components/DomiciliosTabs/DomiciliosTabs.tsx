@@ -50,7 +50,7 @@ export function DomiciliosTabs() {
               onClick={() => setActive(tab.key)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 8,
-                padding: '8px 16px', borderRadius: 10, border: 'none',
+                padding: '8px 16px', borderRadius: 999, border: 'none',
                 background: sel ? '#fff' : 'transparent',
                 boxShadow: sel ? '0 1px 4px rgba(0,0,0,.08)' : 'none',
                 color: sel ? '#1B1512' : '#9a8f86',

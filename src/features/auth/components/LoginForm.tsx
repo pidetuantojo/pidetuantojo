@@ -198,7 +198,7 @@ export function LoginForm() {
             <div style={{ marginBottom: 14 }}>
               <div className="flex items-baseline justify-between" style={{ marginBottom: 7 }}>
                 <label style={{ fontWeight: 500, fontSize: 13, color: '#5a5048' }}>Contraseña</label>
-                <button type="button" style={{ fontFamily: sg, fontSize: 12, color: '#FF6A1A', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                <button type="button" style={{ fontFamily: sg, fontSize: 12, color: '#FF6A1A', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', padding: 0, borderRadius: 999 }}>
                   ¿La olvidaste?
                 </button>
               </div>
@@ -228,7 +228,7 @@ export function LoginForm() {
               disabled={loading}
               style={{
                 fontFamily: sg, fontWeight: 600, fontSize: 15, color: '#fff',
-                width: '100%', border: 0, borderRadius: 12, padding: 15, cursor: 'pointer',
+                width: '100%', border: 0, borderRadius: 999, padding: 15, cursor: 'pointer',
                 background: 'linear-gradient(135deg, #FF8A2B, #FF6A1A 55%, #EA3B2E)',
                 boxShadow: '0 8px 22px -6px rgba(234,59,46,.5)',
                 opacity: loading ? 0.6 : 1,

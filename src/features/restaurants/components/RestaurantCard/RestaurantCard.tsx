@@ -29,7 +29,7 @@ export function RestaurantCard({
 
   const btnBase: React.CSSProperties = {
     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-    fontFamily: sg, fontWeight: 500, fontSize: 13, borderRadius: 10,
+    fontFamily: sg, fontWeight: 500, fontSize: 13, borderRadius: 999,
     padding: '10px 14px', cursor: 'pointer', border: '1.5px solid #E7DED6',
     background: '#fff', color: '#5a5048', transition: 'background .15s',
   };

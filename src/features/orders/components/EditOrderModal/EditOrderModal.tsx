@@ -192,7 +192,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
           </div>
           <button
             onClick={onClose}
-            style={{ marginLeft: 'auto', width: 32, height: 32, borderRadius: 10, border: 0, background: '#F5F0EB', display: 'grid', placeItems: 'center', cursor: 'pointer' }}
+            style={{ marginLeft: 'auto', width: 32, height: 32, borderRadius: 999, border: 0, background: '#F5F0EB', display: 'grid', placeItems: 'center', cursor: 'pointer' }}
           >
             <X style={{ width: 15, height: 15, color: '#5a5048' }} />
           </button>
@@ -270,7 +270,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
                     onClick={() => addProduct(product)}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '9px 12px', borderRadius: 12, border: '1.5px solid #EFE7DF',
+                      padding: '9px 12px', borderRadius: 999, border: '1.5px solid #EFE7DF',
                       background: '#fff', cursor: 'pointer', textAlign: 'left',
                       transition: 'border-color .12s',
                     }}
@@ -382,7 +382,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
                 return (
                   <button key={t.value} onClick={() => setDeliveryType(t.value)}
                     style={{
-                      padding: '10px 12px', borderRadius: 12, fontFamily: sg, fontWeight: 600, fontSize: 13,
+                      padding: '10px 12px', borderRadius: 999, fontFamily: sg, fontWeight: 600, fontSize: 13,
                       cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                       transition: 'all .12s', border: `2px solid ${active ? '#FF6A1A' : '#EFE7DF'}`,
                       background: '#fff', color: active ? '#FF6A1A' : '#5a5048',
@@ -414,7 +414,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
                 return (
                   <button key={m.value} onClick={() => setPaymentMethod(m.value)}
                     style={{
-                      padding: '10px 12px', borderRadius: 12, fontFamily: sg, fontWeight: 600, fontSize: 13,
+                      padding: '10px 12px', borderRadius: 999, fontFamily: sg, fontWeight: 600, fontSize: 13,
                       cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                       transition: 'all .12s', border: `2px solid ${active ? '#FF6A1A' : '#EFE7DF'}`,
                       background: '#fff', color: active ? '#FF6A1A' : '#5a5048',
@@ -442,7 +442,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={onClose}
-              style={{ padding: '12px 18px', borderRadius: 13, border: '1.5px solid #E7DED6', background: '#fff', color: '#5a5048', fontFamily: sg, fontSize: 14, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}
+              style={{ padding: '12px 18px', borderRadius: 999, border: '1.5px solid #E7DED6', background: '#fff', color: '#5a5048', fontFamily: sg, fontSize: 14, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}
             >
               Cancelar
             </button>
@@ -451,7 +451,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
               disabled={!canSave || saving}
               style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                border: 0, borderRadius: 13, padding: '13px 0', fontFamily: sg, fontWeight: 700, fontSize: 15,
+                border: 0, borderRadius: 999, padding: '13px 0', fontFamily: sg, fontWeight: 700, fontSize: 15,
                 color: '#fff', cursor: canSave ? 'pointer' : 'not-allowed',
                 background: canSave && !saving ? 'linear-gradient(135deg, #FF8A2B, #FF6A1A)' : '#d1c5bd',
                 boxShadow: canSave ? '0 8px 20px -8px rgba(255,106,26,.5)' : 'none',

@@ -111,7 +111,7 @@ export function OrderDetailModal({
           <button
             onClick={onClose}
             style={{
-              width: 32, height: 32, borderRadius: 10, border: '1.5px solid #E7DED6',
+              width: 32, height: 32, borderRadius: 999, border: '1.5px solid #E7DED6',
               background: '#fff', display: 'grid', placeItems: 'center',
               cursor: 'pointer', color: '#9a8f86', flexShrink: 0,
             }}
@@ -320,7 +320,7 @@ export function OrderDetailModal({
             onClick={handleWhatsApp}
             style={{
               flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              padding: '12px 16px', borderRadius: 14, border: '1.5px solid #25D366',
+              padding: '12px 16px', borderRadius: 999, border: '1.5px solid #25D366',
               background: '#f0faf4', color: '#1a7a3e', fontFamily: sg,
               fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'background .12s',
             }}
@@ -335,7 +335,7 @@ export function OrderDetailModal({
           <button
             onClick={onClose}
             style={{
-              padding: '12px 20px', borderRadius: 14, border: '1.5px solid #E7DED6',
+              padding: '12px 20px', borderRadius: 999, border: '1.5px solid #E7DED6',
               background: '#fff', color: '#5a5048', fontFamily: sg,
               fontSize: 14, fontWeight: 600, cursor: 'pointer', flexShrink: 0,
               transition: 'background .12s',

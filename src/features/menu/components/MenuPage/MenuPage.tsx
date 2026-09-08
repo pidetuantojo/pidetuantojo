@@ -42,6 +42,14 @@ interface MenuPageProps {
 const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
 const sm = "var(--font-space-mono, monospace)";
 
+function fmtHour(t: string) {
+  const [h, m] = t.split(':').map(Number);
+  const ap = h < 12 ? 'a.m.' : 'p.m.';
+  let hh = h % 12;
+  if (hh === 0) hh = 12;
+  return `${hh}:${String(m).padStart(2, '0')} ${ap}`;
+}
+
 function checkRestaurantOpen(openingHours?: Restaurant['openingHours']): boolean {
   if (!openingHours) return true;
   const anyDefined = Object.values(openingHours).some((v) => v !== null && v !== undefined);
@@ -66,6 +74,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isNavOpen, setNavOpen] = useState(false);
   const [stickyVisible, setStickyVisible] = useState(false);
+  const [closedModalOpen, setClosedModalOpen] = useState(true);
 
   const { primaryColor: pri, secondaryColor: sec, accentColor: acc, bgColor } = restaurant.theme;
   const bg = bgColor ?? '#FBF8F5';
@@ -154,24 +163,90 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
       {/* Anchor para nav */}
       <div id="menu" />
 
-      {/* Banner cerrado */}
-      {restaurantClosed && (
-        <div style={{
-          margin: '12px 16px 0',
-          borderRadius: 14,
-          padding: '12px 16px',
-          background: '#f0ece7',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-        }}>
-          <span style={{ fontSize: 18, flexShrink: 0 }}>🔒</span>
-          <div>
-            <div style={{ fontFamily: sg, fontWeight: 700, fontSize: 13, color: '#6b6059' }}>
-              Restaurante cerrado
+      {/* Modal cerrado */}
+      {restaurantClosed && closedModalOpen && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 16px' }}
+          onClick={() => setClosedModalOpen(false)}
+        >
+          {/* Backdrop */}
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.55)', backdropFilter: 'blur(3px)' }} />
+
+          {/* Sheet */}
+          <div
+            style={{ position: 'relative', width: '100%', maxWidth: 480, background: '#fff', borderRadius: 32, maxHeight: '88vh', overflowY: 'auto' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Botón cerrar */}
+            <button
+              onClick={() => setClosedModalOpen(false)}
+              style={{ position: 'absolute', top: 16, right: 16, width: 32, height: 32, borderRadius: '50%', border: 'none', background: '#F0EAE3', display: 'grid', placeItems: 'center', cursor: 'pointer' }}
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#6b6059" strokeWidth="2.5" strokeLinecap="round">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Mensaje principal */}
+            <div style={{ padding: '28px 20px 24px', textAlign: 'center', borderBottom: '1px solid rgba(0,0,0,.06)' }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>🌙</div>
+              <h2 style={{ fontFamily: sg, fontWeight: 800, fontSize: 22, color: sec, margin: '0 0 8px', letterSpacing: '-.02em' }}>
+                ¡Estamos cerrados!
+              </h2>
+              <p style={{ fontFamily: sg, fontSize: 14, color: '#7a6f66', margin: 0, lineHeight: 1.55 }}>
+                Podés explorar nuestro menú,<br />pero por ahora no recibimos pedidos.
+              </p>
             </div>
-            <div style={{ fontFamily: sg, fontSize: 12, color: '#9a9088', marginTop: 2 }}>
-              Podés ver el menú, pero no se pueden realizar pedidos por el momento.
+
+            {/* Horarios semanales */}
+            {restaurant.openingHours && Object.values(restaurant.openingHours).some(Boolean) && (() => {
+              const DAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+              const today = new Date().getDay();
+              return (
+                <div style={{ padding: '20px 20px 8px' }}>
+                  <div style={{ fontFamily: sm, fontSize: 10, fontWeight: 700, letterSpacing: '.1em', color: '#9a8f86', textTransform: 'uppercase', marginBottom: 14 }}>
+                    Horarios de atención
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {[0, 1, 2, 3, 4, 5, 6].map((day) => {
+                      const isToday = today === day;
+                      const hours = restaurant.openingHours?.[day];
+                      return (
+                        <div
+                          key={day}
+                          style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            padding: '9px 12px', borderRadius: 10,
+                            background: isToday ? `${pri}18` : 'transparent',
+                          }}
+                        >
+                          <span style={{ fontFamily: sg, fontWeight: isToday ? 700 : 500, fontSize: 14, color: isToday ? sec : '#5a5048', display: 'flex', alignItems: 'center', gap: 7 }}>
+                            {isToday && <span style={{ width: 6, height: 6, borderRadius: '50%', background: pri, display: 'inline-block', flexShrink: 0 }} />}
+                            {DAY_NAMES[day]}
+                          </span>
+                          <span style={{ fontFamily: sm, fontSize: 12, color: hours ? (isToday ? sec : '#3d3530') : '#c0b5ab', fontWeight: isToday ? 700 : 400 }}>
+                            {hours ? `${fmtHour(hours.open)} – ${fmtHour(hours.close)}` : 'Cerrado'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* CTA ver menú */}
+            <div style={{ padding: '16px 20px 32px' }}>
+              <button
+                onClick={() => setClosedModalOpen(false)}
+                style={{
+                  width: '100%', fontFamily: sg, fontWeight: 700, fontSize: 15, color: '#fff',
+                  background: `linear-gradient(135deg,${pri},${sec})`,
+                  border: 'none', borderRadius: 999, padding: '15px 0', cursor: 'pointer',
+                }}
+              >
+                Ver menú
+              </button>
             </div>
           </div>
         </div>

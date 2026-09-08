@@ -210,7 +210,7 @@ export default function ConfiguracionPage() {
                     alignItems: 'center',
                     gap: 7,
                     padding: '10px 14px',
-                    borderRadius: 12,
+                    borderRadius: 999,
                     background: copied ? '#f0faf4' : '#FBF8F5',
                     border: `1.5px solid ${copied ? '#2C7A52' : '#E7DED6'}`,
                     fontFamily: sg,
