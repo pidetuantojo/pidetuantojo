@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -11,8 +11,8 @@ import { useRestaurants } from '../../hooks/useRestaurants';
 import { useToggleRestaurantActive, useDeleteRestaurant } from '../../hooks/useRestaurantMutations';
 import { RestaurantList } from '../RestaurantList';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = "var(--font-space-mono, monospace)";
+const sg = "var(--font-sans, sans-serif)";
+const sm = "var(--font-mono, monospace)";
 
 export function RestaurantsManager() {
   const router = useRouter();

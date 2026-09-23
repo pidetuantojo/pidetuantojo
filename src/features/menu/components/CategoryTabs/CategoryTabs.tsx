@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import type { Category } from '@/types';
 
@@ -10,7 +10,7 @@ interface CategoryTabsProps {
   onSelect: (id: string) => void;
 }
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
+const sg = "var(--font-sans, sans-serif)";
 
 export function CategoryTabs({ categories, activeId, primaryColor, secondaryColor, onSelect }: CategoryTabsProps) {
   return (

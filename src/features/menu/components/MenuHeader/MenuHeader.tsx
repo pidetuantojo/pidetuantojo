@@ -1,7 +1,7 @@
-import type { Restaurant, OpeningHours } from '@/types';
+﻿import type { Restaurant, OpeningHours } from '@/types';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = 'var(--font-space-mono, monospace)';
+const sg = "var(--font-sans, sans-serif)";
+const sm = 'var(--font-mono, monospace)';
 
 function toMin(t: string) {
   const [h, m] = t.split(':').map(Number);

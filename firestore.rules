@@ -139,5 +139,14 @@ service cloud.firestore {
         allow delete: if isSuperAdmin();
       }
     }
+
+    // ─── Restaurant Leads ───────────────────────────────────────────────────────
+    // Inscripciones de restaurantes desde la página pública (/registrar-local).
+    // Cualquier visitante puede crear; solo el super admin puede leer y actualizar.
+
+    match /restaurant_leads/{leadId} {
+      allow create: if true;
+      allow read, update: if isSuperAdmin();
+    }
   }
 }

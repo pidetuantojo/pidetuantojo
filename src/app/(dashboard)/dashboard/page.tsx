@@ -1,12 +1,12 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { useAuth } from '@/features/auth';
 import { useRestaurant } from '@/features/restaurants/hooks/useRestaurants';
 import { ROUTES } from '@/constants/routes';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = "var(--font-space-mono, monospace)";
+const sg = "var(--font-sans, sans-serif)";
+const sm = "var(--font-mono, monospace)";
 
 const MODULES = [
   {

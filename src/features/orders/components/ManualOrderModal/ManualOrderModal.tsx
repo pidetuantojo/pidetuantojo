@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import { X, Plus, Minus, Trash2, Search, ShoppingBag } from 'lucide-react';
@@ -24,7 +24,7 @@ interface CartLine {
   selectedAdicionales: Adicional[];
 }
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
+const sg = "var(--font-sans, sans-serif)";
 
 const PAYMENT_METHODS = [
   { value: 'Efectivo',      emoji: '💵' },

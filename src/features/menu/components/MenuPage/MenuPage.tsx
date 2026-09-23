@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 
@@ -39,8 +39,8 @@ interface MenuPageProps {
   deliveryMode: 'manual' | 'zones';
 }
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = "var(--font-space-mono, monospace)";
+const sg = "var(--font-sans, sans-serif)";
+const sm = "var(--font-mono, monospace)";
 
 function fmtHour(t: string) {
   const [h, m] = t.split(':').map(Number);
@@ -241,7 +241,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
                 onClick={() => setClosedModalOpen(false)}
                 style={{
                   width: '100%', fontFamily: sg, fontWeight: 700, fontSize: 15, color: '#fff',
-                  background: `linear-gradient(135deg,${pri},${sec})`,
+                  background: pri,
                   border: 'none', borderRadius: 999, padding: '15px 0', cursor: 'pointer',
                 }}
               >

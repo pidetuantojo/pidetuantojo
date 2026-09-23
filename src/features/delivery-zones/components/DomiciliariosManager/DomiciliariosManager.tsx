@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 
@@ -12,8 +12,8 @@ import {
   useDeleteDomiciliario,
 } from '../../hooks/useDomiciliarioMutations';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = "var(--font-space-mono, monospace)";
+const sg = "var(--font-sans, sans-serif)";
+const sm = "var(--font-mono, monospace)";
 
 const C = {
   primary: '#FF6A1A',
@@ -254,8 +254,8 @@ interface DriverRowProps {
 }
 
 function DriverRow({ driver, onEdit, onToggleActive, onDelete, isToggling, isDeleting }: DriverRowProps) {
-  const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-  const sm = "var(--font-space-mono, monospace)";
+  const sg = "var(--font-sans, sans-serif)";
+  const sm = "var(--font-mono, monospace)";
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', border: '1px solid #EFE7DF', borderRadius: 14, padding: '12px 16px', boxShadow: '0 1px 4px rgba(0,0,0,.04)' }}>

@@ -19,4 +19,6 @@ export const QUERY_KEYS = {
   deliveryZones: (restaurantId: string) => ['deliveryZones', restaurantId] as const,
 
   domiciliarios: (restaurantId: string) => ['domiciliarios', restaurantId] as const,
+
+  leads: ['leads'] as const,
 } as const;

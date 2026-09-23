@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Image from 'next/image';
 import { Edit2, Trash2, Package, Eye, EyeOff, ChevronUp, ChevronDown } from 'lucide-react';
@@ -7,8 +7,8 @@ import { formatCurrency } from '@/lib/utils';
 import { Tooltip } from '@/components/ui/Tooltip';
 import type { ProductCardProps } from './ProductCard.types';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = "var(--font-space-mono, monospace)";
+const sg = "var(--font-sans, sans-serif)";
+const sm = "var(--font-mono, monospace)";
 
 export function ProductCard({
   product,

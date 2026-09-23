@@ -1,10 +1,12 @@
 export const ROUTES = {
   home: '/',
   login: '/login',
+  registrarLocal: '/registrar-local',
   // Super admin
   admin: {
     root: '/admin',
     restaurants: '/admin/restaurantes',
+    leads: '/admin/inscripciones',
   },
   // Restaurant dashboard
   dashboard: {

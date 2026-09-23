@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect } from 'react';
 
@@ -15,8 +15,8 @@ import { useUpdateRestaurant } from '../../hooks/useRestaurantMutations';
 import type { RestaurantFormProps } from './RestaurantForm.types';
 import type { RestaurantFormData, DayHoursForm } from '../../types/restaurant.types';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = "var(--font-space-mono, monospace)";
+const sg = "var(--font-sans, sans-serif)";
+const sm = "var(--font-mono, monospace)";
 
 const PALETTES = [
   { name: 'Mango',   pri: '#F59211', sec: '#1F5130', acc: '#FFE7C4', bg: '#FBF3E9' },

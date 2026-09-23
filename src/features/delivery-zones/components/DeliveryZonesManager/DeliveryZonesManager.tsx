@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 
@@ -13,8 +13,8 @@ import {
   useDeleteDeliveryZone,
 } from '../../hooks/useDeliveryZoneMutations';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = "var(--font-space-mono, monospace)";
+const sg = "var(--font-sans, sans-serif)";
+const sm = "var(--font-mono, monospace)";
 
 const COLOR_PRIMARY = '#FF6A1A';
 const COLOR_BG = '#FBF8F5';
@@ -301,8 +301,8 @@ interface ZoneRowProps {
 }
 
 function ZoneRow({ zone, onEdit, onToggleActive, onDelete, isToggling, isDeleting }: ZoneRowProps) {
-  const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-  const sm = "var(--font-space-mono, monospace)";
+  const sg = "var(--font-sans, sans-serif)";
+  const sm = "var(--font-mono, monospace)";
 
   return (
     <div style={{

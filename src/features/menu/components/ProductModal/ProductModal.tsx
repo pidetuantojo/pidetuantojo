@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
@@ -7,8 +7,8 @@ import { formatCurrency } from '@/lib/utils';
 import { useCartStore } from '@/store/cart.store';
 import type { Adicional, Additional, Product } from '@/types';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = "var(--font-space-mono, monospace)";
+const sg = "var(--font-sans, sans-serif)";
+const sm = "var(--font-mono, monospace)";
 
 interface ProductModalProps {
   product: Product | null;

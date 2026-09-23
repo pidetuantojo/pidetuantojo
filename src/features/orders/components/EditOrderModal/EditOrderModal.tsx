@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { X, Plus, Minus, Save, Loader2, ShoppingBag, Truck, CreditCard, User } from 'lucide-react';
@@ -7,7 +7,7 @@ import { formatCurrency } from '@/lib/utils';
 import type { Order, OrderItem, Product, Adicional, Additional, Category } from '@/types';
 import { ordersService } from '../../services/orders.service';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
+const sg = "var(--font-sans, sans-serif)";
 
 interface EditOrderModalProps {
   order: Order;

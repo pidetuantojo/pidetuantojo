@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = "var(--font-space-mono, monospace)";
+const sg = "var(--font-sans, sans-serif)";
+const sm = "var(--font-mono, monospace)";
 
 interface MenuPreviewProps {
   pri: string;

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -6,8 +6,8 @@ import { useAuth } from '../context/AuthContext';
 import { ROUTES } from '@/constants/routes';
 import { AppLoader } from '@/components/ui/AppLoader';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = "var(--font-space-mono, monospace)";
+const sg = "var(--font-sans, sans-serif)";
+const sm = "var(--font-mono, monospace)";
 
 function AntojoBiteLogo({ className }: { className?: string }) {
   return (
@@ -241,7 +241,7 @@ export function LoginForm() {
 
           <p style={{ fontSize: 13, color: '#8a7f76', textAlign: 'center', margin: '26px 0 0' }}>
             ¿No tenés cuenta?{' '}
-            <a href="#" style={{ color: '#FF6A1A', textDecoration: 'none', fontWeight: 600 }}>
+            <a href="/registrar-local" style={{ color: '#FF6A1A', textDecoration: 'none', fontWeight: 600 }}>
               Registrá tu local
             </a>
           </p>

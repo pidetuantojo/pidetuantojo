@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
@@ -84,8 +84,8 @@ interface HomeClientProps {
   restaurants: Restaurant[];
 }
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = "var(--font-space-mono, monospace)";
+const sg = "var(--font-sans, sans-serif)";
+const sm = "var(--font-mono, monospace)";
 
 // ─── component ───────────────────────────────────────────────────────────────
 
@@ -154,10 +154,10 @@ export function HomeClient({ restaurants }: HomeClientProps) {
         body { margin: 0; background: #FBF8F5; }
         .rcard { transition: transform .18s, box-shadow .18s; cursor: pointer; }
         .rcard:hover { transform: translateY(-4px); box-shadow: 0 22px 46px -24px rgba(27,21,18,.42) !important; }
-        .srch { font-family: var(--font-space-grotesk,'Inter',sans-serif); font-size: 14px; color: #1B1512; width: 100%; border: 1.5px solid #E7DED6; background: #fff; border-radius: 13px; padding: 13px 16px 13px 44px; outline: none; }
+        .srch { font-family: var(--font-sans, sans-serif); font-size: 14px; color: #1B1512; width: 100%; border: 1.5px solid #E7DED6; background: #fff; border-radius: 13px; padding: 13px 16px 13px 44px; outline: none; }
         .srch::placeholder { color: #a89e95; }
         .srch:focus { border-color: #FF6A1A; box-shadow: 0 0 0 4px rgba(255,106,26,.12); }
-        .srch-sm { flex: 1; border: 0; outline: none; font-family: var(--font-space-grotesk,'Inter',sans-serif); font-size: 13.5px; color: #1B1512; background: none; }
+        .srch-sm { flex: 1; border: 0; outline: none; font-family: var(--font-sans, sans-serif); font-size: 13.5px; color: #1B1512; background: none; }
         @media (max-width: 767px) { .desktop-only { display: none !important; } }
         @media (min-width: 768px) { .mobile-only { display: none !important; } }
       ` }} />
@@ -194,7 +194,7 @@ export function HomeClient({ restaurants }: HomeClientProps) {
               <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#FF6A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               {locLabel}
             </div>
-            <Link href="/login" style={{
+            <Link href="/registrar-local" style={{
               fontFamily: sg, fontWeight: 600, fontSize: 13, color: '#fff',
               border: 0, borderRadius: 12, padding: '12px 20px',
               cursor: 'pointer', textDecoration: 'none',
@@ -426,8 +426,8 @@ export function HomeClient({ restaurants }: HomeClientProps) {
 // ─── Desktop Card ─────────────────────────────────────────────────────────────
 
 function DesktopCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open: boolean; label: string } }) {
-  const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-  const sm = "var(--font-space-mono, monospace)";
+  const sg = "var(--font-sans, sans-serif)";
+  const sm = "var(--font-mono, monospace)";
   const pri = r.theme.primaryColor;
   const sec = r.theme.secondaryColor;
 
@@ -508,8 +508,8 @@ function DesktopCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open
 // ─── Mobile Card ──────────────────────────────────────────────────────────────
 
 function MobileCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open: boolean; label: string } }) {
-  const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-  const sm = "var(--font-space-mono, monospace)";
+  const sg = "var(--font-sans, sans-serif)";
+  const sm = "var(--font-mono, monospace)";
   const pri = r.theme.primaryColor;
   const sec = r.theme.secondaryColor;
 

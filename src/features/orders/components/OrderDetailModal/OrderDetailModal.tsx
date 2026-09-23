@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { X, Phone, MapPin, MessageSquare, Package } from 'lucide-react';
@@ -8,8 +8,8 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { useUpdateOrderStatus } from '../../hooks/useUpdateOrderStatus';
 import type { OrderDetailModalProps } from './OrderDetailModal.types';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = "var(--font-space-mono, monospace)";
+const sg = "var(--font-sans, sans-serif)";
+const sm = "var(--font-mono, monospace)";
 
 const DELIVERY_EMOJI: Record<string, string> = {
   recoger: '🏪',

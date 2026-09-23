@@ -1,11 +1,11 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 
 import { DeliveryZonesManager } from '../DeliveryZonesManager';
 import { DomiciliariosManager } from '../DomiciliariosManager';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
+const sg = "var(--font-sans, sans-serif)";
 
 type Tab = 'zonas' | 'domiciliarios';
 

@@ -1,11 +1,11 @@
-'use client';
+﻿'use client';
 
 import Image from 'next/image';
 
 import type { RestaurantCardProps } from './RestaurantCard.types';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = "var(--font-space-mono, monospace)";
+const sg = "var(--font-sans, sans-serif)";
+const sm = "var(--font-mono, monospace)";
 
 export function RestaurantCard({
   restaurant,

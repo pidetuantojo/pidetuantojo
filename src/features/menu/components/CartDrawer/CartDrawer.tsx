@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import { X, Minus, Plus, Trash2, Truck, Store, CreditCard, Banknote, User } from 'lucide-react';
@@ -10,7 +10,7 @@ import type { DeliveryType, PaymentMethod } from '../../helpers/whatsapp.helpers
 import { ordersService } from '@/features/orders/services/orders.service';
 import type { DeliveryZone } from '@/types';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
+const sg = "var(--font-sans, sans-serif)";
 
 interface ZoneDropdownProps {
   zones: DeliveryZone[];

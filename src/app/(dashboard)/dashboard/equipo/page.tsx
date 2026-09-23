@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import {
@@ -12,8 +12,8 @@ import { useAuth } from '@/features/auth';
 import { db } from '@/lib/firebase/config';
 import type { AppUser } from '@/types';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = 'var(--font-space-mono, monospace)';
+const sg = "var(--font-sans, sans-serif)";
+const sm = 'var(--font-mono, monospace)';
 const MAX_VIEW_USERS = 2;
 
 // ─── Fetcher ──────────────────────────────────────────────────────────────────

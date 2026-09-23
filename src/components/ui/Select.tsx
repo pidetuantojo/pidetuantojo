@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect, useId } from 'react';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
+const sg = "var(--font-sans, sans-serif)";
 
 interface SelectOption {
   value: string;
@@ -178,12 +178,12 @@ export function Select({
       </div>
 
       {hint && !error && (
-        <p style={{ fontFamily: "var(--font-space-mono, monospace)", fontSize: 11, color: '#9a8f86', marginTop: 5 }}>
+        <p style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11, color: '#9a8f86', marginTop: 5 }}>
           {hint}
         </p>
       )}
       {error && (
-        <p style={{ fontFamily: "var(--font-space-mono, monospace)", fontSize: 11, color: '#EA3B2E', marginTop: 5 }}>
+        <p style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11, color: '#EA3B2E', marginTop: 5 }}>
           {error}
         </p>
       )}

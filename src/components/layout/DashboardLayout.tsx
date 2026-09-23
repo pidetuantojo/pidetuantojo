@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useAuth } from '@/features/auth';
 import { useRouter, usePathname } from 'next/navigation';
@@ -37,7 +37,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   return (
-    <div className="flex h-screen" style={{ background: '#FBF8F5', fontFamily: "var(--font-space-grotesk, 'Inter', sans-serif)" }}>
+    <div className="flex h-screen" style={{ background: '#FBF8F5', fontFamily: "var(--font-sans, sans-serif)" }}>
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} collapsed={sidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(c => !c)} />
 
       <div className="flex flex-1 flex-col min-w-0">

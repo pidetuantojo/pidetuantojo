@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Image from 'next/image';
 import { Package } from 'lucide-react';
@@ -17,8 +17,8 @@ interface MenuProductCardProps {
   onSelect: (product: Product) => void;
 }
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = "var(--font-space-mono, monospace)";
+const sg = "var(--font-sans, sans-serif)";
+const sm = "var(--font-mono, monospace)";
 
 export function MenuProductCard({ product, primaryColor, secondaryColor, accentColor, categoryName, restaurantClosed, onSelect }: MenuProductCardProps) {
   const { name, description, price, image, tag, isAvailable } = product;

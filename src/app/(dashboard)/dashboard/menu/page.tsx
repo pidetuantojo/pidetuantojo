@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useAuth } from '@/features/auth';
@@ -6,8 +6,8 @@ import { ProductsManager } from '@/features/products/components/ProductsManager'
 import { CategoriesManager } from '@/features/categories/components/CategoriesManager';
 import { AdicionalesManager } from '@/features/adicionales/components/AdicionalesManager';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = 'var(--font-space-mono, monospace)';
+const sg = "var(--font-sans, sans-serif)";
+const sm = 'var(--font-mono, monospace)';
 
 type Tab = 'productos' | 'categorias' | 'adicionales';
 

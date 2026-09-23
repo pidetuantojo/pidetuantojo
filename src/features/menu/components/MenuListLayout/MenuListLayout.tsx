@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import Image from 'next/image';
@@ -15,7 +15,7 @@ interface MenuListLayoutProps {
   onSelect: (product: Product) => void;
 }
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
+const sg = "var(--font-sans, sans-serif)";
 
 export function MenuListLayout({ categories, products, primaryColor, secondaryColor, restaurantClosed, onSelect }: MenuListLayoutProps) {
   // All categories open by default

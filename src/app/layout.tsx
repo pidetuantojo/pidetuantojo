@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
-import { Inter, Space_Grotesk, Space_Mono } from 'next/font/google';
+import { Unbounded, Manrope, DM_Mono } from 'next/font/google';
 import * as RadixTooltip from '@radix-ui/react-tooltip';
 import { AuthProvider } from '@/features/auth';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
-const spaceMono = Space_Mono({ weight: ['400', '700'], subsets: ['latin'], variable: '--font-space-mono' });
+const unbounded = Unbounded({ subsets: ['latin'], variable: '--font-display', weight: ['600', '700'] });
+const manrope = Manrope({ subsets: ['latin'], variable: '--font-sans', weight: ['400', '500', '600', '700'] });
+const dmMono = DM_Mono({ subsets: ['latin'], variable: '--font-mono', weight: ['400', '500'] });
 
 export const metadata: Metadata = {
   title: 'Antojo App',
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body className={`${inter.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${inter.className}`}>
+      <body className={`${unbounded.variable} ${manrope.variable} ${dmMono.variable} ${manrope.className}`}>
         <RadixTooltip.Provider delayDuration={300}>
           <QueryProvider>
             <AuthProvider>{children}</AuthProvider>

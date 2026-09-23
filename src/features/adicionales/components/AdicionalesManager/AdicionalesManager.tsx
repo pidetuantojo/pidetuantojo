@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { Plus, Edit2, Trash2, Check, X } from 'lucide-react';
@@ -13,8 +13,8 @@ import {
   useDeleteAdicional,
 } from '../../hooks/useAdicionales';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = "var(--font-space-mono, monospace)";
+const sg = "var(--font-sans, sans-serif)";
+const sm = "var(--font-mono, monospace)";
 
 interface Props {
   restaurantId: string;

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -11,8 +11,8 @@ import { MenuPreview } from '@/features/restaurants/components/RestaurantForm/Me
 import type { RestaurantColorsPayload } from '@/features/restaurants/components/RestaurantForm/RestaurantForm.types';
 import { ROUTES } from '@/constants/routes';
 
-const sg = "var(--font-space-grotesk, 'Inter', sans-serif)";
-const sm = 'var(--font-space-mono, monospace)';
+const sg = "var(--font-sans, sans-serif)";
+const sm = 'var(--font-mono, monospace)';
 
 const DEFAULT_COLORS: RestaurantColorsPayload = {
   pri: '#F59211',
