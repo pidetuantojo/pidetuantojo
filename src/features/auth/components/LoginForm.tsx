@@ -5,28 +5,11 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { ROUTES } from '@/constants/routes';
 import { AppLoader } from '@/components/ui/AppLoader';
+import { Logo } from '@/components/ui/Logo';
 
 const sg = "var(--font-sans, sans-serif)";
 const sm = "var(--font-mono, monospace)";
 
-function AntojoBiteLogo({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" className={className}>
-      <defs>
-        <linearGradient id="bite-g" x1="102" y1="102" x2="922" y2="922" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#FFB02E" />
-          <stop offset="0.55" stopColor="#FF6A1A" />
-          <stop offset="1" stopColor="#EA3B2E" />
-        </linearGradient>
-        <mask id="bite-m">
-          <rect width="1024" height="1024" fill="#fff" />
-          <circle cx="819.2" cy="215" r="307.2" fill="#000" />
-        </mask>
-      </defs>
-      <circle cx="512" cy="512" r="512" fill="url(#bite-g)" mask="url(#bite-m)" />
-    </svg>
-  );
-}
 
 export function LoginForm() {
   const { signIn, user } = useAuth();
@@ -97,11 +80,8 @@ export function LoginForm() {
         />
 
         {/* Logo */}
-        <div className="relative flex items-center gap-3">
-          <AntojoBiteLogo className="h-9 w-9" />
-          <span style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-0.02em', color: '#FBF6F1' }}>
-            Antojo<span style={{ color: '#FF6A1A' }}>.</span>
-          </span>
+        <div className="relative">
+          <Logo variant="dark" size={18} />
         </div>
 
         {/* Tagline + pills */}
@@ -163,11 +143,8 @@ export function LoginForm() {
       <div className="flex flex-1 flex-col items-center justify-center px-14 py-12" style={{ background: '#FBF8F5' }}>
 
         {/* Logo mobile */}
-        <div className="mb-8 flex items-center gap-2 lg:hidden">
-          <AntojoBiteLogo className="h-8 w-8" />
-          <span style={{ fontWeight: 700, fontSize: 19, color: '#1B1512' }}>
-            Antojo<span style={{ color: '#FF6A1A' }}>.</span>
-          </span>
+        <div className="mb-8 lg:hidden">
+          <Logo variant="light" size={18} />
         </div>
 
         <div className="w-full max-w-[360px]">

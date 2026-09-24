@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import type { Restaurant, OpeningHours } from '@/types';
 import { Select } from '@/components/ui/Select';
+import { Logo, LogoMark } from '@/components/ui/Logo';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -44,39 +45,6 @@ function getStatus(openingHours?: OpeningHours): { open: boolean; label: string 
   return { open: false, label: 'Cerrado' };
 }
 
-// ─── logo svg ───────────────────────────────────────────────────────────────
-
-function BiteLogo({ size = 28, white = false }: { size?: number; white?: boolean }) {
-  if (white) {
-    return (
-      <svg viewBox="0 0 1024 1024" width={size} height={size}>
-        <defs>
-          <mask id="hb-mw">
-            <rect width="1024" height="1024" fill="#fff" />
-            <circle cx="819.2" cy="215" r="307.2" fill="#000" />
-          </mask>
-        </defs>
-        <circle cx="512" cy="512" r="512" fill="#fff" mask="url(#hb-mw)" />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 1024 1024" width={size} height={size}>
-      <defs>
-        <linearGradient id="hb-g" x1="102" y1="102" x2="922" y2="922" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#FFB02E" />
-          <stop offset="0.55" stopColor="#FF6A1A" />
-          <stop offset="1" stopColor="#EA3B2E" />
-        </linearGradient>
-        <mask id="hb-m">
-          <rect width="1024" height="1024" fill="#fff" />
-          <circle cx="819.2" cy="215" r="307.2" fill="#000" />
-        </mask>
-      </defs>
-      <circle cx="512" cy="512" r="512" fill="url(#hb-g)" mask="url(#hb-m)" />
-    </svg>
-  );
-}
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -175,11 +143,8 @@ export function HomeClient({ restaurants }: HomeClientProps) {
           background: 'rgba(251,248,245,.88)', backdropFilter: 'blur(12px)',
           borderBottom: '1px solid #EFE7DF',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 11, flexShrink: 0 }}>
-            <BiteLogo size={30} />
-            <div style={{ fontFamily: sg, fontWeight: 700, fontSize: 19, letterSpacing: '-.02em', color: '#1B1512', lineHeight: 1.05 }}>
-              Pide Tu<br />Antojo<span style={{ color: '#FF6A1A' }}>.</span>
-            </div>
+          <div style={{ flexShrink: 0 }}>
+            <Logo variant="light" size={14} />
           </div>
 
           <div style={{ flex: 1, maxWidth: 420, position: 'relative' }}>
@@ -214,7 +179,7 @@ export function HomeClient({ restaurants }: HomeClientProps) {
           {/* Capa decorativa con overflow:hidden — solo clipea el watermark y el glow */}
           <div style={{ position: 'absolute', inset: 0, borderRadius: 24, overflow: 'hidden', pointerEvents: 'none' }}>
             <div style={{ position: 'absolute', right: -40, top: -60, opacity: .13 }}>
-              <BiteLogo size={340} white />
+              <LogoMark style={{ width: 340, height: 340, color: 'white' }} />
             </div>
           </div>
 
@@ -272,7 +237,7 @@ export function HomeClient({ restaurants }: HomeClientProps) {
 
           {filtered.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '60px 20px', background: '#fff', border: '1px dashed #E0D6CC', borderRadius: 18 }}>
-              <div style={{ marginBottom: 16, opacity: .3 }}><BiteLogo size={56} /></div>
+              <div style={{ marginBottom: 16, opacity: .3 }}><LogoMark style={{ width: 56, height: 56, color: '#FF6A1A' }} /></div>
               <div style={{ fontFamily: sg, fontWeight: 600, fontSize: 18, color: '#1B1512', marginBottom: 6 }}>Todavía no hay restaurantes acá</div>
               <div style={{ fontFamily: sg, fontSize: 14, color: '#8a7f76' }}>Probá con otra ciudad o quitá algún filtro.</div>
             </div>
@@ -295,16 +260,13 @@ export function HomeClient({ restaurants }: HomeClientProps) {
         <div style={{ position: 'relative', background: 'linear-gradient(150deg,#FF8A2B,#FF6A1A 50%,#EA3B2E)', padding: '48px 20px 72px', overflow: 'hidden' }}>
           {/* Watermark decorativo */}
           <div style={{ position: 'absolute', right: -50, top: -30, opacity: .12, pointerEvents: 'none' }}>
-            <BiteLogo size={220} white />
+            <LogoMark style={{ width: 220, height: 220, color: 'white' }} />
           </div>
 
           {/* Nav row */}
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-              <BiteLogo size={28} white />
-              <div style={{ fontFamily: sg, fontWeight: 700, fontSize: 16, color: '#fff', lineHeight: 1.05, letterSpacing: '-.01em' }}>
-                Pide Tu<br />Antojo<span style={{ color: 'rgba(255,255,255,.7)' }}>.</span>
-              </div>
+            <div>
+              <Logo variant="onBrand" size={13} />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: sg, fontWeight: 600, fontSize: 12, color: '#fff', background: 'rgba(255,255,255,.2)', border: '1px solid rgba(255,255,255,.3)', borderRadius: 999, padding: '8px 13px' }}>
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -322,6 +284,7 @@ export function HomeClient({ restaurants }: HomeClientProps) {
             <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#a89e95" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
             <input className="srch-sm" placeholder="Buscar restaurante o comida..." value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
+
         </div>
 
         {/* CARD de filtros + lista — sube sobre el header con margin-top negativo */}
@@ -416,6 +379,22 @@ export function HomeClient({ restaurants }: HomeClientProps) {
                 ))}
               </div>
             )}
+
+            {/* CTA discreta al pie */}
+            <div style={{ textAlign: 'center', padding: '32px 0 16px', borderTop: '1px solid #EFE7DF', marginTop: 24 }}>
+              <p style={{ fontFamily: sg, fontSize: 12.5, color: '#a89e95', margin: '0 0 8px' }}>
+                ¿Tenés un restaurante?
+              </p>
+              <Link href="/registrar-local" style={{
+                fontFamily: sg, fontWeight: 600, fontSize: 13, color: '#FF6A1A',
+                textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4,
+              }}>
+                Registrá tu local
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -469,11 +448,14 @@ function DesktopCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open
         {/* Body */}
         <div style={{ padding: '16px 18px 18px', position: 'relative' }}>
           {/* Logo bubble */}
-          <div style={{ position: 'absolute', top: -26, right: 18, width: 50, height: 50, borderRadius: '50%', background: '#fff', padding: 4, boxShadow: '0 6px 16px -6px rgba(0,0,0,.3)' }}>
-            <div style={{
-              width: '100%', height: '100%', borderRadius: '50%',
-              background: r.logo ? `#fff url('${r.logo}') center/contain no-repeat` : `linear-gradient(135deg,${pri},${sec})`,
-            }} />
+          <div style={{ position: 'absolute', top: -30, right: 16, width: 62, height: 62, borderRadius: '50%', background: '#fff', overflow: 'hidden', boxShadow: '0 6px 18px -6px rgba(0,0,0,.3)', border: '2.5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {r.logo ? (
+              <img src={r.logo} alt={r.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 7, boxSizing: 'border-box', display: 'block' }} />
+            ) : (
+              <div style={{ width: '100%', height: '100%', background: `linear-gradient(135deg,${pri},${sec})`, display: 'grid', placeItems: 'center', fontFamily: sg, fontWeight: 700, fontSize: 22, color: '#fff' }}>
+                {r.name.charAt(0)}
+              </div>
+            )}
           </div>
 
           <h3 style={{ fontFamily: sg, fontWeight: 700, fontSize: 18, letterSpacing: '-.01em', color: '#1B1512', margin: '0 0 4px', paddingRight: 44 }}>
@@ -555,9 +537,9 @@ function MobileCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open:
 
         {/* Logo + Name + Category */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 8px 0' }}>
-          <div style={{ width: 60, height: 60, borderRadius: '50%', flexShrink: 0, background: '#fff', overflow: 'hidden', boxShadow: '0 4px 14px -4px rgba(0,0,0,.22)', border: '1px solid #F1EAE3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 62, height: 62, borderRadius: '50%', flexShrink: 0, background: '#fff', overflow: 'hidden', boxShadow: '0 4px 14px -4px rgba(0,0,0,.22)', border: '1.5px solid #F1EAE3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {r.logo ? (
-              <img src={r.logo} alt={r.name} style={{ width: '72%', height: '72%', objectFit: 'contain', display: 'block' }} />
+              <img src={r.logo} alt={r.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 7, boxSizing: 'border-box', display: 'block' }} />
             ) : (
               <div style={{ width: '100%', height: '100%', background: `linear-gradient(135deg,${pri},${sec})`, display: 'grid', placeItems: 'center', fontFamily: sg, fontWeight: 700, fontSize: 22, color: '#fff' }}>
                 {r.name.charAt(0)}

@@ -4,6 +4,6 @@ export interface ImageUploadProps {
   label?: string;
   disabled?: boolean;
   className?: string;
-  aspectRatio?: 'square' | 'wide';
+  aspectRatio?: 'square' | 'wide' | 'banner';
   objectFit?: 'cover' | 'contain';
 }

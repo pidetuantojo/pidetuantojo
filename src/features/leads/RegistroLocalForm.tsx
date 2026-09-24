@@ -6,44 +6,12 @@ import Link from 'next/link';
 import { COLOMBIA_LOCATIONS, RESTAURANT_CATEGORIES } from '@/constants/colombia-locations';
 import { Select } from '@/components/ui/Select';
 import { leadsService } from './leads.service';
+import { Logo, LogoMark } from '@/components/ui/Logo';
 
 // ─── design tokens ────────────────────────────────────────────────────────────
 
 const sg = "var(--font-sans, sans-serif)";
 
-// ─── logo ─────────────────────────────────────────────────────────────────────
-
-function BiteLogo({ size = 28, white = false }: { size?: number; white?: boolean }) {
-  if (white) {
-    return (
-      <svg viewBox="0 0 1024 1024" width={size} height={size}>
-        <defs>
-          <mask id="rl-mw">
-            <rect width="1024" height="1024" fill="#fff" />
-            <circle cx="819.2" cy="215" r="307.2" fill="#000" />
-          </mask>
-        </defs>
-        <circle cx="512" cy="512" r="512" fill="#fff" mask="url(#rl-mw)" />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 1024 1024" width={size} height={size}>
-      <defs>
-        <linearGradient id="rl-g" x1="102" y1="102" x2="922" y2="922" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#FFB02E" />
-          <stop offset="0.55" stopColor="#FF6A1A" />
-          <stop offset="1" stopColor="#EA3B2E" />
-        </linearGradient>
-        <mask id="rl-m">
-          <rect width="1024" height="1024" fill="#fff" />
-          <circle cx="819.2" cy="215" r="307.2" fill="#000" />
-        </mask>
-      </defs>
-      <circle cx="512" cy="512" r="512" fill="url(#rl-g)" mask="url(#rl-m)" />
-    </svg>
-  );
-}
 
 // ─── benefits ─────────────────────────────────────────────────────────────────
 
@@ -213,12 +181,7 @@ export function RegistroLocalForm() {
         background: 'rgba(251,248,245,.92)', backdropFilter: 'blur(12px)',
         borderBottom: '1px solid #EFE7DF',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <BiteLogo size={28} />
-          <span style={{ fontFamily: sg, fontWeight: 700, fontSize: 17, letterSpacing: '-.02em', color: '#1B1512' }}>
-            Pide Tu Antojo<span style={{ color: '#FF6A1A' }}>.</span>
-          </span>
-        </div>
+        <Logo variant="light" size={15} />
         <Link href="/" style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
           fontFamily: sg, fontSize: 13, fontWeight: 600, color: '#5a4f47',
@@ -305,7 +268,7 @@ export function RegistroLocalForm() {
 
             <div className="rl-panel-inner" style={{ position: 'relative', zIndex: 1 }}>
               <div style={{ marginBottom: 28 }}>
-                <BiteLogo size={36} white />
+                <LogoMark style={{ width: 36, height: 36, color: 'white' }} />
               </div>
 
               <h2 style={{

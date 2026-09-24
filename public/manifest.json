@@ -1,0 +1,11 @@
+{
+  "name": "Pide Tu Antojo",
+  "short_name": "Pide Tu Antojo",
+  "icons": [
+    { "src": "/android-chrome-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/android-chrome-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "theme_color": "#FF6A1A",
+  "background_color": "#FBF8F5",
+  "display": "standalone"
+}

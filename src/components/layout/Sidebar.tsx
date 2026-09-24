@@ -4,30 +4,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/features/auth';
+import { Logo, LogoMark } from '@/components/ui/Logo';
 import { useRestaurant } from '@/features/restaurants/hooks/useRestaurants';
 import { ROUTES } from '@/constants/routes';
 
 const sg = "var(--font-sans, sans-serif)";
 const sm = "var(--font-mono, monospace)";
 
-function BiteLogo() {
-  return (
-    <svg viewBox="0 0 1024 1024" width="30" height="30">
-      <defs>
-        <linearGradient id="sb-g" x1="102" y1="102" x2="922" y2="922" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#FFB02E" />
-          <stop offset="0.55" stopColor="#FF6A1A" />
-          <stop offset="1" stopColor="#EA3B2E" />
-        </linearGradient>
-        <mask id="sb-m">
-          <rect width="1024" height="1024" fill="#fff" />
-          <circle cx="819.2" cy="215" r="307.2" fill="#000" />
-        </mask>
-      </defs>
-      <circle cx="512" cy="512" r="512" fill="url(#sb-g)" mask="url(#sb-m)" />
-    </svg>
-  );
-}
 
 const SUPER_ADMIN_LINKS = [
   {
@@ -192,20 +175,19 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
       }}
     >
       {/* Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start', gap: 11, padding: '0 8px', marginBottom: 6 }}>
-        <BiteLogo />
-        {!collapsed && (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start', padding: '0 8px', marginBottom: 6 }}>
+        {collapsed ? (
+          <LogoMark style={{ width: 30, height: 30, color: '#FF6A1A' }} />
+        ) : (
           <div>
-            <div style={{ fontWeight: 700, fontSize: 18, letterSpacing: '-.02em', color: '#FBF6F1', lineHeight: 1 }}>
-              Antojo<span style={{ color: '#FF6A1A' }}>.</span>
-            </div>
+            <Logo variant="dark" size={15} />
             {isSuperAdmin && (
-              <div style={{ fontFamily: sm, fontSize: 9, letterSpacing: '.12em', color: '#FF8A3D', marginTop: 3 }}>
+              <div style={{ fontFamily: sm, fontSize: 9, letterSpacing: '.12em', color: '#FF8A3D', marginTop: 4 }}>
                 SUPER ADMIN
               </div>
             )}
             {isViewOnly && (
-              <div style={{ fontFamily: sm, fontSize: 9, letterSpacing: '.12em', color: '#9a8f86', marginTop: 3 }}>
+              <div style={{ fontFamily: sm, fontSize: 9, letterSpacing: '.12em', color: '#9a8f86', marginTop: 4 }}>
                 SOLO LECTURA
               </div>
             )}

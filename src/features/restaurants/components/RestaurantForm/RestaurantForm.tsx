@@ -298,8 +298,9 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             value={data.logo}
             onChange={(url) => handleChange('logo', url)}
             disabled={isPending}
-            aspectRatio="wide"
+            aspectRatio="square"
             objectFit="contain"
+            hint="Usá una imagen cuadrada (800×800 px mínimo). PNG con fondo transparente es ideal — el logo se muestra en círculo en toda la app."
           />
           {errors.logo && <p className="text-xs text-red-600">{errors.logo}</p>}
 
@@ -308,9 +309,10 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             value={data.bannerImage}
             onChange={(url) => handleChange('bannerImage', url)}
             disabled={isPending}
-            aspectRatio="wide"
+            aspectRatio="banner"
+            objectFit="contain"
+            hint="Imagen horizontal (1500×500 px, ratio 3:1). Se recorta al centro, así que el contenido principal debe estar centrado. JPG para fotos."
           />
-          <p className="text-xs text-gray-400">Se muestra como header del menú público. Si no subís foto, se usa el color de tu marca.</p>
         </section>
 
         {/* Sección: Formato del menú */}

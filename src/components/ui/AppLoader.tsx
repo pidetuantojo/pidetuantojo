@@ -1,5 +1,7 @@
 ﻿'use client';
 
+import { LogoMark } from './Logo';
+
 const sg = "var(--font-sans, sans-serif)";
 const sm = "var(--font-mono, monospace)";
 
@@ -30,24 +32,6 @@ const THEMES = {
   },
 } as const;
 
-function AntojoBiteLogo({ style }: { style?: React.CSSProperties }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" style={style}>
-      <defs>
-        <linearGradient id="al-bite-g" x1="102" y1="102" x2="922" y2="922" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#FFB02E" />
-          <stop offset="0.55" stopColor="#FF6A1A" />
-          <stop offset="1" stopColor="#EA3B2E" />
-        </linearGradient>
-        <mask id="al-bite-m">
-          <rect width="1024" height="1024" fill="#fff" />
-          <circle cx="819.2" cy="215" r="307.2" fill="#000" />
-        </mask>
-      </defs>
-      <circle cx="512" cy="512" r="512" fill="url(#al-bite-g)" mask="url(#al-bite-m)" />
-    </svg>
-  );
-}
 
 interface AppLoaderProps {
   theme?: 'light' | 'dark' | 'warm';
@@ -98,14 +82,15 @@ export function AppLoader({ theme = 'dark', message = 'Cargando' }: AppLoaderPro
 
         {/* Breathing logo */}
         <div style={{ animation: 'antojo-breathe 1.6s ease-in-out infinite' }}>
-          <AntojoBiteLogo style={{ width: 60, height: 60 }} />
+          <LogoMark style={{ width: 60, height: 60, color: '#FF6A1A' }} />
         </div>
       </div>
 
       {/* Wordmark + message */}
       <div style={{ textAlign: 'center', animation: 'antojo-fade .5s ease both' }}>
-        <div style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-.02em', color: t.titleColor }}>
-          Antojo<span style={{ color: '#FF6A1A' }}>.</span>
+        <div style={{ display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-logo)', fontWeight: 700, fontSize: 16, letterSpacing: '-0.03em', lineHeight: 1.02, color: t.titleColor }}>
+          <span>Pide tu</span>
+          <span>antojo</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10 }}>
           <span style={{ fontFamily: sm, fontSize: 12, letterSpacing: '.04em', color: t.msgColor }}>
