@@ -35,6 +35,7 @@ const PAYMENT_METHODS = [
 const DELIVERY_TYPES = [
   { value: 'recoger' as const, label: 'Recoger', emoji: '🏪' },
   { value: 'domicilio' as const, label: 'Domicilio', emoji: '🛵' },
+  { value: 'mesa' as const, label: 'En el local', emoji: '🪑' },
 ];
 
 export function EditOrderModal({ order, restaurantId, products, adicionales, categories, onClose, onSaved }: EditOrderModalProps) {
@@ -50,7 +51,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
 
   const [customerName, setCustomerName] = useState(order.customerName);
   const [customerPhone, setCustomerPhone] = useState(order.customerPhone);
-  const [deliveryType, setDeliveryType] = useState<'recoger' | 'domicilio'>(order.deliveryType ?? 'recoger');
+  const [deliveryType, setDeliveryType] = useState<'recoger' | 'domicilio' | 'mesa'>(order.deliveryType ?? 'recoger');
   const [address, setAddress] = useState(order.customerAddress ?? '');
   const [barrio, setBarrio] = useState(order.barrio ?? '');
   const [paymentMethod, setPaymentMethod] = useState(order.paymentMethod);
@@ -376,7 +377,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
               <Truck style={{ width: 14, height: 14, color: '#FF6A1A' }} />
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--t-text-1)' }}>Entrega</span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
               {DELIVERY_TYPES.map((t) => {
                 const active = deliveryType === t.value;
                 return (
