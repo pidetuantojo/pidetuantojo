@@ -19,6 +19,7 @@ export const ROUTES = {
     contabilidad: '/dashboard/contabilidad',
     zonas: '/dashboard/domicilios/zonas',
     domiciliarios: '/dashboard/domicilios/domiciliarios',
+    entrega: '/dashboard/entrega',
     configuracion: '/dashboard/configuracion',
     equipo: '/dashboard/equipo',
     // legacy — keep for redirects only

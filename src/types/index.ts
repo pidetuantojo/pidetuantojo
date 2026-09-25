@@ -33,6 +33,17 @@ export type OpeningHours = {
   [day: number]: DaySchedule | null | undefined;
 };
 
+export interface DeliveryMethodConfig {
+  isActive: boolean;
+  allowScheduled?: boolean;
+}
+
+export interface DeliveryMethods {
+  recoger?: DeliveryMethodConfig;
+  domicilio?: DeliveryMethodConfig;
+  mesa?: Pick<DeliveryMethodConfig, 'isActive'>;
+}
+
 export interface Restaurant {
   id: string;
   slug: string;
@@ -60,6 +71,8 @@ export interface Restaurant {
   deliveryMode?: 'manual' | 'zones';
   // Horario de atención
   openingHours?: OpeningHours;
+  // Métodos de entrega
+  deliveryMethods?: DeliveryMethods;
   adminUserId: string;
   isActive: boolean;
   createdAt: string;
@@ -183,7 +196,9 @@ export interface Order {
   customerPhone: string;
   customerAddress?: string;
   barrio?: string;
-  deliveryType?: 'recoger' | 'domicilio';
+  deliveryType?: 'recoger' | 'domicilio' | 'mesa';
+  tableId?: string;
+  tableName?: string;
   deliveryFee?: number;
   paymentMethod: string;
   isPaid?: boolean;
@@ -235,5 +250,21 @@ export type CreateOrderData = Omit<Order, 'id' | 'orderNumber' | 'createdAt' | '
 export type UpdateOrderData = Partial<Pick<Order,
   'statusId' | 'notes' | 'deliveryFee' | 'isPaid' | 'internalNote' |
   'items' | 'subtotal' | 'total' | 'customerName' | 'customerPhone' |
-  'customerAddress' | 'barrio' | 'deliveryType' | 'paymentMethod' | 'assignedDriver'
+  'customerAddress' | 'barrio' | 'deliveryType' | 'paymentMethod' | 'assignedDriver' |
+  'tableId' | 'tableName'
 >>;
+
+// ===== MESAS =====
+
+export interface Mesa {
+  id: string;
+  restaurantId: string;
+  name: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CreateMesaData = Omit<Mesa, 'id' | 'createdAt' | 'updatedAt'>;
+export type UpdateMesaData = Partial<Pick<Mesa, 'name' | 'isActive' | 'sortOrder'>>;

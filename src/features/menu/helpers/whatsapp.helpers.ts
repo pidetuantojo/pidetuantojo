@@ -1,7 +1,7 @@
 import type { CartItem } from '@/store/cart.store';
 import { formatCurrency } from '@/lib/utils';
 
-export type DeliveryType = 'domicilio' | 'recoger' | '';
+export type DeliveryType = 'domicilio' | 'recoger' | 'mesa' | '';
 export type PaymentMethod = 'transferencia' | 'efectivo' | '';
 
 interface CheckoutData {
@@ -10,6 +10,7 @@ interface CheckoutData {
   deliveryType: DeliveryType;
   address?: string;
   barrio?: string;
+  tableName?: string;
   paymentMethod: PaymentMethod;
   location?: { lat: number; lng: number };
 }
@@ -36,7 +37,12 @@ export function buildWhatsAppMessage(
     .join('\n');
 
   const paymentLabel = checkout.paymentMethod === 'transferencia' ? '💳 Transferencia' : '💵 Efectivo';
-  const deliveryLabel = checkout.deliveryType === 'domicilio' ? '🚚 Domicilio' : '🏪 Recoger en tienda';
+  const deliveryLabel =
+    checkout.deliveryType === 'domicilio'
+      ? '🚚 Domicilio'
+      : checkout.deliveryType === 'mesa'
+        ? `🪑 Comer en el local${checkout.tableName ? ` — ${checkout.tableName}` : ''}`
+        : '🏪 Recoger en tienda';
 
   const lines = [
     `🍽️ *Nuevo pedido — ${restaurantName}*`,

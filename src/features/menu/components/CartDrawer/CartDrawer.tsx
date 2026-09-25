@@ -1,14 +1,14 @@
 ﻿'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { X, Minus, Plus, Trash2, Truck, Store, CreditCard, Banknote, User } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { X, Minus, Plus, Trash2, Truck, Store, CreditCard, Banknote, User, UtensilsCrossed } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
 import { cartItemCount, cartTotal, useCartStore } from '@/store/cart.store';
 import { buildWhatsAppMessage, openWhatsApp } from '../../helpers/whatsapp.helpers';
 import type { DeliveryType, PaymentMethod } from '../../helpers/whatsapp.helpers';
 import { ordersService } from '@/features/orders/services/orders.service';
-import type { DeliveryZone } from '@/types';
+import type { DeliveryMethods, DeliveryZone, Mesa } from '@/types';
 
 const sg = "var(--font-sans, sans-serif)";
 
@@ -165,9 +165,11 @@ interface CartDrawerProps {
   receivedStatusId: string;
   deliveryZones: DeliveryZone[];
   deliveryMode: 'manual' | 'zones';
+  deliveryMethods?: DeliveryMethods;
+  mesas?: Mesa[];
 }
 
-export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, deliveryZones, deliveryMode }: CartDrawerProps) {
+export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, deliveryZones, deliveryMode, deliveryMethods, mesas = [] }: CartDrawerProps) {
   const items = useCartStore((s) => s.items);
   const isCartOpen = useCartStore((s) => s.isCartOpen);
   const setCartOpen = useCartStore((s) => s.setCartOpen);
@@ -189,10 +191,17 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
   const [address, setAddress] = useState('');
   const [barrio, setBarrio] = useState('');
   const [selectedZoneId, setSelectedZoneId] = useState('');
+  const [selectedMesaId, setSelectedMesaId] = useState('');
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locLoading, setLocLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Determine which delivery methods are active (default recoger+domicilio on if not configured)
+  const recogerActive = deliveryMethods?.recoger?.isActive ?? true;
+  const domicilioActive = deliveryMethods?.domicilio?.isActive ?? true;
+  const mesaActive = deliveryMethods?.mesa?.isActive ?? false;
+  const selectedMesa = mesas.find((m) => m.id === selectedMesaId) ?? null;
 
   const isZonesMode = deliveryMode === 'zones';
   const selectedZone = isZonesMode
@@ -209,10 +218,13 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
     phone.trim() !== '' &&
     deliveryType !== '' &&
     paymentMethod !== '' &&
-    (deliveryType === 'recoger' || (
-      address.trim() !== '' &&
-      (isZonesMode ? selectedZoneId !== '' : barrio.trim() !== '')
-    ));
+    (
+      deliveryType === 'recoger' ||
+      deliveryType === 'mesa' ||
+      (deliveryType === 'domicilio' &&
+        address.trim() !== '' &&
+        (isZonesMode ? selectedZoneId !== '' : barrio.trim() !== ''))
+    );
 
   async function handleConfirm() {
     setSubmitted(true);
@@ -238,6 +250,7 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
         ...(deliveryType === 'domicilio' && address ? { customerAddress: address } : {}),
         ...(deliveryType === 'domicilio' && effectiveBarrio ? { barrio: effectiveBarrio } : {}),
         ...(effectiveDeliveryFee !== undefined ? { deliveryFee: effectiveDeliveryFee } : {}),
+        ...(deliveryType === 'mesa' && selectedMesa ? { tableId: selectedMesa.id, tableName: selectedMesa.name } : {}),
         ...(location ? { location } : {}),
         paymentMethod: paymentMethod === 'transferencia' ? 'Transferencia' : 'Efectivo',
         isPaid: false,
@@ -265,6 +278,7 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
       deliveryType,
       address,
       barrio: effectiveBarrio,
+      tableName: selectedMesa?.name,
       paymentMethod,
       location: location ?? undefined,
     });
@@ -275,6 +289,7 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
     setAddress('');
     setBarrio('');
     setSelectedZoneId('');
+    setSelectedMesaId('');
     setDeliveryType('');
     setPaymentMethod('');
     setLocation(null);
@@ -593,47 +608,107 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                 <p style={{ fontWeight: 800, fontSize: 14, color: '#1B1512', margin: '0 0 10px' }}>
                   ¿Cómo recibís tu pedido?
                 </p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  {(
-                    [
-                      ['domicilio', 'Domicilio', Truck],
-                      ['recoger', 'Recoger', Store],
-                    ] as const
-                  ).map(([val, label, Icon]) => (
-                    <button
-                      key={val}
-                      onClick={() => setDeliveryType(val)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 8,
-                        padding: '12px 8px',
-                        borderRadius: 14,
-                        cursor: 'pointer',
-                        fontFamily: sg,
-                        fontWeight: 700,
-                        fontSize: 14,
-                        border: '2px solid',
-                        borderColor:
-                          deliveryType === val
-                            ? secondaryColor
-                            : submitted && deliveryType === ''
-                              ? '#fca5a5'
-                              : '#e5e7eb',
-                        background: deliveryType === val ? `${secondaryColor}12` : '#fff',
-                        color: deliveryType === val ? secondaryColor : '#6b7280',
-                      }}
-                    >
-                      <Icon size={16} />
-                      {label}
-                    </button>
-                  ))}
-                </div>
+                {(() => {
+                  const activeOptions: { val: DeliveryType; label: string; Icon: React.ElementType }[] = [];
+                  if (domicilioActive) activeOptions.push({ val: 'domicilio', label: 'Domicilio', Icon: Truck });
+                  if (recogerActive) activeOptions.push({ val: 'recoger', label: 'Recoger', Icon: Store });
+                  if (mesaActive) activeOptions.push({ val: 'mesa', label: 'En el local', Icon: UtensilsCrossed });
+                  const cols = activeOptions.length === 3 ? '1fr 1fr 1fr' : '1fr 1fr';
+                  return (
+                    <div style={{ display: 'grid', gridTemplateColumns: cols, gap: 8 }}>
+                      {activeOptions.map(({ val, label, Icon }) => (
+                        <button
+                          key={val}
+                          onClick={() => setDeliveryType(val)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 8,
+                            padding: '12px 8px',
+                            borderRadius: 14,
+                            cursor: 'pointer',
+                            fontFamily: sg,
+                            fontWeight: 700,
+                            fontSize: 13,
+                            border: '2px solid',
+                            borderColor:
+                              deliveryType === val
+                                ? secondaryColor
+                                : submitted && deliveryType === ''
+                                  ? '#fca5a5'
+                                  : '#e5e7eb',
+                            background: deliveryType === val ? `${secondaryColor}12` : '#fff',
+                            color: deliveryType === val ? secondaryColor : '#6b7280',
+                          }}
+                        >
+                          <Icon size={16} />
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
                 {submitted && deliveryType === '' && (
                   <p style={{ fontSize: 11, color: '#ef4444', marginTop: 6 }}>
                     Elegí cómo recibís tu pedido
                   </p>
+                )}
+
+                {/* Mesa selector */}
+                {deliveryType === 'mesa' && mesas.length > 0 && (
+                  <div style={{
+                    marginTop: 10,
+                    background: '#f9fafb',
+                    borderRadius: 14,
+                    padding: '12px 14px',
+                    border: '1.5px solid #e5e7eb',
+                  }}>
+                    <p style={{
+                      margin: '0 0 10px',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: '#6b7280',
+                      fontFamily: sg,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      textTransform: 'uppercase',
+                      letterSpacing: '.05em',
+                    }}>
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 6h18M3 12h18M8 18h8M12 6v12" />
+                      </svg>
+                      Elegí tu mesa
+                    </p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {mesas.map((mesa) => {
+                        const sel = selectedMesaId === mesa.id;
+                        return (
+                          <button
+                            key={mesa.id}
+                            type="button"
+                            onClick={() => setSelectedMesaId(mesa.id)}
+                            style={{
+                              padding: '8px 16px',
+                              borderRadius: 10,
+                              border: `2px solid ${sel ? secondaryColor : '#e5e7eb'}`,
+                              background: sel ? `${secondaryColor}14` : '#fff',
+                              color: sel ? secondaryColor : '#374151',
+                              fontFamily: sg,
+                              fontSize: 13,
+                              fontWeight: sel ? 700 : 500,
+                              cursor: 'pointer',
+                              boxShadow: sel ? `0 0 0 3px ${secondaryColor}22` : 'none',
+                              transition: 'all .12s',
+                            }}
+                          >
+                            {mesa.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 )}
 
                 {deliveryType === 'domicilio' && (

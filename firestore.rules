@@ -121,6 +121,14 @@ service cloud.firestore {
         allow write: if isOwnerOrSuperAdmin(restaurantId);
       }
 
+      // ─── Mesas ───────────────────────────────────────────────────────────────
+
+      match /mesas/{mesaId} {
+        // El menú público necesita leer mesas para el selector del checkout
+        allow read: if true;
+        allow write: if isOwnerOrSuperAdmin(restaurantId);
+      }
+
       // ─── Domiciliarios ───────────────────────────────────────────────────────
 
       match /domiciliarios/{domiciliarioId} {

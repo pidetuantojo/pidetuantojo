@@ -8,6 +8,7 @@ import { productsService } from '@/features/products/services/products.service';
 import { restaurantsService } from '@/features/restaurants/services/restaurants.service';
 import { orderStatusesService } from '@/features/order-statuses/services/order-statuses.service';
 import { deliveryZonesService } from '@/features/delivery-zones/services/delivery-zones.service';
+import { mesasService } from '@/features/delivery-methods/services/mesas.service';
 
 interface Props {
   params: { slug: string };
@@ -29,7 +30,9 @@ export default async function RestaurantMenuPage({ params }: Props) {
     notFound();
   }
 
-  const [categories, products, adicionales, statuses, allZones] = await Promise.all([
+  const mesaMethodActive = restaurant.deliveryMethods?.mesa?.isActive ?? false;
+
+  const [categories, products, adicionales, statuses, allZones, mesas] = await Promise.all([
     categoriesService.getAll(restaurant.id),
     productsService.getAll(restaurant.id),
     adicionalesService.getAll(restaurant.id),
@@ -37,6 +40,7 @@ export default async function RestaurantMenuPage({ params }: Props) {
     restaurant.deliveryMode === 'zones'
       ? deliveryZonesService.getAll(restaurant.id)
       : Promise.resolve([]),
+    mesaMethodActive ? mesasService.getAll(restaurant.id) : Promise.resolve([]),
   ]);
 
   const activeCategories = categories.filter((c) => c.isActive);
@@ -54,6 +58,7 @@ export default async function RestaurantMenuPage({ params }: Props) {
       receivedStatusId={receivedStatusId}
       deliveryZones={deliveryZones}
       deliveryMode={restaurant.deliveryMode ?? 'manual'}
+      mesas={mesas}
     />
   );
 }

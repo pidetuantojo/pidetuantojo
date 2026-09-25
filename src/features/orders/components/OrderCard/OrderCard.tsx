@@ -31,6 +31,7 @@ function formatShortDate(isoString: string): string {
 
 export function OrderCard({ order, status, statuses, restaurantId, domiciliarios, onOpen, onAdvance, onEdit }: OrderCardProps) {
   const isDomicilio = order.deliveryType === 'domicilio';
+  const isMesa = order.deliveryType === 'mesa';
   const deliveryFee = order.deliveryFee ?? 0;
   const grandTotal = order.total + deliveryFee;
   const isTransfer = order.paymentMethod === 'Transferencia';
@@ -278,6 +279,11 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
           <p className="flex items-start gap-1 text-xs text-[var(--t-text-3)]">
             <MapPin className="h-3 w-3 mt-0.5 flex-shrink-0" />
             <span>{order.customerAddress}{order.barrio ? ` — ${order.barrio}` : ''}</span>
+          </p>
+        )}
+        {isMesa && order.tableName && (
+          <p className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 w-fit">
+            🪑 {order.tableName}
           </p>
         )}
         {order.location && (

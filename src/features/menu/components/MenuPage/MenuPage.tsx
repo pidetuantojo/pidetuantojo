@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { cartItemCount, cartTotal, useCartStore } from '@/store/cart.store';
 import { formatCurrency } from '@/lib/utils';
-import type { Adicional, Category, DeliveryZone, Product, Restaurant } from '@/types';
+import type { Adicional, Category, DeliveryZone, Mesa, Product, Restaurant } from '@/types';
 
 import { CartDrawer } from '../CartDrawer';
 import { CategoryTabs } from '../CategoryTabs';
@@ -37,6 +37,7 @@ interface MenuPageProps {
   receivedStatusId: string;
   deliveryZones: DeliveryZone[];
   deliveryMode: 'manual' | 'zones';
+  mesas?: Mesa[];
 }
 
 const sg = "var(--font-sans, sans-serif)";
@@ -63,7 +64,7 @@ function checkRestaurantOpen(openingHours?: Restaurant['openingHours']): boolean
   return c <= o ? (mins >= o || mins < c) : (mins >= o && mins < c);
 }
 
-export function MenuPage({ restaurant, categories, products, adicionales, receivedStatusId, deliveryZones, deliveryMode }: MenuPageProps) {
+export function MenuPage({ restaurant, categories, products, adicionales, receivedStatusId, deliveryZones, deliveryMode, mesas = [] }: MenuPageProps) {
   const initCart = useCartStore((s) => s.initCart);
   const setCartOpen = useCartStore((s) => s.setCartOpen);
   const items = useCartStore((s) => s.items);
@@ -371,7 +372,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
           )}
 
           <ProductModal product={selectedProduct} adicionales={adicionales} primaryColor={pri} onClose={() => setSelectedProduct(null)} />
-          <CartDrawer primaryColor={pri} secondaryColor={sec} receivedStatusId={receivedStatusId} deliveryZones={deliveryZones} deliveryMode={deliveryMode} />
+          <CartDrawer primaryColor={pri} secondaryColor={sec} receivedStatusId={receivedStatusId} deliveryZones={deliveryZones} deliveryMode={deliveryMode} deliveryMethods={restaurant.deliveryMethods} mesas={mesas} />
         </div>
       </div>
     );
@@ -582,7 +583,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
       {footerBlock}
 
       <ProductModal product={selectedProduct} adicionales={adicionales} primaryColor={pri} onClose={() => setSelectedProduct(null)} />
-      <CartDrawer primaryColor={pri} secondaryColor={sec} receivedStatusId={receivedStatusId} deliveryZones={deliveryZones} deliveryMode={deliveryMode} />
+      <CartDrawer primaryColor={pri} secondaryColor={sec} receivedStatusId={receivedStatusId} deliveryZones={deliveryZones} deliveryMode={deliveryMode} deliveryMethods={restaurant.deliveryMethods} mesas={mesas} />
     </div>
   );
 }

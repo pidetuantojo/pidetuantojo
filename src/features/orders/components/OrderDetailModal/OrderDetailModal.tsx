@@ -14,6 +14,13 @@ const sm = "var(--font-mono, monospace)";
 const DELIVERY_EMOJI: Record<string, string> = {
   recoger: '🏪',
   domicilio: '🛵',
+  mesa: '🪑',
+};
+
+const DELIVERY_LABEL: Record<string, string> = {
+  recoger: 'Recoger en tienda',
+  domicilio: 'Domicilio',
+  mesa: 'Comer en el local',
 };
 
 const PAYMENT_EMOJI: Record<string, string> = {
@@ -160,13 +167,14 @@ export function OrderDetailModal({
                 </div>
               )}
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
-                {deliveryEmoji && (
+                {deliveryEmoji && order.deliveryType && (
                   <span style={{
                     display: 'inline-flex', alignItems: 'center', gap: 5,
                     background: 'var(--t-surface)', border: '1.5px solid var(--t-border)', borderRadius: 999,
                     padding: '4px 10px', fontSize: 12, fontWeight: 600, color: 'var(--t-text-1)',
                   }}>
-                    {deliveryEmoji} {order.deliveryType === 'domicilio' ? 'Domicilio' : 'Recoger en tienda'}
+                    {deliveryEmoji} {DELIVERY_LABEL[order.deliveryType] ?? order.deliveryType}
+                    {order.deliveryType === 'mesa' && order.tableName && ` — ${order.tableName}`}
                   </span>
                 )}
                 <span style={{
