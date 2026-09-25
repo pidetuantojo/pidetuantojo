@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Unbounded, Manrope, DM_Mono, Lexend } from 'next/font/google';
 import * as RadixTooltip from '@radix-ui/react-tooltip';
 import { AuthProvider } from '@/features/auth';
@@ -10,6 +10,12 @@ const unbounded = Unbounded({ subsets: ['latin'], variable: '--font-display', we
 const manrope = Manrope({ subsets: ['latin'], variable: '--font-sans', weight: ['400', '500', '600', '700'] });
 const dmMono = DM_Mono({ subsets: ['latin'], variable: '--font-mono', weight: ['400', '500'] });
 const lexend = Lexend({ subsets: ['latin'], variable: '--font-logo', weight: ['700'] });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export const metadata: Metadata = {
   title: 'Pide Tu Antojo',
