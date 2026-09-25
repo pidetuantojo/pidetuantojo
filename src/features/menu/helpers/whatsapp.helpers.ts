@@ -25,8 +25,6 @@ interface CheckoutData {
   deliveryZoneName?: string;
 }
 
-// Solo caracteres del plano básico de Unicode: los emojis como 🍽️ 👤 📱 llegan como "�"
-// en algunos clientes de WhatsApp al abrir el link wa.me.
 const SEPARATOR = '━━━━━━━━━━━━━━━━━━━';
 
 /** Sin espacio entre "$" y el número: "$15.000" (Intl usa un espacio no separable). */
@@ -56,12 +54,12 @@ export function buildWhatsAppMessage(
 ): string {
   const itemsText = items
     .map((item) => {
-      let line = `- ${item.quantity} x ${item.productName} (${money(item.subtotal)})`;
+      let line = `• ${item.quantity} x ${item.productName} (${money(item.subtotal)})`;
       item.additionals.forEach((a) => {
-        line += `\n   + ${a.name} (+${money(a.price)})`;
+        line += `\n   ➕ ${a.name} (+${money(a.price)})`;
       });
       if (item.observacion?.trim()) {
-        line += `\n   _Nota: ${item.observacion.trim()}_`;
+        line += `\n   📝 _Nota: ${item.observacion.trim()}_`;
       }
       return line;
     })
@@ -70,10 +68,10 @@ export function buildWhatsAppMessage(
   const isDomicilio = checkout.deliveryType === 'domicilio';
   const deliveryLabel =
     isDomicilio
-      ? 'Domicilio'
+      ? '🛵 Domicilio'
       : checkout.deliveryType === 'mesa'
-        ? `Comer en el local${checkout.tableName ? ` — ${checkout.tableName}` : ''}`
-        : 'Recoger en tienda';
+        ? `🪑 Comer en el local${checkout.tableName ? ` — ${checkout.tableName}` : ''}`
+        : '🏃 Recoger en tienda';
 
   const feePending = isDeliveryFeePending(checkout.deliveryType, checkout.deliveryFee);
   const hasFee = isDomicilio && checkout.deliveryFee !== undefined;
@@ -88,32 +86,32 @@ export function buildWhatsAppMessage(
         ...(hasFee
           ? [
               `Subtotal: ${money(checkout.subtotal)}`,
-              `Domicilio${checkout.deliveryZoneName ? ` (${checkout.deliveryZoneName})` : ''}: ${money(checkout.deliveryFee ?? 0)}`,
+              `🏍 Domicilio${checkout.deliveryZoneName ? ` (${checkout.deliveryZoneName})` : ''}: ${money(checkout.deliveryFee ?? 0)}`,
             ]
           : []),
-        `*Total del pedido: ${money(total)}*`,
+        `💰 *Total del pedido: ${money(total)}*`,
       ];
 
   const lines = [
-    ...(checkout.orderNumber ? [`*Orden ${checkout.orderNumber}*`] : []),
+    ...(checkout.orderNumber ? [`🧾 *Orden ${checkout.orderNumber}*`] : []),
     `Hola *${restaurantName}*, soy *${checkout.customerName.trim()}* y me gustaría hacer un pedido.`,
     SEPARATOR,
     `*Entrega:* ${deliveryLabel}`,
-    ...(isDomicilio && checkout.address ? [`*Dirección:* ${checkout.address}`] : []),
-    ...(isDomicilio && checkout.barrio ? [`*Barrio:* ${checkout.barrio}`] : []),
-    ...(checkout.location ? [`*Ubicación:* https://maps.google.com/?q=${checkout.location.lat},${checkout.location.lng}`] : []),
-    ...(checkout.scheduledLabel ? [`*Programado para:* ${checkout.scheduledLabel}`] : []),
-    `*Celular:* ${formatPhone(checkout.customerPhone)}`,
+    ...(isDomicilio && checkout.address ? [`📍 *Dirección:* ${checkout.address}`] : []),
+    ...(isDomicilio && checkout.barrio ? [`🏘 *Barrio:* ${checkout.barrio}`] : []),
+    ...(checkout.location ? [`📌 *Ubicación:* https://maps.google.com/?q=${checkout.location.lat},${checkout.location.lng}`] : []),
+    ...(checkout.scheduledLabel ? [`⏰ *Programado para:* ${checkout.scheduledLabel}`] : []),
+    `📞 *Celular:* ${formatPhone(checkout.customerPhone)}`,
     SEPARATOR,
-    `*Detalle de la orden:*`,
+    `🛒 *Detalle de la orden:*`,
     itemsText,
     SEPARATOR,
-    `*Forma de pago:* ${checkout.paymentLabel}`,
+    `💳 *Forma de pago:* ${checkout.paymentLabel}`,
     ...(checkout.paymentAccount ? [checkout.paymentAccount] : []),
     ``,
     ...totalsLines,
     ``,
-    `Gracias.`,
+    `¡Gracias! 🙏`,
   ];
 
   return lines.join('\n');
