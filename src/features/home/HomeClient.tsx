@@ -128,6 +128,10 @@ export function HomeClient({ restaurants }: HomeClientProps) {
         .srch::placeholder { color: var(--t-text-4); }
         .srch:focus { border-color: #FF6A1A; box-shadow: 0 0 0 4px rgba(255,106,26,.12); }
         .srch-sm { flex: 1; border: 0; outline: none; font-family: var(--font-sans, sans-serif); font-size: 13.5px; color: var(--t-text-1); background: none; }
+        .home-hero { background: linear-gradient(115deg,#FF8A2B,#FF6A1A 48%,#EA3B2E); }
+        .dark .home-hero { background: linear-gradient(115deg,#3D1A06,#2C1204 48%,#2A0C04); }
+        .home-hero-mob { background: linear-gradient(150deg,#FF8A2B,#FF6A1A 50%,#EA3B2E); }
+        .dark .home-hero-mob { background: linear-gradient(150deg,#3D1A06,#2C1204 50%,#2A0C04); }
         @media (max-width: 767px) { .desktop-only { display: none !important; } }
         @media (min-width: 768px) { .mobile-only { display: none !important; } }
       ` }} />
@@ -197,7 +201,7 @@ export function HomeClient({ restaurants }: HomeClientProps) {
             El outer div NO tiene overflow:hidden para que los dropdowns del custom Select
             puedan renderizarse fuera sin cortarse. Los elementos decorativos (watermark,
             glow) se clipean con un inner div absoluto que sí tiene overflow:hidden. */}
-        <div style={{ position: 'relative', margin: '24px 40px 0', borderRadius: 24, background: 'linear-gradient(115deg,#FF8A2B,#FF6A1A 48%,#EA3B2E)' }}>
+        <div className="home-hero" style={{ position: 'relative', margin: '24px 40px 0', borderRadius: 24 }}>
           {/* Capa decorativa con overflow:hidden — solo clipea el watermark y el glow */}
           <div style={{ position: 'absolute', inset: 0, borderRadius: 24, overflow: 'hidden', pointerEvents: 'none' }}>
             <div style={{ position: 'absolute', right: -40, top: -60, opacity: .13 }}>
@@ -279,7 +283,7 @@ export function HomeClient({ restaurants }: HomeClientProps) {
       <div className="mobile-only" style={{ minHeight: '100vh', background: 'var(--t-bg)', fontFamily: sg }}>
 
         {/* HEADER — gradiente con padding-bottom generoso para que la card lo solape */}
-        <div style={{ position: 'relative', background: 'linear-gradient(150deg,#FF8A2B,#FF6A1A 50%,#EA3B2E)', padding: '48px 20px 72px', overflow: 'hidden' }}>
+        <div className="home-hero-mob" style={{ position: 'relative', padding: '48px 20px 72px', overflow: 'hidden' }}>
           {/* Watermark decorativo */}
           <div style={{ position: 'absolute', right: -50, top: -30, opacity: .12, pointerEvents: 'none' }}>
             <LogoMark style={{ width: 220, height: 220, color: 'white' }} />

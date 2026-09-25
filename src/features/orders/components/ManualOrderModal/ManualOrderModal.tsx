@@ -409,7 +409,7 @@ export function ManualOrderModal({
         </div>
 
         {/* Footer */}
-        <div style={{ flexShrink: 0, borderTop: '1px solid var(--t-border)', background: 'var(--t-surface-2)', padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ flexShrink: 0, borderTop: '1px solid var(--t-border)', padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           {error && <p style={{ fontFamily: sg, fontSize: 13, color: '#D8412F', textAlign: 'center', margin: 0 }}>{error}</p>}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--t-text-1)' }}>Total</span>

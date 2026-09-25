@@ -432,7 +432,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
         </div>
 
         {/* Footer */}
-        <div style={{ flexShrink: 0, borderTop: '1px solid var(--t-border)', background: 'var(--t-surface-2)', padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ flexShrink: 0, borderTop: '1px solid var(--t-border)', padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           {items.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 13, color: 'var(--t-text-3)', fontWeight: 600 }}>Total actualizado</span>

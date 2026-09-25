@@ -5,9 +5,9 @@ import type { ButtonProps, ButtonVariant, ButtonSize } from './Button.types';
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary: 'bg-orange-500 text-white hover:bg-orange-600 disabled:bg-orange-300',
-  secondary: 'bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:bg-gray-50 disabled:text-gray-400',
+  secondary: 'bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:bg-gray-50 disabled:text-gray-400 dark:bg-[var(--t-surface-2)] dark:text-[var(--t-text-2)] dark:border dark:border-[var(--t-border)] dark:hover:bg-[var(--t-border)] dark:disabled:bg-[var(--t-surface)] dark:disabled:text-[var(--t-text-4)]',
   danger: 'bg-red-500 text-white hover:bg-red-600 disabled:bg-red-300',
-  ghost: 'bg-transparent text-gray-600 hover:bg-gray-100 disabled:text-gray-300',
+  ghost: 'bg-transparent text-gray-600 hover:bg-gray-100 disabled:text-gray-300 dark:text-[var(--t-text-2)] dark:hover:bg-[var(--t-surface-2)] dark:disabled:text-[var(--t-text-4)]',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {

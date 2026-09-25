@@ -86,7 +86,7 @@ export function CategoryForm({
         )}
       </div>
 
-      <div className="flex gap-3 border-t border-[var(--t-border)] bg-[var(--t-surface-2)] px-6 py-4">
+      <div className="flex gap-3 border-t border-[var(--t-border)] px-6 py-4">
         <Button type="button" variant="secondary" onClick={onCancel} disabled={isPending} className="flex-1">
           Cancelar
         </Button>

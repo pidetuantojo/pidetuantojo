@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useRef, useEffect, useId } from 'react';
 
@@ -38,7 +38,6 @@ export function Select({
 
   const selected = options.find((o) => o.value === value);
 
-  // Close on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -49,7 +48,6 @@ export function Select({
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  // Close on Escape
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === 'Escape') setOpen(false);
@@ -63,7 +61,7 @@ export function Select({
       {label && (
         <label
           htmlFor={id}
-          style={{ fontWeight: 500, fontSize: 13, color: '#5a5048', display: 'block', marginBottom: 6 }}
+          style={{ fontWeight: 500, fontSize: 13, color: 'var(--t-text-2)', display: 'block', marginBottom: 6 }}
         >
           {label}
         </label>
@@ -83,9 +81,9 @@ export function Select({
             justifyContent: 'space-between',
             gap: 8,
             fontSize: 14,
-            color: selected ? '#1B1512' : '#a89e95',
-            border: `1.5px solid ${open ? '#FF6A1A' : error ? '#EA3B2E' : '#E7DED6'}`,
-            background: disabled ? '#F7F4F1' : '#fff',
+            color: selected ? 'var(--t-text-1)' : 'var(--t-text-4)',
+            border: `1.5px solid ${open ? '#FF6A1A' : error ? '#EA3B2E' : 'var(--t-input-border)'}`,
+            background: disabled ? 'var(--t-surface-2)' : 'var(--t-input-bg)',
             borderRadius: 12,
             padding: '11px 14px',
             outline: 'none',
@@ -103,7 +101,7 @@ export function Select({
             width="16"
             height="16"
             fill="none"
-            stroke="#9a8f86"
+            stroke="var(--t-text-3)"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -125,10 +123,10 @@ export function Select({
               top: 'calc(100% + 6px)',
               left: 0,
               right: 0,
-              background: '#fff',
-              border: '1.5px solid #E7DED6',
+              background: 'var(--t-surface)',
+              border: '1.5px solid var(--t-border)',
               borderRadius: 12,
-              boxShadow: '0 8px 24px -8px rgba(27,21,18,.18)',
+              boxShadow: '0 8px 24px -8px rgba(0,0,0,.28)',
               zIndex: 50,
               overflow: 'hidden',
               maxHeight: 240,
@@ -148,7 +146,7 @@ export function Select({
                     padding: '10px 14px',
                     fontSize: 14,
                     fontFamily: sg,
-                    color: isSelected ? '#FF6A1A' : '#1B1512',
+                    color: isSelected ? '#FF6A1A' : 'var(--t-text-1)',
                     background: isSelected ? 'rgba(255,106,26,.07)' : 'transparent',
                     border: 'none',
                     cursor: 'pointer',
@@ -158,7 +156,7 @@ export function Select({
                     transition: 'background .12s',
                   }}
                   onMouseEnter={(e) => {
-                    if (!isSelected) (e.currentTarget as HTMLElement).style.background = '#FBF8F5';
+                    if (!isSelected) (e.currentTarget as HTMLElement).style.background = 'var(--t-surface-2)';
                   }}
                   onMouseLeave={(e) => {
                     if (!isSelected) (e.currentTarget as HTMLElement).style.background = 'transparent';
@@ -178,7 +176,7 @@ export function Select({
       </div>
 
       {hint && !error && (
-        <p style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11, color: '#9a8f86', marginTop: 5 }}>
+        <p style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11, color: 'var(--t-text-3)', marginTop: 5 }}>
           {hint}
         </p>
       )}

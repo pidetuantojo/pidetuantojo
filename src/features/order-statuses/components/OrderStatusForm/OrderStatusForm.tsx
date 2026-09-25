@@ -114,7 +114,7 @@ export function OrderStatusForm({
 
       <div
         className="flex gap-3 px-6 py-4"
-        style={{ borderTop: '1px solid var(--t-border)', background: 'var(--t-surface-2)' }}
+        style={{ borderTop: '1px solid var(--t-border)' }}
       >
         <Button type="button" variant="secondary" onClick={onCancel} disabled={isPending} className="flex-1">
           Cancelar

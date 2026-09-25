@@ -721,7 +721,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
       </div>
 
       {/* Footer con botones */}
-      <div className="flex flex-shrink-0 gap-3 border-t border-[var(--t-border)] bg-[var(--t-surface-2)] px-6 py-4">
+      <div className="flex flex-shrink-0 gap-3 border-t border-[var(--t-border)] px-6 py-4">
         <Button type="button" variant="secondary" onClick={onCancel} disabled={isPending} className="flex-1">
           Cancelar
         </Button>

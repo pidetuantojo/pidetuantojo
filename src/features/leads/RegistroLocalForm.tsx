@@ -7,6 +7,7 @@ import { COLOMBIA_LOCATIONS, RESTAURANT_CATEGORIES } from '@/constants/colombia-
 import { Select } from '@/components/ui/Select';
 import { leadsService } from './leads.service';
 import { Logo, LogoMark } from '@/components/ui/Logo';
+import { useTheme } from '@/components/providers/ThemeProvider';
 
 // ─── design tokens ────────────────────────────────────────────────────────────
 
@@ -77,6 +78,7 @@ const EMPTY_FORM: FormData = {
 // ─── component ────────────────────────────────────────────────────────────────
 
 export function RegistroLocalForm() {
+  const { theme, toggle: toggleTheme } = useTheme();
   const [step, setStep] = useState<'form' | 'success'>('form');
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [autoriza, setAutoriza] = useState(false);
@@ -150,7 +152,7 @@ export function RegistroLocalForm() {
       <style dangerouslySetInnerHTML={{ __html: `
         body { margin: 0; background: var(--t-bg); }
         .rl-layout { display: flex; min-height: 100vh; }
-        .rl-panel { width: 400px; min-width: 400px; position: sticky; top: 0; height: 100vh; overflow: hidden; }
+        .rl-panel { width: 400px; min-width: 400px; overflow: hidden; height: 100vh; }
         .rl-main { flex: 1; display: flex; flex-direction: column; min-height: 100vh; overflow-y: auto; }
         .rl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .rl-full { grid-column: 1 / -1; }
@@ -182,17 +184,39 @@ export function RegistroLocalForm() {
         borderBottom: '1px solid var(--t-border)',
       }}>
         <Logo variant="light" size={15} />
-        <Link href="/" style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          fontFamily: sg, fontSize: 13, fontWeight: 600, color: 'var(--t-text-2)',
-          textDecoration: 'none', padding: '8px 14px',
-          border: '1.5px solid var(--t-border)', borderRadius: 10, background: 'var(--t-surface)',
-        }}>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
-          </svg>
-          Volver al inicio
-        </Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button
+            onClick={toggleTheme}
+            title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+            style={{
+              width: 38, height: 38, borderRadius: 10, border: '1.5px solid var(--t-border)',
+              background: 'var(--t-surface)', color: 'var(--t-text-2)',
+              display: 'grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0,
+              transition: 'background .15s',
+            }}
+          >
+            {theme === 'dark' ? (
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+            )}
+          </button>
+          <Link href="/" style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            fontFamily: sg, fontSize: 13, fontWeight: 600, color: 'var(--t-text-2)',
+            textDecoration: 'none', padding: '8px 14px',
+            border: '1.5px solid var(--t-border)', borderRadius: 10, background: 'var(--t-surface)',
+          }}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <path d="M19 12H5M12 5l-7 7 7 7"/>
+            </svg>
+            Volver al inicio
+          </Link>
+        </div>
       </div>
 
       {step === 'success' ? (
@@ -260,7 +284,7 @@ export function RegistroLocalForm() {
           <div className="rl-panel" style={{
             background: 'linear-gradient(155deg,#FF8A2B 0%,#FF6A1A 45%,#EA3B2E 100%)',
             display: 'flex', flexDirection: 'column', justifyContent: 'center',
-            position: 'relative', overflow: 'hidden',
+            position: 'sticky', top: 0, overflow: 'hidden',
           }}>
             {/* decorative circles */}
             <div style={{ position: 'absolute', top: -80, right: -80, width: 280, height: 280, borderRadius: '50%', background: 'rgba(255,255,255,.08)', pointerEvents: 'none' }} />

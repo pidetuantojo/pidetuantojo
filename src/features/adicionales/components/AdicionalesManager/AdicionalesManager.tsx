@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Plus, Edit2, Trash2, Check, X } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
+import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/Button';
 import type { Adicional } from '@/types';
 
 import {
@@ -105,94 +107,6 @@ export function AdicionalesManager({ restaurantId }: Props) {
         </button>
       </div>
 
-      {/* Form */}
-      {showForm && (
-        <div style={{
-          background: 'var(--t-surface)', borderRadius: 18, border: '1px solid var(--t-border-2)',
-          padding: '20px 24px', marginBottom: 20,
-        }}>
-          <h2 style={{ fontWeight: 600, fontSize: 15, color: 'var(--t-text-1)', margin: '0 0 16px' }}>
-            {editingId ? 'Editar adicional' : 'Nuevo adicional'}
-          </h2>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 12, alignItems: 'end' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--t-text-2)', marginBottom: 6 }}>
-                Nombre *
-              </label>
-              <input
-                type="text"
-                value={form.name}
-                onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-                placeholder="Ej: Chamoy, Gomitas (4und)"
-                style={{
-                  width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 10,
-                  padding: '9px 12px', fontSize: 14, fontFamily: sg, color: 'var(--t-text-1)',
-                  outline: 'none', boxSizing: 'border-box',
-                }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--t-text-2)', marginBottom: 6 }}>
-                Precio
-              </label>
-              <input
-                type="number"
-                min={0}
-                step={100}
-                value={form.price}
-                onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))}
-                placeholder="0"
-                style={{
-                  width: 120, border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 10,
-                  padding: '9px 12px', fontSize: 14, fontFamily: sg, color: 'var(--t-text-1)',
-                  outline: 'none',
-                }}
-              />
-            </div>
-
-            <label style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', paddingBottom: 2 }}>
-              <input
-                type="checkbox"
-                checked={form.isActive}
-                onChange={(e) => setForm((p) => ({ ...p, isActive: e.target.checked }))}
-                style={{ accentColor: '#FF6A1A', width: 16, height: 16 }}
-              />
-              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--t-text-2)' }}>Activo</span>
-            </label>
-          </div>
-
-          {formError && (
-            <p style={{ fontSize: 12, color: '#ef4444', margin: '8px 0 0' }}>{formError}</p>
-          )}
-
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 }}>
-            <button
-              onClick={cancel}
-              style={{
-                padding: '9px 18px', border: '1.5px solid var(--t-border)', borderRadius: 999,
-                background: 'var(--t-surface)', fontFamily: sg, fontWeight: 600, fontSize: 13,
-                color: 'var(--t-text-2)', cursor: 'pointer',
-              }}
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={isPending}
-              style={{
-                padding: '9px 18px', border: 'none', borderRadius: 999,
-                background: '#FF6A1A', fontFamily: sg, fontWeight: 600, fontSize: 13,
-                color: '#fff', cursor: 'pointer', opacity: isPending ? 0.6 : 1,
-              }}
-            >
-              {isPending ? 'Guardando...' : editingId ? 'Actualizar' : 'Crear'}
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* List */}
       {isLoading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -269,6 +183,75 @@ export function AdicionalesManager({ restaurantId }: Props) {
           ))}
         </div>
       )}
+
+      {/* Modal */}
+      <Modal
+        isOpen={showForm}
+        onClose={cancel}
+        title={editingId ? 'Editar adicional' : 'Nuevo adicional'}
+        size="sm"
+      >
+        <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--t-text-2)', marginBottom: 6, fontFamily: sg }}>
+              Nombre *
+            </label>
+            <input
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+              placeholder="Ej: Chamoy, Gomitas (4und)"
+              style={{
+                width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)',
+                borderRadius: 10, padding: '9px 12px', fontSize: 14, fontFamily: sg,
+                color: 'var(--t-text-1)', outline: 'none', boxSizing: 'border-box',
+              }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--t-text-2)', marginBottom: 6, fontFamily: sg }}>
+              Precio
+            </label>
+            <input
+              type="number"
+              min={0}
+              step={100}
+              value={form.price}
+              onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))}
+              placeholder="0"
+              style={{
+                width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)',
+                borderRadius: 10, padding: '9px 12px', fontSize: 14, fontFamily: sg,
+                color: 'var(--t-text-1)', outline: 'none', boxSizing: 'border-box',
+              }}
+            />
+          </div>
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={form.isActive}
+              onChange={(e) => setForm((p) => ({ ...p, isActive: e.target.checked }))}
+              style={{ accentColor: '#FF6A1A', width: 16, height: 16 }}
+            />
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--t-text-2)', fontFamily: sg }}>Activo</span>
+          </label>
+
+          {formError && (
+            <p style={{ fontSize: 12, color: '#ef4444', margin: 0 }}>{formError}</p>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', gap: 10, padding: '0 24px 20px', borderTop: '1px solid var(--t-border)', paddingTop: 16, marginTop: 4 }}>
+          <Button variant="secondary" onClick={cancel} disabled={isPending} className="flex-1">
+            Cancelar
+          </Button>
+          <Button onClick={handleSave} isLoading={isPending} className="flex-1">
+            {editingId ? 'Guardar cambios' : 'Crear adicional'}
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }
