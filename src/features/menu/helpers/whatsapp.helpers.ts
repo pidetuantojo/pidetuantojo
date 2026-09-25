@@ -120,5 +120,9 @@ export function buildWhatsAppMessage(
 export function openWhatsApp(phone: string, message: string): void {
   const cleanPhone = phone.replace(/\D/g, '');
   const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
-  window.open(url, '_blank');
+  // window.open(..., '_blank') después de un await pierde el gesto de usuario
+  // en mobile (Safari iOS, WebViews de Instagram/Facebook) y el browser lo
+  // bloquea o corrompe el URL encoding — los emojis llegan como "?".
+  // location.href navega la misma pestaña y funciona confiable en todos lados.
+  window.location.href = url;
 }
