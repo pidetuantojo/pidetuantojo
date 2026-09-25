@@ -1,7 +1,7 @@
-import { collection, doc, updateDoc, setDoc } from 'firebase/firestore';
+import { collection, deleteField, doc, updateDoc, setDoc } from 'firebase/firestore';
 
 import { db } from '@/lib/firebase/config';
-import type { CreateOrderData } from '@/types';
+import type { AssignedDriver, CreateOrderData } from '@/types';
 
 function ordersRef(restaurantId: string) {
   return collection(db, 'restaurants', restaurantId, 'orders');
@@ -13,17 +13,18 @@ function generateOrderNumber(): string {
 }
 
 export const ordersService = {
-  async create(data: CreateOrderData): Promise<string> {
+  async create(data: CreateOrderData): Promise<{ id: string; orderNumber: string }> {
     const now = new Date().toISOString();
     const ref = doc(ordersRef(data.restaurantId));
+    const orderNumber = generateOrderNumber();
     await setDoc(ref, {
       ...data,
       id: ref.id,
-      orderNumber: generateOrderNumber(),
+      orderNumber,
       createdAt: now,
       updatedAt: now,
     });
-    return ref.id;
+    return { id: ref.id, orderNumber };
   },
 
   async updateStatus(restaurantId: string, id: string, statusId: string): Promise<void> {
@@ -40,9 +41,11 @@ export const ordersService = {
     });
   },
 
-  async updateDeliveryFee(restaurantId: string, id: string, deliveryFee: number): Promise<void> {
+  /** Actualiza el valor del domicilio y recalcula `total = subtotal (productos) + deliveryFee`. */
+  async updateDeliveryFee(restaurantId: string, id: string, deliveryFee: number, subtotal: number): Promise<void> {
     await updateDoc(doc(ordersRef(restaurantId), id), {
       deliveryFee,
+      total: subtotal + deliveryFee,
       updatedAt: new Date().toISOString(),
     });
   },
@@ -62,8 +65,12 @@ export const ordersService = {
   },
 
   async updateData(restaurantId: string, id: string, data: import('@/types').UpdateOrderData): Promise<void> {
+    // Firestore rechaza `undefined`: un campo explícitamente undefined significa "borrarlo"
+    const payload = Object.fromEntries(
+      Object.entries(data).map(([k, v]) => [k, v === undefined ? deleteField() : v]),
+    );
     await updateDoc(doc(ordersRef(restaurantId), id), {
-      ...data,
+      ...payload,
       updatedAt: new Date().toISOString(),
     });
   },
@@ -71,7 +78,7 @@ export const ordersService = {
   async updateDriver(
     restaurantId: string,
     orderId: string,
-    driver: { id: string; name: string; code: string; phone: string } | null,
+    driver: AssignedDriver | null,
   ): Promise<void> {
     await updateDoc(doc(ordersRef(restaurantId), orderId), {
       assignedDriver: driver ?? null,

@@ -32,7 +32,7 @@ export default async function RestaurantMenuPage({ params }: Props) {
 
   const mesaMethodActive = restaurant.deliveryMethods?.mesa?.isActive ?? false;
 
-  const [categories, products, adicionales, statuses, allZones, mesas] = await Promise.all([
+  const [categories, products, adicionales, statuses, allZones, allMesas] = await Promise.all([
     categoriesService.getAll(restaurant.id),
     productsService.getAll(restaurant.id),
     adicionalesService.getAll(restaurant.id),
@@ -48,6 +48,7 @@ export default async function RestaurantMenuPage({ params }: Props) {
   const activeAdicionales = adicionales.filter((a) => a.isActive);
   const receivedStatusId = statuses.find((s) => s.code === 'received')?.id ?? '';
   const deliveryZones = allZones.filter((z) => z.isActive);
+  const mesas = allMesas.filter((m) => m.isActive);
 
   return (
     <MenuPage

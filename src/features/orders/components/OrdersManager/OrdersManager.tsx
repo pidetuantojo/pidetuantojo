@@ -23,6 +23,7 @@ import { useProducts } from '@/features/products/hooks/useProducts';
 import { useAdicionales } from '@/features/adicionales/hooks/useAdicionales';
 import { useCategories } from '@/features/categories';
 import { useDomiciliarios } from '@/features/delivery-zones/hooks/useDomiciliarios';
+import { useRestaurant } from '@/features/restaurants/hooks/useRestaurants';
 import type { Order } from '@/types';
 
 import { useOrders } from '../../hooks/useOrders';
@@ -243,6 +244,7 @@ export function OrdersManager() {
   const { data: adicionales = [] } = useAdicionales(restaurantId);
   const { data: categories = [] } = useCategories(restaurantId);
   const { data: domiciliarios = [] } = useDomiciliarios(restaurantId);
+  const { data: restaurant } = useRestaurant(restaurantId || undefined);
   const { updateStatus } = useUpdateOrderStatus(restaurantId);
 
   const [dateFilter, setDateFilter] = useState<DateFilter>('today');
@@ -608,6 +610,7 @@ export function OrdersManager() {
           products={products}
           adicionales={adicionales}
           categories={categories}
+          paymentMethods={restaurant?.paymentMethods}
           onClose={() => setEditingOrder(null)}
           onSaved={() => setEditingOrder(null)}
         />
@@ -622,6 +625,7 @@ export function OrdersManager() {
         products={products}
         adicionales={adicionales}
         categories={categories}
+        paymentMethods={restaurant?.paymentMethods}
       />
 
       {/* Toasts nuevos pedidos */}

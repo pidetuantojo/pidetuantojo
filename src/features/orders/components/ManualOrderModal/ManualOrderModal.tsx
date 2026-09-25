@@ -4,7 +4,9 @@ import { useState, useMemo } from 'react';
 import { X, Plus, Minus, Trash2, Search, ShoppingBag } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
-import type { Product, Adicional, OrderItem, Additional, Category } from '@/types';
+import type { Product, Adicional, OrderItem, Additional, Category, PaymentMethodConfig } from '@/types';
+import { PaymentMethodPicker } from '@/features/payment-methods/components/PaymentMethodPicker';
+import { getActivePaymentMethods, toOrderPayment } from '@/features/payment-methods/helpers/payment-methods.helpers';
 
 import { ordersService } from '../../services/orders.service';
 
@@ -16,6 +18,7 @@ interface ManualOrderModalProps {
   products: Product[];
   adicionales: Adicional[];
   categories: Category[];
+  paymentMethods?: PaymentMethodConfig[];
 }
 
 interface CartLine {
@@ -25,11 +28,6 @@ interface CartLine {
 }
 
 const sg = "var(--font-sans, sans-serif)";
-
-const PAYMENT_METHODS = [
-  { value: 'Efectivo',      emoji: '💵' },
-  { value: 'Transferencia', emoji: '🏧' },
-];
 
 const DELIVERY_TYPES = [
   { value: 'recoger',   label: 'Recoger',   emoji: '🏪' },
@@ -44,7 +42,9 @@ export function ManualOrderModal({
   products,
   adicionales,
   categories,
+  paymentMethods,
 }: ManualOrderModalProps) {
+  const activePaymentMethods = getActivePaymentMethods(paymentMethods);
   const [search, setSearch] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [cart, setCart] = useState<CartLine[]>([]);
@@ -54,7 +54,8 @@ export function ManualOrderModal({
   const [deliveryType, setDeliveryType] = useState<'recoger' | 'domicilio'>('recoger');
   const [address, setAddress] = useState('');
   const [barrio, setBarrio] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('Efectivo');
+  const [paymentMethodId, setPaymentMethodId] = useState('');
+  const selectedPayment = activePaymentMethods.find((m) => m.id === paymentMethodId) ?? null;
   const [notes, setNotes] = useState('');
 
   const [isSaving, setIsSaving] = useState(false);
@@ -115,7 +116,7 @@ export function ManualOrderModal({
   function reset() {
     setCart([]); setCustomerName(''); setCustomerPhone('');
     setDeliveryType('recoger'); setAddress(''); setBarrio('');
-    setPaymentMethod('Efectivo'); setNotes(''); setSearch('');
+    setPaymentMethodId(''); setNotes(''); setSearch('');
     setSelectedCategoryId(''); setError('');
   }
 
@@ -129,6 +130,7 @@ export function ManualOrderModal({
     if (!customerPhone.trim()) { setError('El teléfono es requerido'); return; }
     if (cart.length === 0) { setError('Agregá al menos un producto'); return; }
     if (deliveryType === 'domicilio' && !address.trim()) { setError('La dirección es requerida para domicilio'); return; }
+    if (!selectedPayment) { setError('Elegí un método de pago'); return; }
 
     setError('');
     setIsSaving(true);
@@ -148,7 +150,7 @@ export function ManualOrderModal({
         deliveryType,
         ...(deliveryType === 'domicilio' && address.trim() ? { customerAddress: address.trim() } : {}),
         ...(deliveryType === 'domicilio' && barrio.trim() ? { barrio: barrio.trim() } : {}),
-        paymentMethod,
+        ...toOrderPayment(selectedPayment),
         isPaid: false,
         items,
         subtotal,
@@ -387,17 +389,7 @@ export function ManualOrderModal({
               <div style={{ fontFamily: sg, fontSize: 11, fontWeight: 700, letterSpacing: '.04em', color: 'var(--t-text-2)', marginBottom: 10 }}>
                 Método de pago
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                {PAYMENT_METHODS.map((m) => {
-                  const active = paymentMethod === m.value;
-                  return (
-                    <button key={m.value} type="button" onClick={() => setPaymentMethod(m.value)}
-                      style={{ padding: '10px 12px', borderRadius: 999, border: `2px solid ${active ? '#FF6A1A' : 'var(--t-border-2)'}`, background: 'var(--t-surface)', color: active ? '#FF6A1A' : 'var(--t-text-2)', fontFamily: sg, fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all .12s' }}>
-                      <span>{m.emoji}</span> {m.value}
-                    </button>
-                  );
-                })}
-              </div>
+              <PaymentMethodPicker methods={activePaymentMethods} value={paymentMethodId} onChange={setPaymentMethodId} />
             </section>
 
             {/* NOTAS */}

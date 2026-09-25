@@ -1,10 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Plus, Minus, Save, Loader2, ShoppingBag, Truck, CreditCard, User } from 'lucide-react';
+import { X, Plus, Minus, Save, Loader2, ShoppingBag, Truck, CreditCard, User, CalendarClock } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
-import type { Order, OrderItem, Product, Adicional, Additional, Category } from '@/types';
+import type { Order, OrderItem, Product, Adicional, Additional, Category, PaymentMethodConfig } from '@/types';
+import { PaymentMethodPicker } from '@/features/payment-methods/components/PaymentMethodPicker';
+import { getActivePaymentMethods, getPaymentLabel } from '@/features/payment-methods/helpers/payment-methods.helpers';
+import {
+  formatScheduledDate,
+  parseScheduleInput,
+  toDateInputValue,
+  toTimeInputValue,
+} from '@/features/menu/helpers/schedule.helpers';
 import { ordersService } from '../../services/orders.service';
 
 const sg = "var(--font-sans, sans-serif)";
@@ -15,6 +23,7 @@ interface EditOrderModalProps {
   products: Product[];
   adicionales: Adicional[];
   categories: Category[];
+  paymentMethods?: PaymentMethodConfig[];
   onClose: () => void;
   onSaved: () => void;
 }
@@ -27,18 +36,13 @@ interface EditableItem {
   additionals: Additional[];
 }
 
-const PAYMENT_METHODS = [
-  { value: 'Efectivo', emoji: '💵' },
-  { value: 'Transferencia', emoji: '🏧' },
-];
-
 const DELIVERY_TYPES = [
   { value: 'recoger' as const, label: 'Recoger', emoji: '🏪' },
   { value: 'domicilio' as const, label: 'Domicilio', emoji: '🛵' },
   { value: 'mesa' as const, label: 'En el local', emoji: '🪑' },
 ];
 
-export function EditOrderModal({ order, restaurantId, products, adicionales, categories, onClose, onSaved }: EditOrderModalProps) {
+export function EditOrderModal({ order, restaurantId, products, adicionales, categories, paymentMethods, onClose, onSaved }: EditOrderModalProps) {
   const [items, setItems] = useState<EditableItem[]>(() =>
     order.items.map((item) => ({
       productId: item.productId,
@@ -54,7 +58,18 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
   const [deliveryType, setDeliveryType] = useState<'recoger' | 'domicilio' | 'mesa'>(order.deliveryType ?? 'recoger');
   const [address, setAddress] = useState(order.customerAddress ?? '');
   const [barrio, setBarrio] = useState(order.barrio ?? '');
-  const [paymentMethod, setPaymentMethod] = useState(order.paymentMethod);
+  const activePaymentMethods = getActivePaymentMethods(paymentMethods);
+  // Preselecciona el método configurado que coincide con el del pedido (tipo + cuenta)
+  const [paymentMethodId, setPaymentMethodId] = useState(
+    () => activePaymentMethods.find(
+      (m) => m.type === order.paymentMethodType && (m.account ?? '') === (order.paymentAccount ?? '')
+    )?.id ?? ''
+  );
+  const selectedPayment = activePaymentMethods.find((m) => m.id === paymentMethodId) ?? null;
+  const initialScheduled = order.isScheduled && order.scheduledFor ? new Date(order.scheduledFor) : null;
+  const [isScheduled, setIsScheduled] = useState(initialScheduled !== null);
+  const [scheduleDate, setScheduleDate] = useState(initialScheduled ? toDateInputValue(initialScheduled) : '');
+  const [scheduleTime, setScheduleTime] = useState(initialScheduled ? toTimeInputValue(initialScheduled) : '');
 
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [addingAdicionalFor, setAddingAdicionalFor] = useState<number | null>(null);
@@ -69,6 +84,8 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
     const addTotal = item.additionals.reduce((s, a) => s + a.price, 0);
     return sum + (item.unitPrice + addTotal) * item.quantity;
   }, 0);
+  // El valor del domicilio se edita desde la tarjeta; acá solo se conserva (o se quita si deja de ser domicilio)
+  const deliveryFee = deliveryType === 'domicilio' ? order.deliveryFee ?? 0 : 0;
 
   function changeQty(index: number, delta: number) {
     setItems((prev) => {
@@ -125,8 +142,14 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
       .filter((a) => a.isActive && !usedNames.has(a.name));
   }
 
+  // El admin puede reprogramar sin las restricciones del cliente (30 min / 7 días / horario):
+  // solo se exige una fecha/hora válida. "Comer en el local" nunca es programado.
+  const canSchedule = deliveryType !== 'mesa';
+  const scheduledDate = canSchedule && isScheduled ? parseScheduleInput(scheduleDate, scheduleTime) : null;
+
   const canSave = items.length > 0 && customerName.trim() && customerPhone.trim() &&
-    (deliveryType !== 'domicilio' || address.trim());
+    (deliveryType !== 'domicilio' || address.trim()) &&
+    (!canSchedule || !isScheduled || scheduledDate !== null);
 
   async function handleSave() {
     if (!canSave) return;
@@ -148,14 +171,25 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
 
       await ordersService.updateData(restaurantId, order.id, {
         items: newItems,
+        // subtotal = productos · total = productos + domicilio (si deja de ser domicilio, se borra el valor)
         subtotal: total,
-        total,
+        total: total + deliveryFee,
+        deliveryFee: deliveryType === 'domicilio' ? order.deliveryFee : undefined,
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
         deliveryType,
         customerAddress: deliveryType === 'domicilio' ? address.trim() : undefined,
         barrio: deliveryType === 'domicilio' && barrio.trim() ? barrio.trim() : undefined,
-        paymentMethod,
+        // Sin selección se conserva el pago actual; al cambiarlo, `undefined` borra la cuenta anterior
+        ...(selectedPayment
+          ? {
+              paymentMethod: getPaymentLabel(selectedPayment),
+              paymentMethodType: selectedPayment.type,
+              paymentAccount: selectedPayment.account,
+            }
+          : {}),
+        isScheduled: scheduledDate !== null,
+        scheduledFor: scheduledDate ? scheduledDate.toISOString() : undefined,
       });
 
       onSaved();
@@ -401,6 +435,37 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
                   style={{ width: '100%', borderRadius: 12, border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', padding: '10px 13px', fontFamily: sg, fontSize: 13, color: 'var(--t-text-1)', outline: 'none', boxSizing: 'border-box' }} />
               </div>
             )}
+
+            {canSchedule && (
+              <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: 'var(--t-text-2)' }}>
+                  <input
+                    type="checkbox"
+                    checked={isScheduled}
+                    onChange={(e) => {
+                      setIsScheduled(e.target.checked);
+                      if (e.target.checked && !scheduleDate) setScheduleDate(toDateInputValue(new Date()));
+                    }}
+                    style={{ width: 16, height: 16, accentColor: '#FF6A1A', cursor: 'pointer' }}
+                  />
+                  <CalendarClock style={{ width: 14, height: 14, color: '#FF6A1A' }} />
+                  Pedido programado
+                </label>
+                {isScheduled && (
+                  <>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 8 }}>
+                      <input type="date" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)}
+                        style={{ width: '100%', minWidth: 0, borderRadius: 12, border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', padding: '10px 13px', fontFamily: sg, fontSize: 13, color: 'var(--t-text-1)', outline: 'none', boxSizing: 'border-box' }} />
+                      <input type="time" value={scheduleTime} step={300} onChange={(e) => setScheduleTime(e.target.value)}
+                        style={{ width: '100%', minWidth: 0, borderRadius: 12, border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', padding: '10px 13px', fontFamily: sg, fontSize: 13, color: 'var(--t-text-1)', outline: 'none', boxSizing: 'border-box' }} />
+                    </div>
+                    <p style={{ margin: 0, fontSize: 12, color: scheduledDate ? 'var(--t-text-3)' : '#e53e3e' }}>
+                      {scheduledDate ? `Para el ${formatScheduledDate(scheduledDate)}` : 'Elegí fecha y hora'}
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
           </section>
 
           {/* Método de pago */}
@@ -409,22 +474,12 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
               <CreditCard style={{ width: 14, height: 14, color: '#FF6A1A' }} />
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--t-text-1)' }}>Método de pago</span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              {PAYMENT_METHODS.map((m) => {
-                const active = paymentMethod === m.value;
-                return (
-                  <button key={m.value} onClick={() => setPaymentMethod(m.value)}
-                    style={{
-                      padding: '10px 12px', borderRadius: 999, fontFamily: sg, fontWeight: 600, fontSize: 13,
-                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                      transition: 'all .12s', border: `2px solid ${active ? '#FF6A1A' : 'var(--t-border-2)'}`,
-                      background: 'var(--t-surface)', color: active ? '#FF6A1A' : 'var(--t-text-2)',
-                    }}>
-                    <span>{m.emoji}</span> {m.value}
-                  </button>
-                );
-              })}
-            </div>
+            <PaymentMethodPicker methods={activePaymentMethods} value={paymentMethodId} onChange={setPaymentMethodId} />
+            {!selectedPayment && (
+              <p style={{ margin: '8px 0 0', fontSize: 12, color: 'var(--t-text-3)' }}>
+                Actual: {order.paymentMethod}{order.paymentAccount ? ` — ${order.paymentAccount}` : ''} (ya no está entre los métodos activos)
+              </p>
+            )}
           </section>
 
           {error && (
@@ -435,9 +490,23 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
         {/* Footer */}
         <div style={{ flexShrink: 0, borderTop: '1px solid var(--t-border)', padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           {items.length > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 13, color: 'var(--t-text-3)', fontWeight: 600 }}>Total actualizado</span>
-              <span style={{ fontWeight: 800, fontSize: 18, color: '#FF6A1A' }}>{formatCurrency(total)}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {deliveryFee > 0 && (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--t-text-3)' }}>
+                    <span>Total productos</span>
+                    <span>{formatCurrency(total)}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--t-text-3)' }}>
+                    <span>Valor de domicilio</span>
+                    <span>{formatCurrency(deliveryFee)}</span>
+                  </div>
+                </>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 13, color: 'var(--t-text-3)', fontWeight: 600 }}>Total actualizado</span>
+                <span style={{ fontWeight: 800, fontSize: 18, color: '#FF6A1A' }}>{formatCurrency(total + deliveryFee)}</span>
+              </div>
             </div>
           )}
           <div style={{ display: 'flex', gap: 8 }}>

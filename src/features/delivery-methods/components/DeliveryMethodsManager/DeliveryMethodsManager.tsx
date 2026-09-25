@@ -287,6 +287,9 @@ export function DeliveryMethodsManager() {
                     ) : mesas.length === 0 ? (
                       <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--t-text-3)', fontSize: 13 }}>
                         Sin mesas configuradas. Agregá las mesas de tu local.
+                        <div style={{ marginTop: 6, fontSize: 12, color: '#FF6A1A', fontWeight: 600 }}>
+                          Mientras no haya mesas, tus clientes podrán pedir sin elegir mesa y se les indicará que pregunten al mesero.
+                        </div>
                       </div>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

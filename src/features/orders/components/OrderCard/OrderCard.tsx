@@ -4,10 +4,16 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ArrowRight, Clock, MapPin, MessageCircle, Pencil, Bike,
-  StickyNote, Check, XCircle, Search,
+  StickyNote, Check, XCircle, Search, Building2,
 } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
+import { formatScheduledDate } from '@/features/menu/helpers/schedule.helpers';
+import { PaymentMethodIcon } from '@/features/payment-methods/components/PaymentMethodIcon';
+import { isTransferMethod } from '@/features/payment-methods/helpers/payment-methods.helpers';
+import type { AssignedDriver, Domiciliario } from '@/types';
+import { buildDriverMessage, toAssignedDriver, validateCourierName } from '../../helpers/driver.helpers';
+import { getOrderTotals } from '../../helpers/totals.helpers';
 import { ordersService } from '../../services/orders.service';
 import type { OrderCardProps } from './OrderCard.types';
 
@@ -32,9 +38,8 @@ function formatShortDate(isoString: string): string {
 export function OrderCard({ order, status, statuses, restaurantId, domiciliarios, onOpen, onAdvance, onEdit }: OrderCardProps) {
   const isDomicilio = order.deliveryType === 'domicilio';
   const isMesa = order.deliveryType === 'mesa';
-  const deliveryFee = order.deliveryFee ?? 0;
-  const grandTotal = order.total + deliveryFee;
-  const isTransfer = order.paymentMethod === 'Transferencia';
+  const { productsTotal, deliveryFee, total: grandTotal } = getOrderTotals(order);
+  const isTransfer = order.paymentMethodType ? isTransferMethod(order.paymentMethodType) : false;
 
   // — delivery fee inline edit —
   const [editingFee, setEditingFee] = useState(false);
@@ -57,6 +62,8 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
   const driverRef = useRef<HTMLDivElement>(null);
   const driverBtnRef = useRef<HTMLButtonElement>(null);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
+  // Paso extra al elegir una empresa: nombre/código de quien tomó el pedido
+  const [courierForm, setCourierForm] = useState<{ base: AssignedDriver; value: string; error: string } | null>(null);
 
   useEffect(() => {
     if (!togglingPaid) setLocalIsPaid(order.isPaid ?? false);
@@ -81,6 +88,14 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
     if (!editingNote) setNoteInput(order.internalNote ?? '');
   }, [order.internalNote, editingNote]);
 
+  const driverQuery = driverSearch.trim().toLowerCase();
+  const availableDrivers = domiciliarios.filter(
+    (d) => d.isActive && (
+      d.name.toLowerCase().includes(driverQuery) ||
+      (!!d.code && d.code.toLowerCase().includes(driverQuery))
+    )
+  );
+
   const activeStatuses = statuses.filter((s) => s.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
   const currentIndex = activeStatuses.findIndex((s) => s.id === order.statusId);
   const nextStatus = currentIndex !== -1 && currentIndex < activeStatuses.length - 1
@@ -91,7 +106,7 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
     if (isNaN(value) || value < 0) return;
     setSavingFee(true);
     try {
-      await ordersService.updateDeliveryFee(restaurantId, order.id, value);
+      await ordersService.updateDeliveryFee(restaurantId, order.id, value, productsTotal);
       setEditingFee(false);
       setFeeInput('');
     } finally {
@@ -113,7 +128,7 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
     }
   }
 
-  async function handleAssignDriver(driver: { id: string; name: string; code: string; phone: string } | null) {
+  async function handleAssignDriver(driver: AssignedDriver | null) {
     setDriverOpen(false);
     setAssigningDriver(true);
     try {
@@ -134,20 +149,26 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
   }
 
   function buildDomiciliarioMsg() {
-    const payLine = isTransfer
-      ? localIsPaid
-        ? '\n*Pago:* Transferencia ✅'
-        : `\n*Pago:* Transferencia\n*Cobrar:* $${grandTotal.toLocaleString('es-CO')}`
-      : `\n*Cobrar:* $${grandTotal.toLocaleString('es-CO')}`;
-    const address = [order.customerAddress, order.barrio].filter(Boolean).join(' — ');
-    const noteStr = noteInput ? `\n\n📝 *Nota:* ${noteInput}` : '';
-    return encodeURIComponent(
-      `🛵 *PEDIDO ${order.orderNumber}*\n\n` +
-      `*Nombre:* ${order.customerName}\n` +
-      `*Dirección:* ${address}\n` +
-      `*Celular:* ${order.customerPhone}` +
-      payLine + noteStr
-    );
+    return encodeURIComponent(buildDriverMessage(order, { isPaid: localIsPaid, grandTotal, note: noteInput }));
+  }
+
+  // — empresa de domicilios: pedir quién tomó el pedido antes de asignar (o para corregirlo) —
+  function selectDriver(d: Domiciliario) {
+    setDriverOpen(false);
+    setDriverSearch('');
+    if (d.isCompany) {
+      setCourierForm({ base: toAssignedDriver(d), value: '', error: '' });
+      return;
+    }
+    handleAssignDriver(toAssignedDriver(d));
+  }
+
+  async function handleSaveCourier() {
+    if (!courierForm) return;
+    const error = validateCourierName({ isCompany: true }, courierForm.value);
+    if (error) { setCourierForm({ ...courierForm, error }); return; }
+    await handleAssignDriver({ ...courierForm.base, courierName: courierForm.value.trim() });
+    setCourierForm(null);
   }
 
   return (
@@ -209,7 +230,7 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
       <div className="space-y-1 border-t border-[var(--t-border)] pt-2 mb-3 text-sm" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between text-[var(--t-text-2)]">
           <span>Total productos</span>
-          <span className="font-medium">{formatCurrency(order.total)}</span>
+          <span className="font-medium">{formatCurrency(productsTotal)}</span>
         </div>
 
         {/* Valor domicilio editable */}
@@ -217,7 +238,7 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-1.5 text-[var(--t-text-4)] text-xs">
               <Bike className="h-3.5 w-3.5" />
-              <span>Domicilio</span>
+              <span>Valor de domicilio</span>
             </div>
             {editingFee ? (
               <div className="flex items-center gap-1.5">
@@ -261,7 +282,11 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
         {/* Método de pago + toggle isPaid */}
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs text-[var(--t-text-3)]">
-            {order.paymentMethod === 'Transferencia' ? '🏧 Transferencia' : '💵 Efectivo'}
+            <span className="inline-flex items-center gap-1.5">
+              {order.paymentMethodType && <PaymentMethodIcon type={order.paymentMethodType} size={13} />}
+              {order.paymentMethod}
+              {order.paymentAccount && <span className="text-[var(--t-text-4)]">· {order.paymentAccount}</span>}
+            </span>
           </p>
           {isTransfer && (
             <button onClick={handleTogglePaid} disabled={togglingPaid} className="flex items-center gap-1.5 disabled:opacity-60">
@@ -284,6 +309,11 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
         {isMesa && order.tableName && (
           <p className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 w-fit">
             🪑 {order.tableName}
+          </p>
+        )}
+        {order.isScheduled && order.scheduledFor && (
+          <p className="flex items-center gap-1.5 text-xs font-semibold text-violet-700 bg-violet-50 border border-violet-200 rounded-lg px-2 py-1 w-fit">
+            🕒 Programado: {formatScheduledDate(new Date(order.scheduledFor))}
           </p>
         )}
         {order.location && (
@@ -341,14 +371,73 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
       {/* Domiciliario */}
       {isDomicilio && (
         <div className="mt-2 border-t border-[var(--t-border)] pt-2" onClick={(e) => e.stopPropagation()}>
-          {order.assignedDriver ? (
+          {courierForm ? (
+            /* Empresa elegida: quién de la empresa tomó el pedido */
+            <div className="rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2.5 space-y-2">
+              <div className="flex items-center gap-2">
+                <Building2 className="h-3.5 w-3.5 flex-shrink-0 text-indigo-600" />
+                <p className="min-w-0 flex-1 truncate text-xs font-bold text-indigo-900">{courierForm.base.name}</p>
+                <span className="flex-shrink-0 rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-bold text-indigo-600">Empresa</span>
+              </div>
+              <label className="block text-[10px] font-semibold uppercase tracking-wide text-indigo-500" htmlFor={`courier-${order.id}`}>
+                Domiciliario
+              </label>
+              <input
+                id={`courier-${order.id}`}
+                autoFocus
+                type="text"
+                value={courierForm.value}
+                onChange={(e) => setCourierForm({ ...courierForm, value: e.target.value, error: '' })}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSaveCourier(); if (e.key === 'Escape') setCourierForm(null); }}
+                placeholder="Nombre o código de quien tomó el pedido"
+                className={`w-full rounded-lg border bg-white px-2.5 py-2 text-xs text-[var(--t-text-1)] outline-none focus:border-indigo-400 ${courierForm.error ? 'border-red-300' : 'border-indigo-200'}`}
+              />
+              {courierForm.error && <p className="text-[11px] text-red-500">{courierForm.error}</p>}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCourierForm(null)}
+                  className="flex-1 rounded-lg border border-indigo-200 bg-white py-1.5 text-xs font-semibold text-indigo-500 hover:bg-indigo-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveCourier}
+                  disabled={assigningDriver}
+                  className="flex-[2] rounded-lg bg-indigo-600 py-1.5 text-xs font-bold text-white hover:bg-indigo-700 disabled:opacity-60"
+                >
+                  {assigningDriver ? 'Asignando...' : 'Asignar'}
+                </button>
+              </div>
+            </div>
+          ) : order.assignedDriver ? (
             <div className="flex items-center gap-2 rounded-xl bg-indigo-50 border border-indigo-100 px-3 py-2">
               <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100">
-                <Bike className="h-3.5 w-3.5 text-indigo-600" />
+                {order.assignedDriver.isCompany
+                  ? <Building2 className="h-3.5 w-3.5 text-indigo-600" />
+                  : <Bike className="h-3.5 w-3.5 text-indigo-600" />}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold text-indigo-900 leading-tight">{order.assignedDriver.name}</p>
-                <p className="text-[10px] text-indigo-500">{order.assignedDriver.code} · {order.assignedDriver.phone}</p>
+                <p className="flex items-center gap-1.5 text-xs font-bold text-indigo-900 leading-tight">
+                  <span className="truncate">{order.assignedDriver.name}</span>
+                  {order.assignedDriver.isCompany && (
+                    <span className="flex-shrink-0 rounded-full bg-indigo-100 px-1.5 py-px text-[9px] font-bold text-indigo-600">Empresa</span>
+                  )}
+                </p>
+                {order.assignedDriver.isCompany && (
+                  <p className="flex items-center gap-1 text-[11px] text-indigo-700">
+                    <span className="truncate">Domiciliario: <b>{order.assignedDriver.courierName ?? '—'}</b></span>
+                    <button
+                      onClick={() => setCourierForm({ base: order.assignedDriver!, value: order.assignedDriver!.courierName ?? '', error: '' })}
+                      className="flex-shrink-0 text-indigo-300 hover:text-indigo-500"
+                      title="Cambiar domiciliario de la empresa"
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </button>
+                  </p>
+                )}
+                <p className="text-[10px] text-indigo-500">
+                  {[order.assignedDriver.code, order.assignedDriver.phone].filter(Boolean).join(' · ')}
+                </p>
               </div>
               <button
                 onClick={() => handleAssignDriver(null)}
@@ -366,7 +455,12 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
                 onClick={() => {
                   if (driverOpen) { setDriverOpen(false); setDriverSearch(''); return; }
                   const rect = driverBtnRef.current?.getBoundingClientRect();
-                  if (rect) setDropdownPos({ top: rect.bottom + 6, left: rect.left, width: Math.max(rect.width, 224) });
+                  if (rect) {
+                    // Que el menú no se salga de la pantalla en mobile
+                    const width = Math.min(260, window.innerWidth - 16);
+                    const left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8));
+                    setDropdownPos({ top: rect.bottom + 6, left, width });
+                  }
                   setDriverOpen(true);
                 }}
                 disabled={assigningDriver || domiciliarios.length === 0}
@@ -378,7 +472,7 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
               {driverOpen && typeof document !== 'undefined' && createPortal(
                 <div
                   ref={driverRef}
-                  style={{ position: 'fixed', top: dropdownPos.top, left: dropdownPos.left, width: 232, zIndex: 9999 }}
+                  style={{ position: 'fixed', top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width, zIndex: 9999 }}
                   className="rounded-xl border border-[var(--t-border)] bg-[var(--t-surface)] shadow-2xl overflow-hidden"
                 >
                   {/* Buscador */}
@@ -389,7 +483,7 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
                       type="text"
                       value={driverSearch}
                       onChange={(e) => setDriverSearch(e.target.value)}
-                      placeholder="Buscar domiciliario..."
+                      placeholder="Buscar domiciliario o empresa..."
                       className="flex-1 text-xs outline-none placeholder-[var(--t-text-4)] text-[var(--t-text-1)] bg-transparent"
                     />
                     {driverSearch && (
@@ -398,26 +492,29 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
                       </button>
                     )}
                   </div>
-                  {/* Lista */}
-                  <div className="max-h-48 overflow-y-auto p-1.5">
-                    {domiciliarios
-                      .filter((d) => d.isActive && d.name.toLowerCase().includes(driverSearch.toLowerCase()))
-                      .map((d) => (
-                        <button
-                          key={d.id}
-                          onClick={() => { handleAssignDriver({ id: d.id, name: d.name, code: d.code, phone: d.phone }); setDriverSearch(''); }}
-                          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left hover:bg-indigo-50 transition-colors"
-                        >
-                          <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100">
-                            <Bike className="h-3 w-3 text-indigo-600" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold text-[var(--t-text-1)] truncate">{d.name}</p>
-                            <p className="text-[10px] text-[var(--t-text-4)]">{d.code} · {d.phone}</p>
-                          </div>
-                        </button>
-                      ))}
-                    {domiciliarios.filter((d) => d.isActive && d.name.toLowerCase().includes(driverSearch.toLowerCase())).length === 0 && (
+                  {/* Lista: individuales y empresas juntos */}
+                  <div className="max-h-56 overflow-y-auto p-1.5">
+                    {availableDrivers.map((d) => (
+                      <button
+                        key={d.id}
+                        onClick={() => selectDriver(d)}
+                        className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left hover:bg-indigo-50 transition-colors"
+                      >
+                        <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100">
+                          {d.isCompany ? <Building2 className="h-3 w-3 text-indigo-600" /> : <Bike className="h-3 w-3 text-indigo-600" />}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="flex items-center gap-1.5 text-xs font-bold text-[var(--t-text-1)]">
+                            <span className="truncate">{d.name}</span>
+                            {d.isCompany && (
+                              <span className="flex-shrink-0 rounded-full bg-indigo-100 px-1.5 py-px text-[9px] font-bold text-indigo-600">Empresa</span>
+                            )}
+                          </p>
+                          <p className="text-[10px] text-[var(--t-text-4)]">{[d.isCompany ? undefined : d.code, d.phone].filter(Boolean).join(' · ')}</p>
+                        </div>
+                      </button>
+                    ))}
+                    {availableDrivers.length === 0 && (
                       <p className="py-4 text-center text-xs text-[var(--t-text-4)]">Sin resultados</p>
                     )}
                   </div>
@@ -464,7 +561,9 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
           style={{ background: 'linear-gradient(135deg, #6366f1, #4f46e5)' }}
         >
           <Bike className="h-4 w-4" />
-          {order.assignedDriver ? `Enviar a ${order.assignedDriver.name}` : 'Enviar a domiciliario'}
+          <span className="truncate">
+            {order.assignedDriver ? `Enviar a ${order.assignedDriver.name}` : 'Enviar a domiciliario'}
+          </span>
         </a>
       )}
     </div>

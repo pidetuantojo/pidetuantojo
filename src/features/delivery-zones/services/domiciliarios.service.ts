@@ -5,6 +5,7 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  deleteField,
   orderBy,
   query,
 } from 'firebase/firestore';
@@ -31,7 +32,11 @@ export const domiciliariosService = {
   },
 
   async update(restaurantId: string, id: string, data: UpdateDomiciliarioData): Promise<void> {
-    await updateDoc(doc(ref(restaurantId), id), { ...data, updatedAt: new Date().toISOString() });
+    // `undefined` = borrar el campo (ej: el código al pasar a empresa); Firestore no acepta undefined
+    const payload = Object.fromEntries(
+      Object.entries(data).map(([k, v]) => [k, v === undefined ? deleteField() : v]),
+    );
+    await updateDoc(doc(ref(restaurantId), id), { ...payload, updatedAt: new Date().toISOString() });
   },
 
   async delete(restaurantId: string, id: string): Promise<void> {

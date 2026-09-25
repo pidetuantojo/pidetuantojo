@@ -34,6 +34,7 @@ export interface RestaurantFormData {
   deliveryMode: 'manual' | 'zones';
   // Horario de atención — índice 0=domingo, 1=lunes, ..., 6=sábado
   openingHours: DayHoursForm[];
+  allowScheduledWhenClosed: boolean;
   // Solo en creación
   adminName: string;
   adminEmail: string;

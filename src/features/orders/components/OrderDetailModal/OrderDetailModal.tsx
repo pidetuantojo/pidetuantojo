@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { X, Phone, MapPin, MessageSquare, Package } from 'lucide-react';
 
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { formatScheduledDate } from '@/features/menu/helpers/schedule.helpers';
 
 import { useUpdateOrderStatus } from '../../hooks/useUpdateOrderStatus';
+import { getOrderTotals } from '../../helpers/totals.helpers';
 import type { OrderDetailModalProps } from './OrderDetailModal.types';
 
 const sg = "var(--font-sans, sans-serif)";
@@ -63,7 +65,7 @@ export function OrderDetailModal({
     if (!order) return;
     const status = statuses.find((s) => s.id === (selectedStatusId || order.statusId));
     const msg = encodeURIComponent(
-      `Hola ${order.customerName}! Tu pedido ${order.orderNumber} está ahora en estado: *${status?.name}* 🍽️`
+      `Hola ${order.customerName}! Tu pedido ${order.orderNumber} está ahora en estado: *${status?.name}*`
     );
     window.open(`https://wa.me/${order.customerPhone.replace(/\D/g, '')}?text=${msg}`, '_blank');
   }
@@ -72,6 +74,7 @@ export function OrderDetailModal({
 
   const normalizedPayment = order.paymentMethod.charAt(0).toUpperCase() + order.paymentMethod.slice(1).toLowerCase();
   const paymentEmoji = PAYMENT_EMOJI[normalizedPayment] ?? '💰';
+  const totals = getOrderTotals(order);
   const deliveryEmoji = order.deliveryType ? (DELIVERY_EMOJI[order.deliveryType] ?? '📦') : null;
 
   return (
@@ -184,6 +187,15 @@ export function OrderDetailModal({
                 }}>
                   {paymentEmoji} {order.paymentMethod}
                 </span>
+                {order.isScheduled && order.scheduledFor && (
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                    background: '#f5f3ff', border: '1.5px solid #ddd6fe', borderRadius: 999,
+                    padding: '4px 10px', fontSize: 12, fontWeight: 600, color: '#6d28d9',
+                  }}>
+                    🕒 Programado: {formatScheduledDate(new Date(order.scheduledFor))}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -252,12 +264,23 @@ export function OrderDetailModal({
                   </div>
                 </div>
               ))}
-              <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '12px 16px', background: 'var(--t-surface-2)',
-              }}>
-                <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--t-text-1)' }}>Total</span>
-                <span style={{ fontWeight: 800, fontSize: 16, color: '#FF6A1A' }}>{formatCurrency(order.total)}</span>
+              <div style={{ padding: '12px 16px', background: 'var(--t-surface-2)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {totals.deliveryFee > 0 && (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--t-text-2)' }}>
+                      <span>Total productos</span>
+                      <span>{formatCurrency(totals.productsTotal)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--t-text-2)' }}>
+                      <span>Valor de domicilio</span>
+                      <span>{formatCurrency(totals.deliveryFee)}</span>
+                    </div>
+                  </>
+                )}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--t-text-1)' }}>Total</span>
+                  <span style={{ fontWeight: 800, fontSize: 16, color: '#FF6A1A' }}>{formatCurrency(totals.total)}</span>
+                </div>
               </div>
             </div>
           </div>

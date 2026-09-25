@@ -8,9 +8,11 @@ import type { Adicional, Category, DeliveryZone, Mesa, Product, Restaurant } fro
 
 import { CartDrawer } from '../CartDrawer';
 import { CategoryTabs } from '../CategoryTabs';
+import { ClosedScheduleBanner } from '../ClosedScheduleBanner';
 import { MenuHeader } from '../MenuHeader';
 import { MenuListLayout } from '../MenuListLayout';
 import { MenuProductCard } from '../MenuProductCard';
+import { OrderSummaryBar } from '../OrderSummaryBar';
 import { ProductModal } from '../ProductModal';
 
 function InstagramIcon() {
@@ -68,6 +70,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
   const initCart = useCartStore((s) => s.initCart);
   const setCartOpen = useCartStore((s) => s.setCartOpen);
   const items = useCartStore((s) => s.items);
+  const removeItem = useCartStore((s) => s.removeItem);
   const count = useCartStore(cartItemCount);
   const total = useCartStore(cartTotal);
 
@@ -103,6 +106,14 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
   const categoryMap = new Map(categories.map((c) => [c.id, c]));
   const isOpen = checkRestaurantOpen(restaurant.openingHours);
   const restaurantClosed = !isOpen;
+  // Cerrado + el restaurante acepta pedidos programados fuera de horario (check en "Horario de atención")
+  // + algún método programable activo → se puede pedir para cuando abra
+  const methods = restaurant.deliveryMethods;
+  const canScheduleWhileClosed =
+    (restaurant.allowScheduledWhenClosed ?? false) &&
+    ((methods?.recoger?.isActive ?? true) || (methods?.domicilio?.isActive ?? true));
+  const showScheduleBanner = restaurantClosed && canScheduleWhileClosed;
+  const orderingBlocked = restaurantClosed && !canScheduleWhileClosed;
 
   // ─── Closed modal (shared between mobile and desktop) ─────────────────────
   const closedModal = restaurantClosed && closedModalOpen && (
@@ -121,7 +132,11 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
         <div style={{ padding: '28px 20px 24px', textAlign: 'center', borderBottom: '1px solid rgba(0,0,0,.06)' }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🌙</div>
           <h2 style={{ fontFamily: sg, fontWeight: 800, fontSize: 22, color: sec, margin: '0 0 8px', letterSpacing: '-.02em' }}>¡Estamos cerrados!</h2>
-          <p style={{ fontFamily: sg, fontSize: 14, color: '#7a6f66', margin: 0, lineHeight: 1.55 }}>Podés explorar nuestro menú,<br />pero por ahora no recibimos pedidos.</p>
+          <p style={{ fontFamily: sg, fontSize: 14, color: '#7a6f66', margin: 0, lineHeight: 1.55 }}>
+            {canScheduleWhileClosed
+              ? <>Podés explorar nuestro menú<br />y programar tu pedido para cuando abramos.</>
+              : <>Podés explorar nuestro menú,<br />pero por ahora no recibimos pedidos.</>}
+          </p>
         </div>
         {restaurant.openingHours && Object.values(restaurant.openingHours).some(Boolean) && (() => {
           const DAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -275,6 +290,12 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
 
           <div id="menu" />
 
+          {showScheduleBanner && (
+            <div style={{ padding: '12px 16px 0' }}>
+              <ClosedScheduleBanner />
+            </div>
+          )}
+
           {closedModal}
 
           {layout === 'cards' && (
@@ -287,7 +308,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
                   <div style={{ textAlign: 'center', padding: '48px 0', color: '#9a8f86', fontFamily: sg }}>Sin productos en esta categoría.</div>
                 ) : (
                   visibleProducts.map((product) => (
-                    <MenuProductCard key={product.id} product={product} primaryColor={pri} secondaryColor={sec} accentColor={acc} categoryName={categoryMap.get(product.categoryId)?.name} restaurantClosed={restaurantClosed} onSelect={setSelectedProduct} />
+                    <MenuProductCard key={product.id} product={product} primaryColor={pri} secondaryColor={sec} accentColor={acc} categoryName={categoryMap.get(product.categoryId)?.name} restaurantClosed={orderingBlocked} onSelect={setSelectedProduct} />
                   ))
                 )}
               </div>
@@ -295,48 +316,28 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
           )}
 
           {layout === 'list' && (
-            <MenuListLayout categories={categories} products={products} primaryColor={pri} secondaryColor={sec} restaurantClosed={restaurantClosed} onSelect={setSelectedProduct} />
+            <MenuListLayout categories={categories} products={products} primaryColor={pri} secondaryColor={sec} restaurantClosed={orderingBlocked} onSelect={setSelectedProduct} />
           )}
-
-          {count > 0 && !restaurantClosed && (
-            <div style={{ position: 'fixed', bottom: 0, zIndex: 30, left: 'max(0px, calc(50vw - 240px))', right: 'max(0px, calc(50vw - 240px))', padding: '0 12px 12px' }}>
-              <div style={{ borderRadius: 16, boxShadow: '0 12px 30px -12px rgba(0,0,0,.45)', overflow: 'hidden' }}>
-                <div style={{ background: '#fff', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {items.map((item) => (
-                    <div key={item.cartId} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ fontSize: 16 }}>🛍️</span>
-                      <span style={{ flex: 1, fontFamily: sg, fontWeight: 600, fontSize: 13, color: '#1B1512' }}>{item.productName}</span>
-                      <span style={{ fontFamily: sm, fontSize: 12, color: '#9a8f86', marginRight: 6 }}>x{item.quantity}</span>
-                      <span style={{ fontFamily: sg, fontWeight: 700, fontSize: 13, color: pri }}>{formatCurrency(item.subtotal)}</span>
-                      <button onClick={(e) => { e.stopPropagation(); useCartStore.getState().removeItem(item.cartId); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'grid', placeItems: 'center' }}>
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <div onClick={() => setCartOpen(true)} style={{ background: sec, padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-                    <span style={{ minWidth: 26, height: 26, padding: '0 7px', borderRadius: 8, background: pri, color: '#fff', fontFamily: sg, fontWeight: 700, fontSize: 13, display: 'grid', placeItems: 'center' }}>{count}</span>
-                    <span style={{ fontFamily: sg, fontWeight: 600, fontSize: 15, color: '#fff' }}>Completar pedido</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: sg, fontWeight: 700, fontSize: 16, color: '#fff' }}>
-                    {formatCurrency(total)}
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {count > 0 && !restaurantClosed && <div style={{ height: 120 }} />}
 
           <div style={{ padding: '0 16px' }}>
             {locationBlock}
             {socialBlock}
           </div>
           {footerBlock}
+
+          {/* Al final: su espaciador libera el pie de página debajo de la barra fija */}
+          {count > 0 && !orderingBlocked && (
+            <OrderSummaryBar
+              variant="mobile"
+              items={items}
+              count={count}
+              total={total}
+              primaryColor={pri}
+              secondaryColor={sec}
+              onOpen={() => setCartOpen(true)}
+              onRemove={removeItem}
+            />
+          )}
 
           {isNavOpen && (
             <div style={{ position: 'fixed', inset: 0, zIndex: 50 }}>
@@ -372,7 +373,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
           )}
 
           <ProductModal product={selectedProduct} adicionales={adicionales} primaryColor={pri} onClose={() => setSelectedProduct(null)} />
-          <CartDrawer primaryColor={pri} secondaryColor={sec} receivedStatusId={receivedStatusId} deliveryZones={deliveryZones} deliveryMode={deliveryMode} deliveryMethods={restaurant.deliveryMethods} mesas={mesas} />
+          <CartDrawer primaryColor={pri} secondaryColor={sec} receivedStatusId={receivedStatusId} deliveryZones={deliveryZones} deliveryMode={deliveryMode} deliveryMethods={restaurant.deliveryMethods} openingHours={restaurant.openingHours} restaurantClosed={restaurantClosed} allowScheduledWhenClosed={canScheduleWhileClosed} paymentMethods={restaurant.paymentMethods} mesas={mesas} />
         </div>
       </div>
     );
@@ -539,6 +540,12 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
         {/* Main content */}
         <div style={{ flex: 1, minWidth: 0, padding: '32px 0 80px 24px' }}>
 
+          {showScheduleBanner && (
+            <div style={{ marginBottom: 24, maxWidth: 720 }}>
+              <ClosedScheduleBanner />
+            </div>
+          )}
+
           {layout === 'cards' && (
             visibleProducts.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '80px 0', color: '#9a8f86', fontFamily: sg, fontSize: 15 }}>
@@ -554,7 +561,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
                     secondaryColor={sec}
                     accentColor={acc}
                     categoryName={categoryMap.get(product.categoryId)?.name}
-                    restaurantClosed={restaurantClosed}
+                    restaurantClosed={orderingBlocked}
                     onSelect={setSelectedProduct}
                   />
                 ))}
@@ -568,7 +575,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
               products={products}
               primaryColor={pri}
               secondaryColor={sec}
-              restaurantClosed={restaurantClosed}
+              restaurantClosed={orderingBlocked}
               onSelect={setSelectedProduct}
             />
           )}
@@ -582,8 +589,21 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
       </div>
       {footerBlock}
 
+      {count > 0 && !orderingBlocked && (
+        <OrderSummaryBar
+          variant="desktop"
+          items={items}
+          count={count}
+          total={total}
+          primaryColor={pri}
+          secondaryColor={sec}
+          onOpen={() => setCartOpen(true)}
+          onRemove={removeItem}
+        />
+      )}
+
       <ProductModal product={selectedProduct} adicionales={adicionales} primaryColor={pri} onClose={() => setSelectedProduct(null)} />
-      <CartDrawer primaryColor={pri} secondaryColor={sec} receivedStatusId={receivedStatusId} deliveryZones={deliveryZones} deliveryMode={deliveryMode} deliveryMethods={restaurant.deliveryMethods} mesas={mesas} />
+      <CartDrawer primaryColor={pri} secondaryColor={sec} receivedStatusId={receivedStatusId} deliveryZones={deliveryZones} deliveryMode={deliveryMode} deliveryMethods={restaurant.deliveryMethods} openingHours={restaurant.openingHours} restaurantClosed={restaurantClosed} allowScheduledWhenClosed={canScheduleWhileClosed} paymentMethods={restaurant.paymentMethods} mesas={mesas} />
     </div>
   );
 }

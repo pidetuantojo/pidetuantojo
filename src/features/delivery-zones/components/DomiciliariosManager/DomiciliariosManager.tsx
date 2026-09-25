@@ -16,12 +16,13 @@ const sg = "var(--font-sans, sans-serif)";
 const sm = "var(--font-mono, monospace)";
 
 interface FormState {
+  isCompany: boolean;
   name: string;
   code: string;
   phone: string;
 }
 
-const emptyForm: FormState = { name: '', code: '', phone: '' };
+const emptyForm: FormState = { isCompany: false, name: '', code: '', phone: '' };
 
 export function DomiciliariosManager() {
   const { user } = useAuth();
@@ -48,7 +49,7 @@ export function DomiciliariosManager() {
 
   function openEdit(d: Domiciliario) {
     setEditing(d);
-    setForm({ name: d.name, code: d.code, phone: d.phone });
+    setForm({ isCompany: d.isCompany ?? false, name: d.name, code: d.code ?? '', phone: d.phone });
     setFormError('');
     setShowForm(true);
   }
@@ -61,18 +62,27 @@ export function DomiciliariosManager() {
   }
 
   async function handleSave() {
+    const { isCompany } = form;
     const name = form.name.trim();
     const code = form.code.trim();
     const phone = form.phone.trim();
-    if (!name) { setFormError('El nombre es requerido'); return; }
-    if (!code) { setFormError('El código es requerido'); return; }
+    if (!name) { setFormError(isCompany ? 'El nombre de la empresa es requerido' : 'El nombre es requerido'); return; }
+    // El código solo aplica a domiciliarios individuales
+    if (!isCompany && !code) { setFormError('El código es requerido'); return; }
     if (!phone) { setFormError('El número es requerido'); return; }
 
     setFormError('');
     if (editing) {
-      await update.mutateAsync({ id: editing.id, data: { name, code, phone } });
+      // Al pasar a empresa, `code: undefined` borra el código guardado
+      await update.mutateAsync({
+        id: editing.id,
+        data: { name, phone, isCompany, code: isCompany ? undefined : code },
+      });
     } else {
-      await create.mutateAsync({ restaurantId, name, code, phone, isActive: true });
+      await create.mutateAsync({
+        restaurantId, name, phone, isActive: true,
+        ...(isCompany ? { isCompany: true } : { code }),
+      });
     }
     cancelForm();
   }
@@ -128,7 +138,7 @@ export function DomiciliariosManager() {
             Domiciliarios
           </h2>
           <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--t-text-3)' }}>
-            Personal de entrega disponible para asignar a pedidos
+            Personal de entrega y empresas de domicilios para asignar a pedidos
           </p>
         </div>
         <button
@@ -153,7 +163,7 @@ export function DomiciliariosManager() {
           onClick={(e) => { if (e.target === e.currentTarget) cancelForm(); }}
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 16 }}
         >
-          <div style={{ background: 'var(--t-surface)', borderRadius: 20, padding: '24px 28px', width: 440, maxWidth: '100%', display: 'flex', flexDirection: 'column', gap: 20, boxShadow: '0 24px 60px rgba(0,0,0,0.2)' }}>
+          <div style={{ background: 'var(--t-surface)', borderRadius: 20, padding: '24px 28px', width: 440, maxWidth: '100%', maxHeight: '90vh', overflowY: 'auto', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 20, boxShadow: '0 24px 60px rgba(0,0,0,0.2)' }}>
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--t-text-1)' }}>
@@ -164,10 +174,29 @@ export function DomiciliariosManager() {
 
             {/* Fields */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', background: form.isCompany ? '#FFF3EA' : 'var(--t-surface-2)', border: `1.5px solid ${form.isCompany ? '#FF6A1A44' : 'var(--t-border-2)'}`, borderRadius: 12, padding: '10px 12px' }}>
+                <input
+                  type="checkbox"
+                  checked={form.isCompany}
+                  onChange={(e) => { setForm((p) => ({ ...p, isCompany: e.target.checked })); setFormError(''); }}
+                  style={{ width: 16, height: 16, marginTop: 2, accentColor: '#FF6A1A', cursor: 'pointer', flexShrink: 0 }}
+                />
+                <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--t-text-1)' }}>¿Es empresa de domicilios?</span>
+                  <span style={{ fontSize: 12, color: 'var(--t-text-3)', lineHeight: 1.4 }}>
+                    Al asignarla a un pedido vas a indicar qué domiciliario de la empresa lo tomó.
+                  </span>
+                </span>
+              </label>
+
               {[
-                { key: 'name', label: 'Nombre completo', placeholder: 'Ej: Juan Pérez' },
-                { key: 'code', label: 'Código', placeholder: 'Ej: D-01' },
-                { key: 'phone', label: 'Número de celular', placeholder: 'Ej: 3001234567' },
+                form.isCompany
+                  ? { key: 'name', label: 'Nombre de la empresa', placeholder: 'Ej: Domicilios Express' }
+                  : { key: 'name', label: 'Nombre completo', placeholder: 'Ej: Juan Pérez' },
+                ...(form.isCompany ? [] : [{ key: 'code', label: 'Código', placeholder: 'Ej: D-01' }]),
+                form.isCompany
+                  ? { key: 'phone', label: 'Celular de la empresa', placeholder: 'Ej: 3001234567' }
+                  : { key: 'phone', label: 'Número de celular', placeholder: 'Ej: 3001234567' },
               ].map(({ key, label, placeholder }) => (
                 <div key={key}>
                   <label style={{ display: 'block', fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', textTransform: 'uppercase', marginBottom: 6 }}>
@@ -175,7 +204,7 @@ export function DomiciliariosManager() {
                   </label>
                   <input
                     type={key === 'phone' ? 'tel' : 'text'}
-                    value={form[key as keyof FormState]}
+                    value={form[key as 'name' | 'code' | 'phone']}
                     onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
                     placeholder={placeholder}
                     style={{ width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 10, padding: '10px 12px', fontSize: 14, fontFamily: sg, color: 'var(--t-text-1)', outline: 'none', boxSizing: 'border-box' }}
@@ -260,16 +289,26 @@ function DriverRow({ driver, onEdit, onToggleActive, onDelete, isToggling, isDel
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--t-surface)', border: '1px solid var(--t-border-2)', borderRadius: 14, padding: '12px 16px', boxShadow: '0 1px 4px rgba(0,0,0,.04)' }}>
       {/* Avatar */}
       <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#FFF3EA', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#FF6A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-        </svg>
+        {driver.isCompany ? (
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#FF6A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2M10 6h4M10 10h4M10 14h4M10 18h4"/>
+          </svg>
+        ) : (
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#FF6A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+        )}
       </div>
 
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ fontFamily: sg, fontWeight: 700, fontSize: 14, color: 'var(--t-text-1)' }}>{driver.name}</span>
-          <span style={{ fontFamily: sm, fontSize: 10, fontWeight: 700, color: '#FF6A1A', background: '#FFF3EA', padding: '2px 8px', borderRadius: 999 }}>{driver.code}</span>
+          {driver.isCompany ? (
+            <span style={{ fontFamily: sm, fontSize: 10, fontWeight: 700, color: '#4f46e5', background: '#eef2ff', padding: '2px 8px', borderRadius: 999 }}>Empresa</span>
+          ) : driver.code ? (
+            <span style={{ fontFamily: sm, fontSize: 10, fontWeight: 700, color: '#FF6A1A', background: '#FFF3EA', padding: '2px 8px', borderRadius: 999 }}>{driver.code}</span>
+          ) : null}
         </div>
         <span style={{ fontFamily: sg, fontSize: 12, color: 'var(--t-text-3)' }}>{driver.phone}</span>
       </div>

@@ -1,14 +1,29 @@
 ﻿'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Minus, Plus, Trash2, Truck, Store, CreditCard, Banknote, User, UtensilsCrossed } from 'lucide-react';
+import { X, Minus, Plus, Trash2, Truck, Store, User, UtensilsCrossed, CalendarClock, CheckCircle2 } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
 import { cartItemCount, cartTotal, useCartStore } from '@/store/cart.store';
 import { buildWhatsAppMessage, openWhatsApp } from '../../helpers/whatsapp.helpers';
 import type { DeliveryType, PaymentMethod } from '../../helpers/whatsapp.helpers';
+import { checkCanOrder } from '../../helpers/canOrder.helpers';
+import {
+  SCHEDULE_MAX_DAYS,
+  SCHEDULE_MIN_MINUTES,
+  fmtHour,
+  formatScheduledDate,
+  getDaySchedule,
+  getScheduleBounds,
+  hasOpeningHours,
+  parseScheduleInput,
+  toDateInputValue,
+  validateScheduledDate,
+} from '../../helpers/schedule.helpers';
 import { ordersService } from '@/features/orders/services/orders.service';
-import type { DeliveryMethods, DeliveryZone, Mesa } from '@/types';
+import { PaymentMethodIcon } from '@/features/payment-methods/components/PaymentMethodIcon';
+import { getActivePaymentMethods, getPaymentLabel, toOrderPayment } from '@/features/payment-methods/helpers/payment-methods.helpers';
+import type { DeliveryMethods, DeliveryZone, Mesa, OpeningHours, PaymentMethodConfig } from '@/types';
 
 const sg = "var(--font-sans, sans-serif)";
 
@@ -166,10 +181,16 @@ interface CartDrawerProps {
   deliveryZones: DeliveryZone[];
   deliveryMode: 'manual' | 'zones';
   deliveryMethods?: DeliveryMethods;
+  openingHours?: OpeningHours;
+  // Local cerrado: solo se aceptan pedidos programados
+  restaurantClosed?: boolean;
+  // Check "Aceptar pedidos programados cuando estés cerrado" del restaurante
+  allowScheduledWhenClosed?: boolean;
+  paymentMethods?: PaymentMethodConfig[];
   mesas?: Mesa[];
 }
 
-export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, deliveryZones, deliveryMode, deliveryMethods, mesas = [] }: CartDrawerProps) {
+export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, deliveryZones, deliveryMode, deliveryMethods, openingHours, restaurantClosed = false, allowScheduledWhenClosed = false, paymentMethods, mesas = [] }: CartDrawerProps) {
   const items = useCartStore((s) => s.items);
   const isCartOpen = useCartStore((s) => s.isCartOpen);
   const setCartOpen = useCartStore((s) => s.setCartOpen);
@@ -186,22 +207,51 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
   const [notaOpen, setNotaOpen] = useState<Record<string, boolean>>({});
   const [deliveryType, setDeliveryType] = useState<DeliveryType>('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('');
+  // Alerta que aparece al elegir un método con cuenta (el número se copia al portapapeles)
+  const [copyAlert, setCopyAlert] = useState<{ label: string; account: string; copied: boolean } | null>(null);
+
+  useEffect(() => {
+    if (!copyAlert) return;
+    const t = setTimeout(() => setCopyAlert(null), 5000);
+    return () => clearTimeout(t);
+  }, [copyAlert]);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [barrio, setBarrio] = useState('');
   const [selectedZoneId, setSelectedZoneId] = useState('');
   const [selectedMesaId, setSelectedMesaId] = useState('');
+  const [isScheduled, setIsScheduled] = useState(false);
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleTime, setScheduleTime] = useState('');
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locLoading, setLocLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // Determine which delivery methods are active (default recoger+domicilio on if not configured)
-  const recogerActive = deliveryMethods?.recoger?.isActive ?? true;
-  const domicilioActive = deliveryMethods?.domicilio?.isActive ?? true;
-  const mesaActive = deliveryMethods?.mesa?.isActive ?? false;
+  // Abierto: cada método decide si permite programar (dashboard → Entrega).
+  // Cerrado: solo si el restaurante acepta pedidos programados fuera de horario (dashboard → Horario de atención);
+  // en ese caso Recoger y Domicilio se programan obligatoriamente y "Comer en el Local" no aplica.
+  const closedOrdersAllowed = restaurantClosed && allowScheduledWhenClosed;
+  const recogerScheduled = closedOrdersAllowed || (deliveryMethods?.recoger?.allowScheduled ?? false);
+  const domicilioScheduled = closedOrdersAllowed || (deliveryMethods?.domicilio?.allowScheduled ?? false);
+  const recogerActive = (deliveryMethods?.recoger?.isActive ?? true) && (!restaurantClosed || closedOrdersAllowed);
+  const domicilioActive = (deliveryMethods?.domicilio?.isActive ?? true) && (!restaurantClosed || closedOrdersAllowed);
+  const mesaActive = (deliveryMethods?.mesa?.isActive ?? false) && !restaurantClosed;
   const selectedMesa = mesas.find((m) => m.id === selectedMesaId) ?? null;
+
+  const activePaymentMethods = getActivePaymentMethods(paymentMethods);
+  const selectedPayment = activePaymentMethods.find((m) => m.id === paymentMethod) ?? null;
+
+  // Programar pedido: solo Domicilio / Recoger y si el restaurante lo habilitó para ese método
+  const scheduleAllowed =
+    (deliveryType === 'recoger' && recogerScheduled) ||
+    (deliveryType === 'domicilio' && domicilioScheduled);
+  const scheduleForced = scheduleAllowed && restaurantClosed;
+  const wantsSchedule = scheduleAllowed && (isScheduled || restaurantClosed);
+  const scheduledDate = wantsSchedule ? parseScheduleInput(scheduleDate, scheduleTime) : null;
+  const scheduleError = wantsSchedule ? validateScheduledDate(scheduledDate, openingHours) : null;
 
   const isZonesMode = deliveryMode === 'zones';
   const selectedZone = isZonesMode
@@ -212,19 +262,41 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
 
   if (!isCartOpen) return null;
 
-  const canOrder =
-    items.length > 0 &&
-    name.trim() !== '' &&
-    phone.trim() !== '' &&
-    deliveryType !== '' &&
-    paymentMethod !== '' &&
-    (
-      deliveryType === 'recoger' ||
-      deliveryType === 'mesa' ||
-      (deliveryType === 'domicilio' &&
-        address.trim() !== '' &&
-        (isZonesMode ? selectedZoneId !== '' : barrio.trim() !== ''))
-    );
+  const canOrder = checkCanOrder({
+    items,
+    name,
+    phone,
+    deliveryType,
+    paymentMethod: selectedPayment ? paymentMethod : '',
+    address,
+    isZonesMode,
+    selectedZoneId,
+    barrio,
+    selectedMesaId,
+    mesaRequired: mesas.length > 0,
+    scheduleValid: scheduleError === null,
+  });
+
+  function selectDeliveryType(val: DeliveryType) {
+    setDeliveryType(val);
+    if (val !== 'mesa') setSelectedMesaId('');
+    if (restaurantClosed && !scheduleDate) setScheduleDate(toDateInputValue(new Date()));
+  }
+
+  function selectPayment(method: PaymentMethodConfig) {
+    setPaymentMethod(method.id);
+    const account = method.account;
+    if (!account) { setCopyAlert(null); return; }
+    const label = getPaymentLabel(method);
+    const show = (copied: boolean) => setCopyAlert({ label, account, copied });
+    if (!navigator.clipboard?.writeText) { show(false); return; }
+    navigator.clipboard.writeText(account).then(() => show(true), () => show(false));
+  }
+
+  function toggleScheduled(checked: boolean) {
+    setIsScheduled(checked);
+    if (checked && !scheduleDate) setScheduleDate(toDateInputValue(new Date()));
+  }
 
   async function handleConfirm() {
     setSubmitted(true);
@@ -240,9 +312,10 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
         ? total + selectedZone.price
         : total;
 
-    // Guardar pedido en Firestore
+    // Guardar pedido en Firestore (si falla, el mensaje se envía igual, sin número de orden)
+    let orderNumber: string | undefined;
     try {
-      await ordersService.create({
+      const created = await ordersService.create({
         restaurantId,
         customerName: name,
         customerPhone: phone,
@@ -251,8 +324,10 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
         ...(deliveryType === 'domicilio' && effectiveBarrio ? { barrio: effectiveBarrio } : {}),
         ...(effectiveDeliveryFee !== undefined ? { deliveryFee: effectiveDeliveryFee } : {}),
         ...(deliveryType === 'mesa' && selectedMesa ? { tableId: selectedMesa.id, tableName: selectedMesa.name } : {}),
+        isScheduled: scheduledDate !== null,
+        ...(scheduledDate ? { scheduledFor: scheduledDate.toISOString() } : {}),
         ...(location ? { location } : {}),
-        paymentMethod: paymentMethod === 'transferencia' ? 'Transferencia' : 'Efectivo',
+        ...(selectedPayment ? toOrderPayment(selectedPayment) : { paymentMethod: '' }),
         isPaid: false,
         items: items.map((item) => ({
           productId: item.productId,
@@ -268,18 +343,25 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
         total: effectiveTotal,
         statusId: receivedStatusId,
       });
+      orderNumber = created?.orderNumber;
     } catch (err) {
       console.error('[CartDrawer] Error al guardar pedido en Firestore:', err);
     }
 
-    const message = buildWhatsAppMessage(restaurantName, items, effectiveTotal, {
+    const message = buildWhatsAppMessage(restaurantName, items, {
+      orderNumber,
+      subtotal: total,
+      deliveryFee: effectiveDeliveryFee,
+      deliveryZoneName: isZonesMode && deliveryType === 'domicilio' ? selectedZone?.name : undefined,
       customerName: name,
       customerPhone: phone,
       deliveryType,
       address,
       barrio: effectiveBarrio,
       tableName: selectedMesa?.name,
-      paymentMethod,
+      scheduledLabel: scheduledDate ? formatScheduledDate(scheduledDate) : undefined,
+      paymentLabel: selectedPayment ? getPaymentLabel(selectedPayment) : '',
+      paymentAccount: selectedPayment?.account,
       location: location ?? undefined,
     });
     openWhatsApp(restaurantPhone, message);
@@ -290,8 +372,12 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
     setBarrio('');
     setSelectedZoneId('');
     setSelectedMesaId('');
+    setIsScheduled(false);
+    setScheduleDate('');
+    setScheduleTime('');
     setDeliveryType('');
     setPaymentMethod('');
+    setCopyAlert(null);
     setLocation(null);
     setSubmitted(false);
     setIsLoading(false);
@@ -337,6 +423,41 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
           fontFamily: sg,
         }}
       >
+        {/* Alerta: número de cuenta copiado */}
+        {copyAlert && (
+          <div
+            role="alert"
+            style={{
+              position: 'absolute', left: 12, right: 12, bottom: 16, zIndex: 5,
+              display: 'flex', alignItems: 'flex-start', gap: 10,
+              background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#065f46',
+              borderRadius: 14, padding: '12px 14px',
+              boxShadow: '0 12px 30px -10px rgba(0,0,0,.35)',
+              fontSize: 13, lineHeight: 1.5,
+            }}
+          >
+            <CheckCircle2 size={18} style={{ flexShrink: 0, marginTop: 1 }} aria-hidden="true" />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 800 }}>
+                {copyAlert.copied ? 'Número de cuenta copiado' : 'Datos para transferir'}
+              </div>
+              <div>
+                Transferí a <strong>{copyAlert.label}</strong>:{' '}
+                <strong style={{ overflowWrap: 'anywhere' }}>{copyAlert.account}</strong>
+              </div>
+              <div style={{ color: '#047857' }}>Enviá el comprobante por WhatsApp al confirmar.</div>
+            </div>
+            <button
+              type="button"
+              aria-label="Cerrar"
+              onClick={() => setCopyAlert(null)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: '#065f46', display: 'grid', placeItems: 'center', flexShrink: 0 }}
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
+
         {/* Header */}
         <div
           style={{
@@ -606,31 +727,42 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
               {/* Entrega */}
               <div>
                 <p style={{ fontWeight: 800, fontSize: 14, color: '#1B1512', margin: '0 0 10px' }}>
-                  ¿Cómo recibís tu pedido?
+                  Seleccioná la forma de entrega
                 </p>
                 {(() => {
                   const activeOptions: { val: DeliveryType; label: string; Icon: React.ElementType }[] = [];
+                  if (recogerActive) activeOptions.push({ val: 'recoger', label: 'Recoger en Local', Icon: Store });
                   if (domicilioActive) activeOptions.push({ val: 'domicilio', label: 'Domicilio', Icon: Truck });
-                  if (recogerActive) activeOptions.push({ val: 'recoger', label: 'Recoger', Icon: Store });
-                  if (mesaActive) activeOptions.push({ val: 'mesa', label: 'En el local', Icon: UtensilsCrossed });
-                  const cols = activeOptions.length === 3 ? '1fr 1fr 1fr' : '1fr 1fr';
+                  if (mesaActive) activeOptions.push({ val: 'mesa', label: 'Comer en el Local', Icon: UtensilsCrossed });
+                  if (activeOptions.length === 0 && restaurantClosed) {
+                    return (
+                      <p style={{ margin: 0, fontSize: 12, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 12px', lineHeight: 1.5 }}>
+                        🌙 Estamos cerrados en este momento y no recibimos pedidos. Volvé en nuestro horario de atención.
+                      </p>
+                    );
+                  }
                   return (
-                    <div style={{ display: 'grid', gridTemplateColumns: cols, gap: 8 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${activeOptions.length}, minmax(0, 1fr))`, gap: 8 }}>
                       {activeOptions.map(({ val, label, Icon }) => (
                         <button
                           key={val}
-                          onClick={() => setDeliveryType(val)}
+                          type="button"
+                          aria-pressed={deliveryType === val}
+                          onClick={() => selectDeliveryType(val)}
                           style={{
                             display: 'flex',
+                            flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: 8,
-                            padding: '12px 8px',
+                            gap: 6,
+                            padding: '14px 6px',
                             borderRadius: 14,
                             cursor: 'pointer',
                             fontFamily: sg,
                             fontWeight: 700,
-                            fontSize: 13,
+                            fontSize: 12,
+                            lineHeight: 1.2,
+                            textAlign: 'center',
                             border: '2px solid',
                             borderColor:
                               deliveryType === val
@@ -642,7 +774,7 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                             color: deliveryType === val ? secondaryColor : '#6b7280',
                           }}
                         >
-                          <Icon size={16} />
+                          <Icon size={22} />
                           {label}
                         </button>
                       ))}
@@ -651,12 +783,12 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                 })()}
                 {submitted && deliveryType === '' && (
                   <p style={{ fontSize: 11, color: '#ef4444', marginTop: 6 }}>
-                    Elegí cómo recibís tu pedido
+                    Elegí la forma de entrega
                   </p>
                 )}
 
                 {/* Mesa selector */}
-                {deliveryType === 'mesa' && mesas.length > 0 && (
+                {deliveryType === 'mesa' && (
                   <div style={{
                     marginTop: 10,
                     background: '#f9fafb',
@@ -679,8 +811,14 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M3 6h18M3 12h18M8 18h8M12 6v12" />
                       </svg>
-                      Elegí tu mesa
+                      {mesas.length > 0 ? 'Elegí tu mesa' : 'Tu mesa'}
                     </p>
+                    {mesas.length === 0 ? (
+                      <p style={{ margin: 0, fontSize: 12, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '8px 12px', lineHeight: 1.5 }}>
+                        🙋 Este local no tiene mesas configuradas. Preguntale al mesero tu número de mesa o dejalo vacío y continuá con tu pedido.
+                      </p>
+                    ) : (
+                    <>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                       {mesas.map((mesa) => {
                         const sel = selectedMesaId === mesa.id;
@@ -708,6 +846,16 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                         );
                       })}
                     </div>
+                    <p style={{ margin: '10px 0 0', fontSize: 12, color: '#6b7280', lineHeight: 1.5 }}>
+                      🙋 ¿No sabés en qué mesa estás? Preguntale al mesero.
+                    </p>
+                    {submitted && selectedMesaId === '' && (
+                      <p style={{ fontSize: 11, color: '#ef4444', margin: '6px 0 0' }}>
+                        Elegí la mesa en la que estás
+                      </p>
+                    )}
+                    </>
+                    )}
                   </div>
                 )}
 
@@ -854,6 +1002,115 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                     </button>
                   </div>
                 )}
+
+                {/* Programar pedido */}
+                {scheduleAllowed && (() => {
+                  const now = new Date();
+                  const { max } = getScheduleBounds(now);
+                  const todayHours = getDaySchedule(openingHours, now);
+                  const pickedDay = parseScheduleInput(scheduleDate, '00:00');
+                  const pickedHours = pickedDay ? getDaySchedule(openingHours, pickedDay) : null;
+                  const pickedIsToday = scheduleDate === toDateInputValue(now);
+                  const showSchedErr = scheduleError !== null && (submitted || (scheduleDate !== '' && scheduleTime !== ''));
+                  const fieldStyle = (hasErr: boolean): React.CSSProperties => ({
+                    width: '100%',
+                    border: `1.5px solid ${hasErr ? '#fca5a5' : '#e5e7eb'}`,
+                    borderRadius: 12,
+                    padding: '10px 12px',
+                    fontSize: 13,
+                    fontFamily: sg,
+                    color: '#1B1512',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    background: hasErr ? '#fef2f2' : '#fff',
+                    minWidth: 0,
+                  });
+                  const labelStyle: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, color: '#6b7280', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '.05em' };
+
+                  return (
+                    <div style={{ marginTop: 12, background: '#f9fafb', borderRadius: 14, padding: '12px 14px', border: '1.5px solid #e5e7eb' }}>
+                      <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 800, color: '#1B1512', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <CalendarClock size={15} color={secondaryColor} />
+                        ¿Querés programar tu pedido?
+                      </p>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: scheduleForced ? 'default' : 'pointer', fontSize: 13, fontWeight: 600, color: '#374151' }}>
+                        <input
+                          type="checkbox"
+                          checked={isScheduled || scheduleForced}
+                          disabled={scheduleForced}
+                          onChange={(e) => toggleScheduled(e.target.checked)}
+                          style={{ width: 16, height: 16, accentColor: secondaryColor, cursor: scheduleForced ? 'default' : 'pointer' }}
+                        />
+                        Programar para más tarde
+                      </label>
+                      {scheduleForced && (
+                        <p style={{ margin: '6px 0 0', fontSize: 12, color: '#92400e', lineHeight: 1.5 }}>
+                          Estamos cerrados en este momento: elegí cuándo querés tu pedido.
+                        </p>
+                      )}
+
+                      {(isScheduled || scheduleForced) && (
+                        <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          <p style={{ margin: 0, fontSize: 12, color: '#6b7280', lineHeight: 1.5 }}>
+                            Tu pedido se preparará para la fecha y hora que elijas. Mínimo {SCHEDULE_MIN_MINUTES} minutos en el futuro y máximo {SCHEDULE_MAX_DAYS} días adelante.
+                          </p>
+
+                          {hasOpeningHours(openingHours) && (
+                            <div style={{ fontSize: 12, color: '#374151', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '8px 10px', lineHeight: 1.6 }}>
+                              <div>
+                                <strong>Horario de hoy:</strong>{' '}
+                                {todayHours ? `${fmtHour(todayHours.open)} – ${fmtHour(todayHours.close)}` : 'Cerrado'}
+                              </div>
+                              {pickedDay && !pickedIsToday && (
+                                <div>
+                                  <strong>Horario del día elegido:</strong>{' '}
+                                  {pickedHours ? `${fmtHour(pickedHours.open)} – ${fmtHour(pickedHours.close)}` : 'Cerrado'}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 8 }}>
+                            <div>
+                              <label style={labelStyle}>Fecha</label>
+                              <input
+                                type="date"
+                                value={scheduleDate}
+                                min={toDateInputValue(now)}
+                                max={toDateInputValue(max)}
+                                onChange={(e) => setScheduleDate(e.target.value)}
+                                style={fieldStyle(submitted && scheduleDate === '')}
+                              />
+                            </div>
+                            <div>
+                              <label style={labelStyle}>Hora</label>
+                              <input
+                                type="time"
+                                value={scheduleTime}
+                                step={300}
+                                onChange={(e) => setScheduleTime(e.target.value)}
+                                style={fieldStyle(submitted && scheduleTime === '')}
+                              />
+                            </div>
+                          </div>
+
+                          {showSchedErr && (
+                            <p style={{ margin: 0, fontSize: 11, color: '#ef4444' }}>{scheduleError}</p>
+                          )}
+
+                          {scheduledDate && !scheduleError && (
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, color: '#065f46', background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 10, padding: '8px 12px', lineHeight: 1.5 }}>
+                              <CheckCircle2 size={16} style={{ flexShrink: 0, marginTop: 1 }} />
+                              <span>
+                                Pedido programado para el <strong>{formatScheduledDate(scheduledDate)}</strong>
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Tus datos */}
@@ -914,45 +1171,53 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
               {/* Pago */}
               <div>
                 <p style={{ fontWeight: 800, fontSize: 14, color: '#1B1512', margin: '0 0 10px' }}>
-                  ¿Cómo vas a pagar?
+                  Método de Pago
                 </p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  {(
-                    [
-                      ['transferencia', 'Transferencia', CreditCard],
-                      ['efectivo', 'Efectivo', Banknote],
-                    ] as const
-                  ).map(([val, label, Icon]) => (
-                    <button
-                      key={val}
-                      onClick={() => setPaymentMethod(val)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 8,
-                        padding: '12px 8px',
-                        borderRadius: 14,
-                        cursor: 'pointer',
-                        fontFamily: sg,
-                        fontWeight: 700,
-                        fontSize: 14,
-                        border: '2px solid',
-                        borderColor:
-                          paymentMethod === val
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 8 }}>
+                  {activePaymentMethods.map((method) => {
+                    const sel = paymentMethod === method.id;
+                    return (
+                      <button
+                        key={method.id}
+                        type="button"
+                        aria-pressed={sel}
+                        onClick={() => selectPayment(method)}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 4,
+                          padding: '12px 6px',
+                          borderRadius: 14,
+                          cursor: 'pointer',
+                          fontFamily: sg,
+                          textAlign: 'center',
+                          minWidth: 0,
+                          border: '2px solid',
+                          borderColor: sel
                             ? secondaryColor
                             : submitted && paymentMethod === ''
                               ? '#fca5a5'
                               : '#e5e7eb',
-                        background: paymentMethod === val ? `${secondaryColor}12` : '#fff',
-                        color: paymentMethod === val ? secondaryColor : '#6b7280',
-                      }}
-                    >
-                      <Icon size={16} />
-                      {label}
-                    </button>
-                  ))}
+                          background: sel ? `${secondaryColor}12` : '#fff',
+                          color: sel ? secondaryColor : '#6b7280',
+                        }}
+                      >
+                        <PaymentMethodIcon type={method.type} size={22} />
+                        <span style={{ fontWeight: 800, fontSize: 13, color: sel ? secondaryColor : '#1B1512', lineHeight: 1.2 }}>
+                          {getPaymentLabel(method)}
+                        </span>
+                        {method.account && (
+                          <span style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.2, maxWidth: '100%', overflowWrap: 'anywhere' }}>
+                            {method.account}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
+
                 {submitted && paymentMethod === '' && (
                   <p style={{ fontSize: 11, color: '#ef4444', marginTop: 6 }}>
                     Elegí un método de pago
@@ -983,7 +1248,7 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                 ) : (
                   <>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontWeight: 800, fontSize: 15, color: '#1B1512' }}>Subtotal</span>
+                      <span style={{ fontWeight: 800, fontSize: 15, color: '#1B1512' }}>{deliveryType === 'domicilio' ? 'Subtotal' : 'Total'}</span>
                       <span style={{ fontWeight: 800, fontSize: 22, color: secondaryColor }}>
                         {formatCurrency(total)}
                       </span>

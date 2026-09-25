@@ -78,6 +78,7 @@ const defaultValues: RestaurantFormData = {
   menuLayout: 'cards',
   deliveryMode: 'manual',
   openingHours: defaultOpeningHours(),
+  allowScheduledWhenClosed: false,
   adminName: '',
   adminEmail: '',
   adminPassword: '',
@@ -112,6 +113,7 @@ export function useRestaurantForm(restaurant?: Restaurant) {
       menuLayout: restaurant.menuLayout ?? 'cards',
       deliveryMode: restaurant.deliveryMode ?? 'manual',
       openingHours: firebaseToHoursForm(restaurant.openingHours),
+      allowScheduledWhenClosed: restaurant.allowScheduledWhenClosed ?? false,
       adminName: '',
       adminEmail: '',
       adminPassword: '',
@@ -193,6 +195,7 @@ export function useRestaurantForm(restaurant?: Restaurant) {
       menuLayout: data.menuLayout,
       deliveryMode: data.deliveryMode,
       ...(hasAnyHours ? { openingHours: hours } : {}),
+      allowScheduledWhenClosed: data.allowScheduledWhenClosed,
       adminEmail: data.adminEmail,
       adminPassword: data.adminPassword,
       adminName: data.adminName,
@@ -227,6 +230,7 @@ export function useRestaurantForm(restaurant?: Restaurant) {
       menuLayout: data.menuLayout,
       deliveryMode: data.deliveryMode,
       ...(hasAnyHours ? { openingHours: hours } : {}),
+      allowScheduledWhenClosed: data.allowScheduledWhenClosed,
     };
   }
 

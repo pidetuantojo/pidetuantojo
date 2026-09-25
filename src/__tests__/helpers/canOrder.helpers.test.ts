@@ -135,3 +135,23 @@ describe('checkCanOrder — casos extremos', () => {
     expect(checkCanOrder(base({ phone: '   ' }))).toBe(false);
   });
 });
+
+describe('checkCanOrder — comer en el local', () => {
+  it('rechaza si no eligió mesa', () => {
+    expect(checkCanOrder(base({ deliveryType: 'mesa' }))).toBe(false);
+  });
+
+  it('permite pedido sin mesa si el restaurante no tiene mesas configuradas', () => {
+    expect(checkCanOrder(base({ deliveryType: 'mesa', mesaRequired: false }))).toBe(true);
+  });
+
+  it('permite pedido con mesa elegida sin dirección', () => {
+    expect(checkCanOrder(base({ deliveryType: 'mesa', selectedMesaId: 'm1' }))).toBe(true);
+  });
+});
+
+describe('checkCanOrder — pedido programado', () => {
+  it('rechaza si la programación no es válida', () => {
+    expect(checkCanOrder(base({ scheduleValid: false }))).toBe(false);
+  });
+});

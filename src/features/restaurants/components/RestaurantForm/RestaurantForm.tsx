@@ -690,6 +690,33 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             Copiar Lunes a toda la semana
           </button>
 
+          <label
+            style={{
+              display: 'flex', alignItems: 'flex-start', gap: 10,
+              background: 'var(--t-surface)', border: '1.5px solid var(--t-border)',
+              borderRadius: 12, padding: '12px 14px',
+              cursor: isPending ? 'not-allowed' : 'pointer',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={data.allowScheduledWhenClosed}
+              onChange={(e) => handleChange('allowScheduledWhenClosed', e.target.checked)}
+              disabled={isPending}
+              style={{ width: 16, height: 16, marginTop: 2, accentColor: '#FF6A1A', cursor: 'inherit', flexShrink: 0 }}
+            />
+            <span style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <span style={{ fontFamily: sg, fontWeight: 600, fontSize: 13, color: 'var(--t-text-1)' }}>
+                Aceptar pedidos programados cuando estés cerrado
+              </span>
+              <span style={{ fontFamily: sg, fontSize: 12, color: 'var(--t-text-3)', lineHeight: 1.45 }}>
+                {data.allowScheduledWhenClosed
+                  ? 'Fuera de horario, el menú muestra un aviso y los clientes pueden programar su pedido (Recoger en Local o Domicilio) para cuando abras.'
+                  : 'Fuera de horario, el menú se puede ver pero no se reciben pedidos.'}
+              </span>
+            </span>
+          </label>
+
           <div style={{
             fontFamily: sm, fontSize: 10.5, lineHeight: 1.9, color: 'var(--t-text-4)',
             background: 'var(--t-surface-2)', border: '1px solid var(--t-border)',

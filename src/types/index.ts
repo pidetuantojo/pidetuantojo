@@ -44,6 +44,27 @@ export interface DeliveryMethods {
   mesa?: Pick<DeliveryMethodConfig, 'isActive'>;
 }
 
+// ===== MÉTODOS DE PAGO =====
+
+export type PaymentMethodType =
+  | 'efectivo'
+  | 'datafono'
+  | 'nequi'
+  | 'daviplata'
+  | 'breb'
+  | 'bancolombia'
+  | 'otro_banco';
+
+export interface PaymentMethodConfig {
+  id: string;
+  type: PaymentMethodType;
+  isActive: boolean;
+  // Número de celular, alias BreB o número de cuenta (según el tipo)
+  account?: string;
+  // Solo para 'otro_banco'
+  bankName?: string;
+}
+
 export interface Restaurant {
   id: string;
   slug: string;
@@ -71,8 +92,12 @@ export interface Restaurant {
   deliveryMode?: 'manual' | 'zones';
   // Horario de atención
   openingHours?: OpeningHours;
+  // Si está cerrado, ¿se aceptan pedidos programados para cuando abra?
+  allowScheduledWhenClosed?: boolean;
   // Métodos de entrega
   deliveryMethods?: DeliveryMethods;
+  // Métodos de pago (efectivo, datáfono y cuentas para transferir)
+  paymentMethods?: PaymentMethodConfig[];
   adminUserId: string;
   isActive: boolean;
   createdAt: string;
@@ -199,8 +224,15 @@ export interface Order {
   deliveryType?: 'recoger' | 'domicilio' | 'mesa';
   tableId?: string;
   tableName?: string;
+  // Programación: false/ausente = inmediato. scheduledFor en ISO 8601
+  isScheduled?: boolean;
+  scheduledFor?: string;
   deliveryFee?: number;
+  // Etiqueta visible del método (ej: "Nequi"); Contabilidad agrupa por este valor
   paymentMethod: string;
+  paymentMethodType?: PaymentMethodType;
+  // Cuenta a la que el cliente transfirió (si aplica)
+  paymentAccount?: string;
   isPaid?: boolean;
   items: OrderItem[];
   subtotal: number;
@@ -209,7 +241,7 @@ export interface Order {
   notes?: string;
   internalNote?: string;
   location?: { lat: number; lng: number };
-  assignedDriver?: { id: string; name: string; code: string; phone: string };
+  assignedDriver?: AssignedDriver;
   createdAt: string;
   updatedAt: string;
 }
@@ -236,22 +268,38 @@ export interface Domiciliario {
   id: string;
   restaurantId: string;
   name: string;
-  code: string;
+  // Solo domiciliarios individuales; las empresas no tienen código
+  code?: string;
+  // Celular del domiciliario, o de la empresa (a donde se envía el pedido)
   phone: string;
+  // true = empresa de domicilios
+  isCompany?: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 export type CreateDomiciliarioData = Omit<Domiciliario, 'id' | 'createdAt' | 'updatedAt'>;
-export type UpdateDomiciliarioData = Partial<Pick<Domiciliario, 'name' | 'code' | 'phone' | 'isActive'>>;
+export type UpdateDomiciliarioData = Partial<Pick<Domiciliario, 'name' | 'code' | 'phone' | 'isCompany' | 'isActive'>>;
+
+/** Domiciliario (o empresa) asignado a un pedido: copia de sus datos al momento de asignar. */
+export interface AssignedDriver {
+  id: string;
+  name: string;
+  phone: string;
+  code?: string;
+  isCompany?: boolean;
+  // Solo empresas: nombre o código de quien tomó el pedido (texto libre, para trazabilidad)
+  courierName?: string;
+}
 
 export type CreateOrderData = Omit<Order, 'id' | 'orderNumber' | 'createdAt' | 'updatedAt'>;
 export type UpdateOrderData = Partial<Pick<Order,
   'statusId' | 'notes' | 'deliveryFee' | 'isPaid' | 'internalNote' |
   'items' | 'subtotal' | 'total' | 'customerName' | 'customerPhone' |
   'customerAddress' | 'barrio' | 'deliveryType' | 'paymentMethod' | 'assignedDriver' |
-  'tableId' | 'tableName'
+  'tableId' | 'tableName' | 'isScheduled' | 'scheduledFor' |
+  'paymentMethodType' | 'paymentAccount'
 >>;
 
 // ===== MESAS =====

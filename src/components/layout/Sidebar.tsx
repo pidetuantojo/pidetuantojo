@@ -57,7 +57,13 @@ const RESTAURANT_NAV: NavItem[] = [
       { href: ROUTES.dashboard.adicionales, label: 'Adicionales', icon: <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
     ],
   },
-  { type: 'link', href: ROUTES.dashboard.contabilidad, label: 'Contabilidad', icon: IcoContabilidad },
+  {
+    type: 'group', id: 'finanzas', label: 'Finanzas', icon: IcoContabilidad,
+    children: [
+      { href: ROUTES.dashboard.contabilidad, label: 'Contabilidad', icon: <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
+      { href: ROUTES.dashboard.pagos, label: 'Métodos de pago', icon: <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> },
+    ],
+  },
   {
     type: 'group', id: 'entrega', label: 'Gestión de entrega', icon: IcoEntrega,
     children: [

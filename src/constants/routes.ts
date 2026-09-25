@@ -17,6 +17,7 @@ export const ROUTES = {
     categorias: '/dashboard/categorias',
     adicionales: '/dashboard/adicionales',
     contabilidad: '/dashboard/contabilidad',
+    pagos: '/dashboard/pagos',
     zonas: '/dashboard/domicilios/zonas',
     domiciliarios: '/dashboard/domicilios/domiciliarios',
     entrega: '/dashboard/entrega',
