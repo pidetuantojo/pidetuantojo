@@ -27,7 +27,7 @@ export function MenuListLayout({ categories, products, primaryColor, secondaryCo
     if (!activeCategoryId) return;
     setOpenIds((prev) => {
       if (prev.has(activeCategoryId)) return prev;
-      return new Set([...prev, activeCategoryId]);
+      return new Set(Array.from(prev).concat(activeCategoryId));
     });
     const el = document.getElementById(`cat-${activeCategoryId}`);
     if (el) {
