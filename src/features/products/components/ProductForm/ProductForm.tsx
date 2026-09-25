@@ -147,7 +147,7 @@ export function ProductForm({
         {/* Adicionales */}
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-gray-700">Adicionales</h3>
+            <h3 className="text-sm font-semibold text-[var(--t-text-2)]">Adicionales</h3>
             <Link
               href={ROUTES.dashboard.menu}
               className="text-xs font-medium text-orange-600 hover:text-orange-700"
@@ -158,7 +158,7 @@ export function ProductForm({
           </div>
 
           {adicionales.length === 0 ? (
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-[var(--t-text-4)]">
               No hay adicionales creados.{' '}
               <Link href={ROUTES.dashboard.menu} className="font-medium text-orange-600 hover:underline">
                 Crear adicionales →
@@ -171,9 +171,11 @@ export function ProductForm({
                 return (
                   <label
                     key={a.id}
-                    className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 px-3 py-2.5 transition-colors ${
-                      checked ? 'border-orange-400 bg-orange-50' : 'border-gray-200 hover:border-gray-300'
-                    } ${!a.isActive ? 'opacity-50' : ''}`}
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 px-3 py-2.5 transition-colors ${!a.isActive ? 'opacity-50' : ''}`}
+                    style={checked
+                      ? { borderColor: '#fb923c', backgroundColor: 'rgba(249,115,22,0.08)' }
+                      : { borderColor: 'var(--t-border)', backgroundColor: 'transparent' }
+                    }
                   >
                     <input
                       type="checkbox"
@@ -183,7 +185,7 @@ export function ProductForm({
                       className="h-4 w-4 rounded flex-shrink-0"
                       style={{ accentColor: '#f97316' }}
                     />
-                    <span className="flex-1 text-sm font-medium text-gray-800">{a.name}</span>
+                    <span className="flex-1 text-sm font-medium text-[var(--t-text-1)]">{a.name}</span>
                     <span className="text-xs font-bold text-orange-500 flex-shrink-0">
                       +{formatCurrency(a.price)}
                     </span>
@@ -204,7 +206,7 @@ export function ProductForm({
               className="h-4 w-4 rounded accent-orange-500"
               disabled={isPending}
             />
-            <span className="text-sm font-medium text-gray-700">Activo en el menú</span>
+            <span className="text-sm font-medium text-[var(--t-text-2)]">Activo en el menú</span>
           </label>
           <label className="flex cursor-pointer items-center gap-2">
             <input
@@ -214,7 +216,7 @@ export function ProductForm({
               className="h-4 w-4 rounded accent-orange-500"
               disabled={isPending}
             />
-            <span className="text-sm font-medium text-gray-700">Disponible hoy</span>
+            <span className="text-sm font-medium text-[var(--t-text-2)]">Disponible hoy</span>
           </label>
         </div>
 
@@ -223,7 +225,7 @@ export function ProductForm({
         )}
       </div>
 
-      <div className="flex gap-3 border-t border-gray-100 bg-gray-50 px-6 py-4">
+      <div className="flex gap-3 border-t border-[var(--t-border)] bg-[var(--t-surface-2)] px-6 py-4">
         <Button type="button" variant="secondary" onClick={onCancel} disabled={isPending} className="flex-1">
           Cancelar
         </Button>

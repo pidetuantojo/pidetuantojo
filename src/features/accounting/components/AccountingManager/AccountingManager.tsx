@@ -64,13 +64,16 @@ export function AccountingManager() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Contabilidad</h2>
-        <p className="mt-0.5 text-sm text-gray-500">Resumen financiero de tu restaurante</p>
+        <h2 className="text-2xl font-bold" style={{ color: 'var(--t-text-1)' }}>Contabilidad</h2>
+        <p className="mt-0.5 text-sm" style={{ color: 'var(--t-text-3)' }}>Resumen financiero de tu restaurante</p>
       </div>
 
       {/* Filtros de fecha */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex gap-1 rounded-xl border border-gray-200 bg-gray-50 p-1">
+        <div
+          className="flex gap-1 rounded-xl p-1"
+          style={{ border: '1px solid var(--t-border)', background: 'var(--t-surface-2)' }}
+        >
           {PRESETS.map(({ key, label }) => (
             <button
               key={key}
@@ -78,9 +81,14 @@ export function AccountingManager() {
               className={cn(
                 'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
                 preset === key
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'shadow-sm'
+                  : ''
               )}
+              style={
+                preset === key
+                  ? { background: 'var(--t-surface)', color: 'var(--t-text-1)' }
+                  : { color: 'var(--t-text-3)' }
+              }
             >
               {label}
             </button>
@@ -89,23 +97,33 @@ export function AccountingManager() {
 
         {preset === 'custom' && (
           <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-gray-400" />
+            <Calendar className="h-4 w-4" style={{ color: 'var(--t-text-4)' }} />
             <input
               type="date"
               value={toInputDate(customRange.start)}
               onChange={(e) =>
                 setCustomRange((prev) => ({ ...prev, start: fromInputDate(e.target.value, false) }))
               }
-              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+              className="rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+              style={{
+                border: '1px solid var(--t-input-border)',
+                background: 'var(--t-input-bg)',
+                color: 'var(--t-text-1)',
+              }}
             />
-            <span className="text-gray-400">—</span>
+            <span style={{ color: 'var(--t-text-4)' }}>—</span>
             <input
               type="date"
               value={toInputDate(customRange.end)}
               onChange={(e) =>
                 setCustomRange((prev) => ({ ...prev, end: fromInputDate(e.target.value, true) }))
               }
-              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+              className="rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+              style={{
+                border: '1px solid var(--t-input-border)',
+                background: 'var(--t-input-bg)',
+                color: 'var(--t-text-1)',
+              }}
             />
           </div>
         )}

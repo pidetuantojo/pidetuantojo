@@ -92,8 +92,8 @@ export function OrderStatusesManager() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Estados de pedido</h2>
-          <p className="mt-0.5 text-sm text-gray-500">
+          <h2 className="text-2xl font-bold" style={{ color: 'var(--t-text-1)' }}>Estados de pedido</h2>
+          <p className="mt-0.5 text-sm" style={{ color: 'var(--t-text-3)' }}>
             Flujo de estados para gestionar los pedidos de tu restaurante
           </p>
         </div>
@@ -106,8 +106,8 @@ export function OrderStatusesManager() {
       {/* Estados base */}
       <section className="space-y-3">
         <div className="flex items-center gap-2">
-          <Lock className="h-4 w-4 text-gray-400" />
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+          <Lock className="h-4 w-4" style={{ color: 'var(--t-text-4)' }} />
+          <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--t-text-3)' }}>
             Estados base (no eliminables)
           </h3>
         </div>
@@ -127,15 +127,18 @@ export function OrderStatusesManager() {
       {/* Estados personalizados */}
       <section className="space-y-3">
         <div className="flex items-center gap-2">
-          <ListOrdered className="h-4 w-4 text-gray-400" />
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+          <ListOrdered className="h-4 w-4" style={{ color: 'var(--t-text-4)' }} />
+          <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--t-text-3)' }}>
             Estados personalizados
           </h3>
         </div>
 
         {customStatuses.length === 0 ? (
-          <div className="rounded-xl border-2 border-dashed border-gray-200 py-10 text-center">
-            <p className="text-sm text-gray-400">
+          <div
+            className="rounded-xl py-10 text-center"
+            style={{ border: '2px dashed var(--t-border)' }}
+          >
+            <p className="text-sm" style={{ color: 'var(--t-text-4)' }}>
               No hay estados personalizados. Podés agregar intermedios para tu flujo específico.
             </p>
             <button
@@ -200,10 +203,13 @@ function StatusRow({
   isDeleting,
 }: StatusRowProps) {
   return (
-    <div className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+    <div
+      className="flex items-center gap-4 rounded-xl px-4 py-3 shadow-sm"
+      style={{ border: '1px solid var(--t-border)', background: 'var(--t-surface)' }}
+    >
       {/* Color dot + sortOrder */}
       <div className="flex flex-shrink-0 items-center gap-2">
-        <span className="text-xs font-medium text-gray-400">{status.sortOrder}</span>
+        <span className="text-xs font-medium" style={{ color: 'var(--t-text-4)' }}>{status.sortOrder}</span>
         <span
           className="h-4 w-4 rounded-full ring-2 ring-white ring-offset-1"
           style={{ backgroundColor: status.color }}
@@ -218,7 +224,10 @@ function StatusRow({
         >
           {status.name}
         </div>
-        <code className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-500">
+        <code
+          className="rounded px-1.5 py-0.5 font-mono text-xs"
+          style={{ background: 'var(--t-surface-2)', color: 'var(--t-text-3)' }}
+        >
           {status.code}
         </code>
       </div>
@@ -238,7 +247,16 @@ function StatusRow({
         <button
           onClick={() => onToggleActive(status.id, !status.isActive)}
           disabled={isToggling}
-          className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:opacity-50"
+          className="rounded-lg p-2 transition-colors disabled:opacity-50"
+          style={{ color: 'var(--t-text-4)' }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.background = 'var(--t-surface-2)';
+            (e.currentTarget as HTMLButtonElement).style.color = 'var(--t-text-2)';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.background = '';
+            (e.currentTarget as HTMLButtonElement).style.color = 'var(--t-text-4)';
+          }}
           title={status.isActive ? 'Desactivar' : 'Activar'}
         >
           {status.isActive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -247,7 +265,8 @@ function StatusRow({
         {!status.isBase && onEdit && (
           <button
             onClick={() => onEdit(status)}
-            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600"
+            className="rounded-lg p-2 transition-colors hover:bg-blue-50 hover:text-blue-600"
+            style={{ color: 'var(--t-text-4)' }}
             title="Editar"
           >
             <Edit className="h-4 w-4" />
@@ -258,7 +277,8 @@ function StatusRow({
           <button
             onClick={() => onDelete(status.id, status.name)}
             disabled={isDeleting}
-            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+            className="rounded-lg p-2 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+            style={{ color: 'var(--t-text-4)' }}
             title="Eliminar"
           >
             <Trash2 className="h-4 w-4" />

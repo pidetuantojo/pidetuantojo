@@ -64,14 +64,15 @@ export function OrderStatusForm({
 
         {/* Color */}
         <div className="space-y-1">
-          <label className="block text-sm font-medium text-gray-700">Color</label>
+          <label className="block text-sm font-medium" style={{ color: 'var(--t-text-2)' }}>Color</label>
           <div className="flex items-center gap-3">
             <input
               type="color"
               value={data.color}
               onChange={(e) => handleChange('color', e.target.value)}
               disabled={isPending}
-              className="h-10 w-16 cursor-pointer rounded-lg border border-gray-300 p-0.5"
+              className="h-10 w-16 cursor-pointer rounded-lg p-0.5"
+              style={{ border: '1px solid var(--t-input-border)' }}
             />
             <div
               className="flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium text-white"
@@ -103,7 +104,7 @@ export function OrderStatusForm({
             className="h-4 w-4 rounded accent-orange-500"
             disabled={isPending}
           />
-          <span className="text-sm font-medium text-gray-700">Estado activo</span>
+          <span className="text-sm font-medium" style={{ color: 'var(--t-text-2)' }}>Estado activo</span>
         </label>
 
         {mutationError && (
@@ -111,7 +112,10 @@ export function OrderStatusForm({
         )}
       </div>
 
-      <div className="flex gap-3 border-t border-gray-100 bg-gray-50 px-6 py-4">
+      <div
+        className="flex gap-3 px-6 py-4"
+        style={{ borderTop: '1px solid var(--t-border)', background: 'var(--t-surface-2)' }}
+      >
         <Button type="button" variant="secondary" onClick={onCancel} disabled={isPending} className="flex-1">
           Cancelar
         </Button>

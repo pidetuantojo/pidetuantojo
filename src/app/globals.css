@@ -6,6 +6,85 @@
   --color-primary: #f97316;
   --color-secondary: #fb923c;
   --color-accent: #ea580c;
+
+  /* ── Theme tokens ──────────────────────────────────────────────── */
+  /* Backgrounds */
+  --t-bg:          #FBF8F5;
+  --t-surface:     #FFFFFF;
+  --t-surface-2:   #F7F1EB;
+
+  /* Borders */
+  --t-border:      #E7DED6;
+  --t-border-2:    #EFE7DF;
+  --t-border-3:    #E0D6CC;
+
+  /* Text */
+  --t-text-1:      #1B1512;
+  --t-text-2:      #5a5048;
+  --t-text-3:      #8a7f76;
+  --t-text-4:      #a89e95;
+
+  /* Nav glass */
+  --t-nav-glass:   rgba(251,248,245,.88);
+
+  /* Sidebar (always dark; minor tune per theme) */
+  --t-sb-from:     #3a2417;
+  --t-sb-to:       #1B1512;
+  --t-sb-glass:    rgba(255,255,255,.06);
+  --t-sb-border:   rgba(255,255,255,.08);
+  --t-sb-muted:    #b8aaa0;
+
+  /* Auth / forms */
+  --t-input-bg:     #FFFFFF;
+  --t-input-border: #E7DED6;
+
+  /* Status badges */
+  --t-badge-warn-bg:    #FFF7E0;
+  --t-badge-warn-text:  #B45309;
+  --t-badge-info-bg:    #EFF6FF;
+  --t-badge-info-text:  #1D4ED8;
+  --t-badge-ok-bg:      #ECFDF5;
+  --t-badge-ok-text:    #065F46;
+}
+
+.dark {
+  /* Backgrounds */
+  --t-bg:          #14100C;
+  --t-surface:     #1F1511;
+  --t-surface-2:   #2A1D14;
+
+  /* Borders */
+  --t-border:      #3A2416;
+  --t-border-2:    #4A3020;
+  --t-border-3:    #3A2416;
+
+  /* Text */
+  --t-text-1:      #FBF6F1;
+  --t-text-2:      #C9A78F;
+  --t-text-3:      #9A8474;
+  --t-text-4:      #7A6860;
+
+  /* Nav glass */
+  --t-nav-glass:   rgba(20,16,12,.94);
+
+  /* Sidebar */
+  --t-sb-from:     #2a1610;
+  --t-sb-to:       #100B07;
+  --t-sb-glass:    rgba(255,255,255,.04);
+  --t-sb-border:   rgba(255,255,255,.05);
+  --t-sb-muted:    #9a8474;
+
+  /* Auth / forms */
+  --t-input-bg:     #1F1511;
+  --t-input-border: #3A2416;
+
+  /* Status badges */
+  --t-badge-warn-bg:    #2A1E00;
+  --t-badge-warn-text:  #F59E0B;
+  --t-badge-info-bg:    #0D1A30;
+  --t-badge-info-text:  #60A5FA;
+  --t-badge-ok-bg:      #0A2417;
+  --t-badge-ok-text:    #34D399;
 }
 
 

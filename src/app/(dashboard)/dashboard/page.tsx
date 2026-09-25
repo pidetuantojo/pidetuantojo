@@ -112,7 +112,7 @@ export default function DashboardHomePage() {
       </div>
 
       {/* Gestión */}
-      <div style={{ fontWeight: 600, fontSize: 15, color: '#1B1512', marginBottom: 14 }}>Gestión</div>
+      <div style={{ fontWeight: 600, fontSize: 15, color: 'var(--t-text-1)', marginBottom: 14 }}>Gestión</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
 
         {MODULES.map(({ href, label, desc, iconBg, iconShadow, icon }) => (
@@ -120,7 +120,7 @@ export default function DashboardHomePage() {
             key={href}
             href={href}
             style={{
-              background: '#fff', border: '1px solid #EFE7DF', borderRadius: 16,
+              background: 'var(--t-surface)', border: '1px solid var(--t-border-2)', borderRadius: 16,
               padding: 22, textDecoration: 'none', display: 'block',
               transition: 'transform .18s, box-shadow .18s',
             }}
@@ -142,8 +142,8 @@ export default function DashboardHomePage() {
             >
               {icon}
             </div>
-            <div style={{ fontWeight: 700, fontSize: 17, color: '#1B1512', marginBottom: 4 }}>{label}</div>
-            <p style={{ fontSize: 13, color: '#8a7f76', margin: 0 }}>{desc}</p>
+            <div style={{ fontWeight: 700, fontSize: 17, color: 'var(--t-text-1)', marginBottom: 4 }}>{label}</div>
+            <p style={{ fontSize: 13, color: 'var(--t-text-3)', margin: 0 }}>{desc}</p>
           </Link>
         ))}
 

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { Restaurant, OpeningHours } from '@/types';
 import { Select } from '@/components/ui/Select';
 import { Logo, LogoMark } from '@/components/ui/Logo';
+import { useTheme } from '@/components/providers/ThemeProvider';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -58,6 +59,7 @@ const sm = "var(--font-mono, monospace)";
 // ─── component ───────────────────────────────────────────────────────────────
 
 export function HomeClient({ restaurants }: HomeClientProps) {
+  const { theme, toggle: toggleTheme } = useTheme();
   const [dep, setDep] = useState('');
   const [city, setCity] = useState('');
   const [cat, setCat] = useState('');
@@ -119,13 +121,13 @@ export function HomeClient({ restaurants }: HomeClientProps) {
     <>
       {/* ── estilos globales de la página ── */}
       <style dangerouslySetInnerHTML={{ __html: `
-        body { margin: 0; background: #FBF8F5; }
+        body { margin: 0; background: var(--t-bg); }
         .rcard { transition: transform .18s, box-shadow .18s; cursor: pointer; }
         .rcard:hover { transform: translateY(-4px); box-shadow: 0 22px 46px -24px rgba(27,21,18,.42) !important; }
-        .srch { font-family: var(--font-sans, sans-serif); font-size: 14px; color: #1B1512; width: 100%; border: 1.5px solid #E7DED6; background: #fff; border-radius: 13px; padding: 13px 16px 13px 44px; outline: none; }
-        .srch::placeholder { color: #a89e95; }
+        .srch { font-family: var(--font-sans, sans-serif); font-size: 14px; color: var(--t-text-1); width: 100%; border: 1.5px solid var(--t-border); background: var(--t-surface); border-radius: 13px; padding: 13px 16px 13px 44px; outline: none; }
+        .srch::placeholder { color: var(--t-text-4); }
         .srch:focus { border-color: #FF6A1A; box-shadow: 0 0 0 4px rgba(255,106,26,.12); }
-        .srch-sm { flex: 1; border: 0; outline: none; font-family: var(--font-sans, sans-serif); font-size: 13.5px; color: #1B1512; background: none; }
+        .srch-sm { flex: 1; border: 0; outline: none; font-family: var(--font-sans, sans-serif); font-size: 13.5px; color: var(--t-text-1); background: none; }
         @media (max-width: 767px) { .desktop-only { display: none !important; } }
         @media (min-width: 768px) { .mobile-only { display: none !important; } }
       ` }} />
@@ -133,15 +135,15 @@ export function HomeClient({ restaurants }: HomeClientProps) {
       {/* ══════════════════════════════════════════════════════════
           DESKTOP LAYOUT
       ═══════════════════════════════════════════════════════════ */}
-      <div className="desktop-only" style={{ minHeight: '100vh', background: '#FBF8F5', fontFamily: sg }}>
+      <div className="desktop-only" style={{ minHeight: '100vh', background: 'var(--t-bg)', fontFamily: sg }}>
 
         {/* NAV */}
         <div style={{
           position: 'sticky', top: 0, zIndex: 8,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 28,
           padding: '16px 40px',
-          background: 'rgba(251,248,245,.88)', backdropFilter: 'blur(12px)',
-          borderBottom: '1px solid #EFE7DF',
+          background: 'var(--t-nav-glass)', backdropFilter: 'blur(12px)',
+          borderBottom: '1px solid var(--t-border-2)',
         }}>
           <div style={{ flexShrink: 0 }}>
             <Logo variant="light" size={14} />
@@ -155,10 +157,30 @@ export function HomeClient({ restaurants }: HomeClientProps) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: sg, fontSize: 13, color: '#5a5048', background: '#fff', border: '1.5px solid #E7DED6', borderRadius: 12, padding: '11px 15px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: sg, fontSize: 13, color: 'var(--t-text-2)', background: 'var(--t-surface)', border: '1.5px solid var(--t-border)', borderRadius: 12, padding: '11px 15px' }}>
               <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#FF6A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               {locLabel}
             </div>
+            <button
+              onClick={toggleTheme}
+              title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+              style={{
+                width: 42, height: 42, borderRadius: 12, border: '1.5px solid var(--t-border)',
+                background: 'var(--t-surface)', color: 'var(--t-text-2)',
+                display: 'grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0,
+                transition: 'background .15s',
+              }}
+            >
+              {theme === 'dark' ? (
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+              )}
+            </button>
             <Link href="/registrar-local" style={{
               fontFamily: sg, fontWeight: 600, fontSize: 13, color: '#fff',
               border: 0, borderRadius: 12, padding: '12px 20px',
@@ -231,15 +253,15 @@ export function HomeClient({ restaurants }: HomeClientProps) {
         {/* RESULTS */}
         <div style={{ padding: '30px 40px 60px' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 18 }}>
-            <h2 style={{ fontFamily: sg, fontWeight: 700, fontSize: 22, letterSpacing: '-.02em', color: '#1B1512', margin: 0 }}>{resultsTitle}</h2>
-            <span style={{ fontFamily: sm, fontSize: 12, color: '#8a7f76' }}>{filtered.length} {filtered.length === 1 ? 'resultado' : 'resultados'}</span>
+            <h2 style={{ fontFamily: sg, fontWeight: 700, fontSize: 22, letterSpacing: '-.02em', color: 'var(--t-text-1)', margin: 0 }}>{resultsTitle}</h2>
+            <span style={{ fontFamily: sm, fontSize: 12, color: 'var(--t-text-3)' }}>{filtered.length} {filtered.length === 1 ? 'resultado' : 'resultados'}</span>
           </div>
 
           {filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px 20px', background: '#fff', border: '1px dashed #E0D6CC', borderRadius: 18 }}>
+            <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--t-surface)', border: '1px dashed var(--t-border-3)', borderRadius: 18 }}>
               <div style={{ marginBottom: 16, opacity: .3 }}><LogoMark style={{ width: 56, height: 56, color: '#FF6A1A' }} /></div>
-              <div style={{ fontFamily: sg, fontWeight: 600, fontSize: 18, color: '#1B1512', marginBottom: 6 }}>Todavía no hay restaurantes acá</div>
-              <div style={{ fontFamily: sg, fontSize: 14, color: '#8a7f76' }}>Probá con otra ciudad o quitá algún filtro.</div>
+              <div style={{ fontFamily: sg, fontWeight: 600, fontSize: 18, color: 'var(--t-text-1)', marginBottom: 6 }}>Todavía no hay restaurantes acá</div>
+              <div style={{ fontFamily: sg, fontSize: 14, color: 'var(--t-text-3)' }}>Probá con otra ciudad o quitá algún filtro.</div>
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
@@ -254,7 +276,7 @@ export function HomeClient({ restaurants }: HomeClientProps) {
       {/* ══════════════════════════════════════════════════════════
           MOBILE LAYOUT
       ═══════════════════════════════════════════════════════════ */}
-      <div className="mobile-only" style={{ minHeight: '100vh', background: '#FBF8F5', fontFamily: sg }}>
+      <div className="mobile-only" style={{ minHeight: '100vh', background: 'var(--t-bg)', fontFamily: sg }}>
 
         {/* HEADER — gradiente con padding-bottom generoso para que la card lo solape */}
         <div style={{ position: 'relative', background: 'linear-gradient(150deg,#FF8A2B,#FF6A1A 50%,#EA3B2E)', padding: '48px 20px 72px', overflow: 'hidden' }}>
@@ -268,9 +290,30 @@ export function HomeClient({ restaurants }: HomeClientProps) {
             <div>
               <Logo variant="onBrand" size={13} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: sg, fontWeight: 600, fontSize: 12, color: '#fff', background: 'rgba(255,255,255,.2)', border: '1px solid rgba(255,255,255,.3)', borderRadius: 999, padding: '8px 13px' }}>
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              {locLabel}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button
+                onClick={toggleTheme}
+                title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+                style={{
+                  width: 36, height: 36, borderRadius: 10, border: '1px solid rgba(255,255,255,.3)',
+                  background: 'rgba(255,255,255,.2)', color: '#fff',
+                  display: 'grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0,
+                }}
+              >
+                {theme === 'dark' ? (
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                  </svg>
+                )}
+              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: sg, fontWeight: 600, fontSize: 12, color: '#fff', background: 'rgba(255,255,255,.2)', border: '1px solid rgba(255,255,255,.3)', borderRadius: 999, padding: '8px 13px' }}>
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                {locLabel}
+              </div>
             </div>
           </div>
 
@@ -280,7 +323,7 @@ export function HomeClient({ restaurants }: HomeClientProps) {
           </h2>
 
           {/* Search */}
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10, background: '#fff', borderRadius: 14, padding: '13px 16px', boxShadow: '0 10px 28px -10px rgba(0,0,0,.35)' }}>
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10, background: 'var(--t-surface)', borderRadius: 14, padding: '13px 16px', boxShadow: '0 10px 28px -10px rgba(0,0,0,.35)' }}>
             <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#a89e95" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
             <input className="srch-sm" placeholder="Buscar restaurante o comida..." value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
@@ -288,19 +331,19 @@ export function HomeClient({ restaurants }: HomeClientProps) {
         </div>
 
         {/* CARD de filtros + lista — sube sobre el header con margin-top negativo */}
-        <div style={{ margin: '-36px 0 0', borderRadius: '24px 24px 0 0', background: '#FBF8F5', minHeight: '100vh', position: 'relative', zIndex: 2 }}>
+        <div style={{ margin: '-36px 0 0', borderRadius: '24px 24px 0 0', background: 'var(--t-bg)', minHeight: '100vh', position: 'relative', zIndex: 2 }}>
 
           {/* FILTROS */}
           <div style={{ padding: '22px 16px 0', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
             {/* Dep + Ciudad — apilados verticalmente, ciudad solo aparece si hay dep */}
             <div>
-              <div style={{ fontFamily: sm, fontSize: 9.5, letterSpacing: '.08em', color: '#9a8f86', marginBottom: 6 }}>DEPARTAMENTO</div>
+              <div style={{ fontFamily: sm, fontSize: 9.5, letterSpacing: '.08em', color: 'var(--t-text-4)', marginBottom: 6 }}>DEPARTAMENTO</div>
               <Select value={dep} onChange={handleDepChange} options={depOptions} placeholder="Todos los departamentos" />
             </div>
             {dep && (
               <div>
-                <div style={{ fontFamily: sm, fontSize: 9.5, letterSpacing: '.08em', color: '#9a8f86', marginBottom: 6 }}>CIUDAD</div>
+                <div style={{ fontFamily: sm, fontSize: 9.5, letterSpacing: '.08em', color: 'var(--t-text-4)', marginBottom: 6 }}>CIUDAD</div>
                 <Select value={city} onChange={setCity} options={cityOptions} placeholder="Todas las ciudades" />
               </div>
             )}
@@ -314,9 +357,9 @@ export function HomeClient({ restaurants }: HomeClientProps) {
                   style={{
                     flexShrink: 0, fontFamily: sg, fontWeight: 600, fontSize: 12.5,
                     borderRadius: 999, padding: '9px 16px', cursor: 'pointer',
-                    border: cat === c.value ? 'none' : '1.5px solid #E7DED6',
-                    color: cat === c.value ? '#fff' : '#5a5048',
-                    background: cat === c.value ? '#FF6A1A' : '#fff',
+                    border: cat === c.value ? 'none' : '1.5px solid var(--t-border)',
+                    color: cat === c.value ? '#fff' : 'var(--t-text-2)',
+                    background: cat === c.value ? '#FF6A1A' : 'var(--t-surface)',
                     boxShadow: cat === c.value ? '0 4px 12px -4px rgba(255,106,26,.5)' : 'none',
                     transition: 'all .15s',
                   }}
@@ -333,9 +376,9 @@ export function HomeClient({ restaurants }: HomeClientProps) {
                 display: 'flex', alignItems: 'center', gap: 10,
                 fontFamily: sg, fontWeight: 600, fontSize: 13,
                 borderRadius: 13, padding: '13px 16px', cursor: 'pointer',
-                border: onlyOpen ? '1.5px solid #FFC9A8' : '1.5px solid #E7DED6',
-                color: onlyOpen ? '#EA3B2E' : '#5a5048',
-                background: onlyOpen ? '#FFF1E9' : '#fff',
+                border: onlyOpen ? '1.5px solid #FFC9A8' : '1.5px solid var(--t-border)',
+                color: onlyOpen ? '#EA3B2E' : 'var(--t-text-2)',
+                background: onlyOpen ? '#FFF1E9' : 'var(--t-surface)',
                 transition: 'all .15s',
                 textAlign: 'left',
               }}
@@ -361,16 +404,16 @@ export function HomeClient({ restaurants }: HomeClientProps) {
           {/* LISTA */}
           <div style={{ padding: '20px 16px 48px' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14 }}>
-              <span style={{ fontFamily: sg, fontWeight: 700, fontSize: 17, color: '#1B1512' }}>{resultsTitle}</span>
-              <span style={{ fontFamily: sm, fontSize: 11, color: '#8a7f76' }}>
+              <span style={{ fontFamily: sg, fontWeight: 700, fontSize: 17, color: 'var(--t-text-1)' }}>{resultsTitle}</span>
+              <span style={{ fontFamily: sm, fontSize: 11, color: 'var(--t-text-3)' }}>
                 {filtered.length} {filtered.length === 1 ? 'resultado' : 'resultados'}
               </span>
             </div>
 
             {filtered.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 16px', background: '#fff', border: '1px dashed #E0D6CC', borderRadius: 16 }}>
-                <div style={{ fontFamily: sg, fontWeight: 600, fontSize: 15, color: '#1B1512', marginBottom: 5 }}>Sin restaurantes acá</div>
-                <div style={{ fontFamily: sg, fontSize: 13, color: '#8a7f76' }}>Probá otra ciudad o quitá un filtro.</div>
+              <div style={{ textAlign: 'center', padding: '40px 16px', background: 'var(--t-surface)', border: '1px dashed var(--t-border-3)', borderRadius: 16 }}>
+                <div style={{ fontFamily: sg, fontWeight: 600, fontSize: 15, color: 'var(--t-text-1)', marginBottom: 5 }}>Sin restaurantes acá</div>
+                <div style={{ fontFamily: sg, fontSize: 13, color: 'var(--t-text-3)' }}>Probá otra ciudad o quitá un filtro.</div>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -381,8 +424,8 @@ export function HomeClient({ restaurants }: HomeClientProps) {
             )}
 
             {/* CTA discreta al pie */}
-            <div style={{ textAlign: 'center', padding: '32px 0 16px', borderTop: '1px solid #EFE7DF', marginTop: 24 }}>
-              <p style={{ fontFamily: sg, fontSize: 12.5, color: '#a89e95', margin: '0 0 8px' }}>
+            <div style={{ textAlign: 'center', padding: '32px 0 16px', borderTop: '1px solid var(--t-border-2)', marginTop: 24 }}>
+              <p style={{ fontFamily: sg, fontSize: 12.5, color: 'var(--t-text-4)', margin: '0 0 8px' }}>
                 ¿Tenés un restaurante?
               </p>
               <Link href="/registrar-local" style={{
@@ -412,7 +455,7 @@ function DesktopCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open
 
   return (
     <Link href={`/${r.slug}`} style={{ textDecoration: 'none' }}>
-      <div className="rcard" style={{ background: '#fff', border: '1px solid #EFE7DF', borderRadius: 18, overflow: 'hidden', boxShadow: '0 8px 22px -20px rgba(27,21,18,.4)' }}>
+      <div className="rcard" style={{ background: 'var(--t-surface)', border: '1px solid var(--t-border-2)', borderRadius: 18, overflow: 'hidden', boxShadow: '0 8px 22px -20px rgba(27,21,18,.4)' }}>
         {/* Cover */}
         <div style={{ position: 'relative', height: 158 }}>
           <div style={{
@@ -448,7 +491,7 @@ function DesktopCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open
         {/* Body */}
         <div style={{ padding: '16px 18px 18px', position: 'relative' }}>
           {/* Logo bubble */}
-          <div style={{ position: 'absolute', top: -30, right: 16, width: 62, height: 62, borderRadius: '50%', background: '#fff', overflow: 'hidden', boxShadow: '0 6px 18px -6px rgba(0,0,0,.3)', border: '2.5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'absolute', top: -30, right: 16, width: 62, height: 62, borderRadius: '50%', background: 'var(--t-surface)', overflow: 'hidden', boxShadow: '0 6px 18px -6px rgba(0,0,0,.3)', border: '2.5px solid var(--t-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {r.logo ? (
               <img src={r.logo} alt={r.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 7, boxSizing: 'border-box', display: 'block' }} />
             ) : (
@@ -458,22 +501,22 @@ function DesktopCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open
             )}
           </div>
 
-          <h3 style={{ fontFamily: sg, fontWeight: 700, fontSize: 18, letterSpacing: '-.01em', color: '#1B1512', margin: '0 0 4px', paddingRight: 44 }}>
+          <h3 style={{ fontFamily: sg, fontWeight: 700, fontSize: 18, letterSpacing: '-.01em', color: 'var(--t-text-1)', margin: '0 0 4px', paddingRight: 44 }}>
             {r.name}
           </h3>
-          <p style={{ fontFamily: sg, fontSize: 13, lineHeight: 1.45, color: '#8a7f76', margin: '0 0 14px', paddingRight: 44, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          <p style={{ fontFamily: sg, fontSize: 13, lineHeight: 1.45, color: 'var(--t-text-3)', margin: '0 0 14px', paddingRight: 44, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
             {r.tagline || r.description}
           </p>
 
           {(r.city || r.department) && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: sm, fontSize: 11, color: '#8a7f76', marginBottom: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: sm, fontSize: 11, color: 'var(--t-text-3)', marginBottom: 6 }}>
               <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#c0b5ab" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               {[r.city, r.department].filter(Boolean).join(', ')}
             </div>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 12, marginTop: 10, borderTop: '1px solid #F1EAE3' }}>
-            <span style={{ fontFamily: sm, fontSize: 11, color: st.open ? '#2C7A52' : '#a89e95' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 12, marginTop: 10, borderTop: '1px solid var(--t-border-2)' }}>
+            <span style={{ fontFamily: sm, fontSize: 11, color: st.open ? '#2C7A52' : 'var(--t-text-4)' }}>
               {st.label}
             </span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: sg, fontWeight: 700, fontSize: 13, color: '#FF6A1A' }}>
@@ -497,7 +540,7 @@ function MobileCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open:
 
   return (
     <Link href={`/${r.slug}`} style={{ textDecoration: 'none' }}>
-      <div className="rcard" style={{ background: '#fff', borderRadius: 20, padding: '10px 10px 14px', boxShadow: '0 10px 28px -18px rgba(27,21,18,.5)', border: '1.5px solid #E7DED6' }}>
+      <div className="rcard" style={{ background: 'var(--t-surface)', borderRadius: 20, padding: '10px 10px 14px', boxShadow: '0 10px 28px -18px rgba(27,21,18,.5)', border: '1.5px solid var(--t-border)' }}>
         {/* Cover photo */}
         <div style={{ position: 'relative', height: 180, borderRadius: 14, overflow: 'hidden' }}>
           <div style={{
@@ -537,7 +580,7 @@ function MobileCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open:
 
         {/* Logo + Name + Category */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 8px 0' }}>
-          <div style={{ width: 62, height: 62, borderRadius: '50%', flexShrink: 0, background: '#fff', overflow: 'hidden', boxShadow: '0 4px 14px -4px rgba(0,0,0,.22)', border: '1.5px solid #F1EAE3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 62, height: 62, borderRadius: '50%', flexShrink: 0, background: 'var(--t-surface)', overflow: 'hidden', boxShadow: '0 4px 14px -4px rgba(0,0,0,.22)', border: '1.5px solid var(--t-border-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {r.logo ? (
               <img src={r.logo} alt={r.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 7, boxSizing: 'border-box', display: 'block' }} />
             ) : (
@@ -547,11 +590,11 @@ function MobileCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open:
             )}
           </div>
           <div style={{ minWidth: 0 }}>
-            <h4 style={{ fontFamily: sg, fontWeight: 700, fontSize: 18, letterSpacing: '-.01em', color: '#1B1512', margin: 0, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <h4 style={{ fontFamily: sg, fontWeight: 700, fontSize: 18, letterSpacing: '-.01em', color: 'var(--t-text-1)', margin: 0, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {r.name}
             </h4>
             {r.category && (
-              <div style={{ fontFamily: sg, fontSize: 13, color: '#9a9088', marginTop: 2 }}>{r.category}</div>
+              <div style={{ fontFamily: sg, fontSize: 13, color: 'var(--t-text-3)', marginTop: 2 }}>{r.category}</div>
             )}
           </div>
         </div>
@@ -561,14 +604,14 @@ function MobileCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open:
           {(r.city || r.department) && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#c0b5ab" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span style={{ fontFamily: sg, fontSize: 12.5, color: '#6f655d', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <span style={{ fontFamily: sg, fontSize: 12.5, color: 'var(--t-text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {[r.city, r.department].filter(Boolean).join(', ')}
               </span>
             </div>
           )}
           <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke={st.open ? '#c0b5ab' : '#D97706'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-            <span style={{ fontFamily: sg, fontWeight: st.open ? 400 : 600, fontSize: 12.5, color: st.open ? '#6f655d' : '#B45309' }}>{st.label}</span>
+            <span style={{ fontFamily: sg, fontWeight: st.open ? 400 : 600, fontSize: 12.5, color: st.open ? 'var(--t-text-2)' : '#B45309' }}>{st.label}</span>
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect } from 'react';
 
@@ -66,13 +66,13 @@ function getStatusNow(hours: DayHoursForm[]): { open: boolean; text: string } {
 
 function ColorPicker({ label, hint, value, onChange, disabled }: { label: string; hint: string; value: string; onChange: (v: string) => void; disabled: boolean }) {
   return (
-    <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', border: '1.5px solid #E7DED6', borderRadius: 12, padding: '10px 12px', cursor: 'pointer' }}>
+    <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--t-surface)', border: '1.5px solid var(--t-border)', borderRadius: 12, padding: '10px 12px', cursor: 'pointer' }}>
       <div>
-        <div style={{ fontFamily: sg, fontSize: 13, color: '#5a5048', fontWeight: 500 }}>{label}</div>
-        <div style={{ fontFamily: sm, fontSize: 10, color: '#9a8f86', marginTop: 2 }}>{hint}</div>
+        <div style={{ fontFamily: sg, fontSize: 13, color: 'var(--t-text-2)', fontWeight: 500 }}>{label}</div>
+        <div style={{ fontFamily: sm, fontSize: 10, color: 'var(--t-text-3)', marginTop: 2 }}>{hint}</div>
       </div>
       <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontFamily: sm, fontSize: 11, color: '#9a8f86' }}>{value}</span>
+        <span style={{ fontFamily: sm, fontSize: 11, color: 'var(--t-text-3)' }}>{value}</span>
         <input
           type="color"
           value={value}
@@ -105,10 +105,10 @@ function PaletteSection({
 
   return (
     <section>
-      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-400">Paleta de colores del menú</h3>
+      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[var(--t-text-4)]">Paleta de colores del menú</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div>
-          <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: '#9a8f86', marginBottom: 10 }}>ELEGÍ UNA PALETA</div>
+          <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', marginBottom: 10 }}>ELEGÍ UNA PALETA</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
             {PALETTES.map((p) => {
               const active = isActive(p);
@@ -119,8 +119,8 @@ function PaletteSection({
                   onClick={() => applyPalette(p)}
                   disabled={isPending}
                   style={{
-                    background: active ? '#FFF7F0' : '#fff',
-                    border: `1.5px solid ${active ? p.pri : '#E7DED6'}`,
+                    background: active ? '#FFF7F0' : 'var(--t-surface)',
+                    border: `1.5px solid ${active ? p.pri : 'var(--t-border)'}`,
                     borderRadius: 12, padding: '10px 12px',
                     cursor: 'pointer', textAlign: 'left',
                     transition: 'border-color .12s, background .12s',
@@ -132,7 +132,7 @@ function PaletteSection({
                     <span style={{ width: 18, height: 18, borderRadius: 6, background: p.acc, display: 'block' }} />
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontFamily: sg, fontWeight: 600, fontSize: 12, color: '#1B1512' }}>{p.name}</span>
+                    <span style={{ fontFamily: sg, fontWeight: 600, fontSize: 12, color: 'var(--t-text-1)' }}>{p.name}</span>
                     {active && <span style={{ fontFamily: sm, fontSize: 11, color: p.pri }}>✓</span>}
                   </div>
                 </button>
@@ -141,7 +141,7 @@ function PaletteSection({
           </div>
         </div>
         <div>
-          <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: '#9a8f86', marginBottom: 10 }}>O PERSONALIZÁ</div>
+          <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', marginBottom: 10 }}>O PERSONALIZÁ</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <ColorPicker label="Primario" hint="Botones y precios" value={data.primaryColor} onChange={(v) => handleChange('primaryColor', v)} disabled={isPending} />
             <ColorPicker label="Secundario" hint="Títulos y barra inferior" value={data.secondaryColor} onChange={(v) => handleChange('secondaryColor', v)} disabled={isPending} />
@@ -197,7 +197,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
     const monHours = data.openingHours[1];
     const next = data.openingHours.map((_, i) =>
       i === 0
-        ? { on: monHours.on, open: monHours.open, close: monHours.close } // domingo mantiene el toggle del lunes
+        ? { on: monHours.on, open: monHours.open, close: monHours.close }
         : { on: monHours.on, open: monHours.open, close: monHours.close }
     );
     handleChange('openingHours', next);
@@ -219,7 +219,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
 
         {/* Sección: Información básica */}
         <section className="space-y-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--t-text-4)]">
             Información básica
           </h3>
 
@@ -289,7 +289,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
 
         {/* Sección: Branding */}
         <section className="space-y-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--t-text-4)]">
             Branding
           </h3>
 
@@ -317,7 +317,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
 
         {/* Sección: Formato del menú */}
         <section>
-          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-400">Formato del menú público</h3>
+          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[var(--t-text-4)]">Formato del menú público</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             {([
               {
@@ -358,8 +358,8 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
                   onClick={() => handleChange('menuLayout', f.id)}
                   disabled={isPending}
                   style={{
-                    background: '#fff',
-                    border: sel ? `2px solid #FF6A1A` : '1.5px solid #ece6df',
+                    background: 'var(--t-surface)',
+                    border: sel ? '2px solid #FF6A1A' : '1.5px solid var(--t-border)',
                     borderRadius: 14, padding: 14,
                     cursor: 'pointer', textAlign: 'left',
                     transition: 'border-color .12s',
@@ -370,8 +370,8 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
                   </div>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                     <div>
-                      <div style={{ fontFamily: sg, fontWeight: 600, fontSize: 13, color: '#1B1512', lineHeight: 1.2 }}>{f.name}</div>
-                      <div style={{ fontFamily: sg, fontSize: 11, color: '#8a7f76', marginTop: 2 }}>{f.desc}</div>
+                      <div style={{ fontFamily: sg, fontWeight: 600, fontSize: 13, color: 'var(--t-text-1)', lineHeight: 1.2 }}>{f.name}</div>
+                      <div style={{ fontFamily: sg, fontSize: 11, color: 'var(--t-text-3)', marginTop: 2 }}>{f.desc}</div>
                     </div>
                     <span style={{ width: 18, height: 18, borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: 11, color: '#fff', background: '#FF6A1A', opacity: sel ? 1 : 0, flexShrink: 0 }}>✓</span>
                   </div>
@@ -383,7 +383,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
 
         {/* Sección: Modo de domicilios */}
         <section>
-          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-400">Modo de domicilios</h3>
+          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[var(--t-text-4)]">Modo de domicilios</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             {([
               {
@@ -417,20 +417,20 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
                   onClick={() => handleChange('deliveryMode', mode.id)}
                   disabled={isPending}
                   style={{
-                    background: '#fff',
-                    border: sel ? '2px solid #FF6A1A' : '1.5px solid #ece6df',
+                    background: 'var(--t-surface)',
+                    border: sel ? '2px solid #FF6A1A' : '1.5px solid var(--t-border)',
                     borderRadius: 14, padding: 14,
                     cursor: 'pointer', textAlign: 'left',
                     transition: 'border-color .12s',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 56, borderRadius: 10, marginBottom: 10, background: sel ? '#FFF3EA' : '#F6F1EB', color: sel ? '#FF6A1A' : '#9a8f86' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 56, borderRadius: 10, marginBottom: 10, background: sel ? '#FFF3EA' : 'var(--t-surface-2)', color: sel ? '#FF6A1A' : 'var(--t-text-3)' }}>
                     {mode.icon}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                     <div>
-                      <div style={{ fontFamily: sg, fontWeight: 600, fontSize: 13, color: '#1B1512', lineHeight: 1.2 }}>{mode.name}</div>
-                      <div style={{ fontFamily: sg, fontSize: 11, color: '#8a7f76', marginTop: 3, lineHeight: 1.4 }}>{mode.desc}</div>
+                      <div style={{ fontFamily: sg, fontWeight: 600, fontSize: 13, color: 'var(--t-text-1)', lineHeight: 1.2 }}>{mode.name}</div>
+                      <div style={{ fontFamily: sg, fontSize: 11, color: 'var(--t-text-3)', marginTop: 3, lineHeight: 1.4 }}>{mode.desc}</div>
                     </div>
                     <span style={{ width: 18, height: 18, borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: 11, color: '#fff', background: '#FF6A1A', opacity: sel ? 1 : 0, flexShrink: 0 }}>✓</span>
                   </div>
@@ -445,7 +445,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
 
         {/* Sección: Ubicación */}
         <section className="space-y-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--t-text-4)]">
             Ubicación
           </h3>
           <Input
@@ -478,11 +478,11 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             />
           </div>
           {data.department && data.city && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, fontFamily: sm, fontSize: 11.5, color: '#8a7f76', background: '#FBF8F5', border: '1px solid #F1EAE3', borderRadius: 11, padding: '10px 13px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9, fontFamily: sm, fontSize: 11.5, color: 'var(--t-text-3)', background: 'var(--t-surface-2)', border: '1px solid var(--t-border)', borderRadius: 11, padding: '10px 13px' }}>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#FF6A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
               </svg>
-              En el home aparecerás en <b style={{ color: '#5a5048', marginLeft: 4 }}>{data.city}, {data.department}</b>
+              En el home aparecerás en <b style={{ color: 'var(--t-text-2)', marginLeft: 4 }}>{data.city}, {data.department}</b>
             </div>
           )}
           <Input
@@ -509,7 +509,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
 
         {/* Sección: Redes sociales */}
         <section className="space-y-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--t-text-4)]">
             Redes sociales
           </h3>
           <div className="flex flex-col gap-4">
@@ -535,19 +535,19 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
         {/* Sección: Horario de atención */}
         <section className="space-y-4">
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--t-text-4)]">
               Horario de atención
             </h3>
             <span style={{
               fontFamily: sm, fontSize: 11, fontWeight: 700, letterSpacing: '.04em',
               borderRadius: 999, padding: '5px 11px', flexShrink: 0,
-              color: statusNow.open ? '#14331F' : '#5a5048',
-              background: statusNow.open ? '#7BD88F' : '#EDE7E0',
+              color: statusNow.open ? '#14331F' : 'var(--t-text-2)',
+              background: statusNow.open ? '#7BD88F' : 'var(--t-surface-2)',
             }}>
               {statusNow.text}
             </span>
           </div>
-          <p style={{ fontFamily: sg, fontSize: 12.5, color: '#8a7f76', margin: 0 }}>
+          <p style={{ fontFamily: sg, fontSize: 12.5, color: 'var(--t-text-3)', margin: 0 }}>
             Activá los días que abrís y definí la hora de apertura y cierre. El menú y el home muestran automáticamente si estás abierto o cerrado.
           </p>
 
@@ -559,8 +559,8 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
                   key={dayIndex}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 14,
-                    background: day.on ? '#fff' : '#FAFAF9',
-                    border: `1.5px solid ${day.on ? '#E7DED6' : '#F1EAE3'}`,
+                    background: day.on ? 'var(--t-surface)' : 'var(--t-surface-2)',
+                    border: `1.5px solid ${day.on ? 'var(--t-border)' : 'var(--t-border-2)'}`,
                     borderRadius: 12, padding: '10px 14px',
                     transition: 'background .12s, border-color .12s',
                   }}
@@ -594,7 +594,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
                     </span>
                     <span style={{
                       fontFamily: sg, fontWeight: 600, fontSize: 13,
-                      color: day.on ? '#1B1512' : '#a89e95',
+                      color: day.on ? 'var(--t-text-1)' : 'var(--t-text-4)',
                       transition: 'color .15s',
                     }}>
                       {DAY_LABELS[dayIndex]}
@@ -609,26 +609,26 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
                         onChange={(e) => setDayHours(dayIndex, { open: e.target.value })}
                         disabled={isPending}
                         style={{
-                          fontFamily: sm, fontSize: 13, color: '#1B1512',
-                          border: '1.5px solid #E7DED6', background: '#fff',
+                          fontFamily: sm, fontSize: 13, color: 'var(--t-text-1)',
+                          border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)',
                           borderRadius: 9, padding: '7px 10px', outline: 'none',
                         }}
                       />
-                      <span style={{ fontFamily: sm, fontSize: 13, color: '#b3a89e' }}>–</span>
+                      <span style={{ fontFamily: sm, fontSize: 13, color: 'var(--t-text-4)' }}>–</span>
                       <input
                         type="time"
                         value={day.close}
                         onChange={(e) => setDayHours(dayIndex, { close: e.target.value })}
                         disabled={isPending}
                         style={{
-                          fontFamily: sm, fontSize: 13, color: '#1B1512',
-                          border: '1.5px solid #E7DED6', background: '#fff',
+                          fontFamily: sm, fontSize: 13, color: 'var(--t-text-1)',
+                          border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)',
                           borderRadius: 9, padding: '7px 10px', outline: 'none',
                         }}
                       />
                     </div>
                   ) : (
-                    <span style={{ fontFamily: sm, fontSize: 12, color: '#b3a89e' }}>Cerrado</span>
+                    <span style={{ fontFamily: sm, fontSize: 12, color: 'var(--t-text-4)' }}>Cerrado</span>
                   )}
                 </div>
               );
@@ -641,8 +641,8 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             disabled={isPending}
             style={{
               fontFamily: sg, fontWeight: 600, fontSize: 12,
-              color: '#5a5048', background: '#FBF8F5',
-              border: '1.5px solid #E7DED6', borderRadius: 10,
+              color: 'var(--t-text-2)', background: 'var(--t-surface-2)',
+              border: '1.5px solid var(--t-border)', borderRadius: 10,
               padding: '9px 13px', cursor: 'pointer',
             }}
           >
@@ -650,12 +650,12 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
           </button>
 
           <div style={{
-            fontFamily: sm, fontSize: 10.5, lineHeight: 1.9, color: '#a89e95',
-            background: '#FBF8F5', border: '1px solid #F1EAE3',
+            fontFamily: sm, fontSize: 10.5, lineHeight: 1.9, color: 'var(--t-text-4)',
+            background: 'var(--t-surface-2)', border: '1px solid var(--t-border)',
             borderRadius: 11, padding: '12px 14px',
             whiteSpace: 'pre-line',
           }}>
-            <span style={{ color: '#6f655d', fontWeight: 700 }}>openingHours</span> (schema.org){'\n'}
+            <span style={{ color: 'var(--t-text-2)', fontWeight: 700 }}>openingHours</span> (schema.org){'\n'}
             {hoursSummary}
           </div>
         </section>
@@ -663,10 +663,10 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
         {/* Sección: Usuario administrador (solo en creación) */}
         {!isEditing && (
           <section className="space-y-4">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--t-text-4)]">
               Usuario administrador
             </h3>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-[var(--t-text-3)]">
               Este usuario podrá acceder al dashboard del restaurante.
             </p>
             <Input
@@ -712,7 +712,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             className="h-4 w-4 rounded accent-orange-500"
             disabled={isPending}
           />
-          <span className="text-sm font-medium text-gray-700">Restaurante activo</span>
+          <span className="text-sm font-medium text-[var(--t-text-2)]">Restaurante activo</span>
         </label>
 
         {mutationError && (
@@ -721,7 +721,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
       </div>
 
       {/* Footer con botones */}
-      <div className="flex flex-shrink-0 gap-3 border-t border-gray-100 bg-gray-50 px-6 py-4">
+      <div className="flex flex-shrink-0 gap-3 border-t border-[var(--t-border)] bg-[var(--t-surface-2)] px-6 py-4">
         <Button type="button" variant="secondary" onClick={onCancel} disabled={isPending} className="flex-1">
           Cancelar
         </Button>

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { X, Plus, Minus, Save, Loader2, ShoppingBag, Truck, CreditCard, User } from 'lucide-react';
@@ -176,25 +176,25 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
       <div style={{
         position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column',
         width: '100%', maxWidth: 520, maxHeight: '92dvh',
-        background: '#fff', borderRadius: 20, boxShadow: '0 -8px 40px rgba(0,0,0,.18)', overflow: 'hidden',
+        background: 'var(--t-surface)', borderRadius: 20, boxShadow: '0 -8px 40px rgba(0,0,0,.18)', overflow: 'hidden',
       }} className="sm:rounded-2xl">
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '18px 20px', borderBottom: '1px solid #F1EAE3', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '18px 20px', borderBottom: '1px solid var(--t-border)', flexShrink: 0 }}>
           <div style={{ width: 40, height: 40, borderRadius: 13, background: '#FFF3EA', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
             <Save style={{ width: 18, height: 18, color: '#FF6A1A' }} />
           </div>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 16, color: '#1B1512' }}>
-              Editar pedido <span style={{ fontSize: 12, color: '#9a8f86', fontWeight: 500 }}>{order.orderNumber}</span>
+            <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--t-text-1)' }}>
+              Editar pedido <span style={{ fontSize: 12, color: 'var(--t-text-3)', fontWeight: 500 }}>{order.orderNumber}</span>
             </div>
-            <div style={{ fontSize: 11, color: '#9a8f86', marginTop: 1 }}>Corregí o ajustá cualquier dato</div>
+            <div style={{ fontSize: 11, color: 'var(--t-text-3)', marginTop: 1 }}>Corregí o ajustá cualquier dato</div>
           </div>
           <button
             onClick={onClose}
-            style={{ marginLeft: 'auto', width: 32, height: 32, borderRadius: 999, border: 0, background: '#F5F0EB', display: 'grid', placeItems: 'center', cursor: 'pointer' }}
+            style={{ marginLeft: 'auto', width: 32, height: 32, borderRadius: 999, border: 0, background: 'var(--t-surface-2)', display: 'grid', placeItems: 'center', cursor: 'pointer' }}
           >
-            <X style={{ width: 15, height: 15, color: '#5a5048' }} />
+            <X style={{ width: 15, height: 15, color: 'var(--t-text-2)' }} />
           </button>
         </div>
 
@@ -206,7 +206,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <ShoppingBag style={{ width: 14, height: 14, color: '#FF6A1A' }} />
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#4a4540' }}>Productos</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--t-text-1)' }}>Productos</span>
               </div>
               <button
                 onClick={() => { setShowAddProduct((v) => !v); setAddingAdicionalFor(null); }}
@@ -224,7 +224,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
 
             {showAddProduct && (
               <div style={{ marginBottom: 10, borderRadius: 14, border: '2px dashed #FF6A1A', padding: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <p style={{ fontSize: 11, color: '#9a8f86' }}>Elegí un producto:</p>
+                <p style={{ fontSize: 11, color: 'var(--t-text-3)' }}>Elegí un producto:</p>
 
                 {/* Category chips */}
                 {categories.length > 0 && (
@@ -234,9 +234,9 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
                       style={{
                         flexShrink: 0, padding: '4px 10px', borderRadius: 999, fontFamily: sg,
                         fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'all .12s',
-                        border: filterCategoryId === '' ? '2px solid #FF6A1A' : '1.5px solid #EFE7DF',
-                        background: filterCategoryId === '' ? '#FF6A1A' : '#fff',
-                        color: filterCategoryId === '' ? '#fff' : '#5a5048',
+                        border: filterCategoryId === '' ? '2px solid #FF6A1A' : '1.5px solid var(--t-border-2)',
+                        background: filterCategoryId === '' ? '#FF6A1A' : 'var(--t-surface)',
+                        color: filterCategoryId === '' ? '#fff' : 'var(--t-text-2)',
                       }}
                     >
                       Todos
@@ -250,9 +250,9 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
                           style={{
                             flexShrink: 0, padding: '4px 10px', borderRadius: 999, fontFamily: sg,
                             fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'all .12s',
-                            border: active ? '2px solid #FF6A1A' : '1.5px solid #EFE7DF',
-                            background: active ? '#FF6A1A' : '#fff',
-                            color: active ? '#fff' : '#5a5048',
+                            border: active ? '2px solid #FF6A1A' : '1.5px solid var(--t-border-2)',
+                            background: active ? '#FF6A1A' : 'var(--t-surface)',
+                            color: active ? '#fff' : 'var(--t-text-2)',
                           }}
                         >
                           {cat.name}
@@ -270,14 +270,14 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
                     onClick={() => addProduct(product)}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '9px 12px', borderRadius: 999, border: '1.5px solid #EFE7DF',
-                      background: '#fff', cursor: 'pointer', textAlign: 'left',
+                      padding: '9px 12px', borderRadius: 999, border: '1.5px solid var(--t-border-2)',
+                      background: 'var(--t-surface)', cursor: 'pointer', textAlign: 'left',
                       transition: 'border-color .12s',
                     }}
                     onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = '#FF6A1A'; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = '#EFE7DF'; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--t-border-2)'; }}
                   >
-                    <span style={{ fontWeight: 600, fontSize: 13, color: '#1B1512' }}>{product.name}</span>
+                    <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--t-text-1)' }}>{product.name}</span>
                     <span style={{ fontWeight: 700, fontSize: 13, color: '#FF6A1A' }}>{formatCurrency(product.price)}</span>
                   </button>
                 ))}
@@ -288,17 +288,17 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
               {items.map((item, index) => {
                 const availForItem = getAvailableAdicionales(index);
                 return (
-                  <div key={index} style={{ borderRadius: 14, border: '1.5px solid #EFE7DF', overflow: 'hidden' }}>
+                  <div key={index} style={{ borderRadius: 14, border: '1.5px solid var(--t-border-2)', overflow: 'hidden' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 600, fontSize: 13, color: '#1B1512', marginBottom: 1 }}>{item.productName}</div>
+                        <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--t-text-1)', marginBottom: 1 }}>{item.productName}</div>
                         <div style={{ fontSize: 12, color: '#FF6A1A', fontWeight: 700 }}>{formatCurrency(item.unitPrice)}</div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                        <button onClick={() => changeQty(index, -1)} style={{ width: 28, height: 28, borderRadius: 999, border: '1.5px solid #EFE7DF', background: '#fff', display: 'grid', placeItems: 'center', cursor: 'pointer' }}>
-                          <Minus style={{ width: 11, height: 11, color: '#5a5048' }} />
+                        <button onClick={() => changeQty(index, -1)} style={{ width: 28, height: 28, borderRadius: 999, border: '1.5px solid var(--t-border-2)', background: 'var(--t-surface)', display: 'grid', placeItems: 'center', cursor: 'pointer' }}>
+                          <Minus style={{ width: 11, height: 11, color: 'var(--t-text-2)' }} />
                         </button>
-                        <span style={{ fontWeight: 700, fontSize: 14, color: '#1B1512', minWidth: 18, textAlign: 'center' }}>{item.quantity}</span>
+                        <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--t-text-1)', minWidth: 18, textAlign: 'center' }}>{item.quantity}</span>
                         <button onClick={() => changeQty(index, 1)} style={{ width: 28, height: 28, borderRadius: 999, border: 0, background: '#FF6A1A', display: 'grid', placeItems: 'center', cursor: 'pointer' }}>
                           <Plus style={{ width: 11, height: 11, color: '#fff' }} />
                         </button>
@@ -306,10 +306,10 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
                     </div>
 
                     {/* Adicionales */}
-                    <div style={{ padding: '6px 12px 10px', borderTop: '1px dashed #F0EBE6' }}>
+                    <div style={{ padding: '6px 12px 10px', borderTop: '1px dashed var(--t-border)' }}>
                       {item.additionals.map((a, ai) => (
                         <div key={ai} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                          <span style={{ fontSize: 11, color: '#9a8f86' }}>↳ {a.name} <span style={{ color: '#c9bdb5' }}>+{formatCurrency(a.price)}</span></span>
+                          <span style={{ fontSize: 11, color: 'var(--t-text-3)' }}>↳ {a.name} <span style={{ color: 'var(--t-text-4)' }}>+{formatCurrency(a.price)}</span></span>
                           <button onClick={() => removeAdditional(index, ai)} style={{ width: 18, height: 18, borderRadius: 999, border: 0, background: '#fee2e2', display: 'grid', placeItems: 'center', cursor: 'pointer' }}>
                             <X style={{ width: 10, height: 10, color: '#ef4444' }} />
                           </button>
@@ -334,13 +334,13 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
                               onClick={() => addAdditional(index, a)}
                               style={{
                                 fontSize: 11, fontWeight: 500, padding: '3px 9px', borderRadius: 999,
-                                border: '1.5px solid #EFE7DF', background: '#fff', color: '#5a5048', cursor: 'pointer',
+                                border: '1.5px solid var(--t-border-2)', background: 'var(--t-surface)', color: 'var(--t-text-2)', cursor: 'pointer',
                                 transition: 'all .12s',
                               }}
                               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = '#FF6A1A'; (e.currentTarget as HTMLElement).style.color = '#FF6A1A'; }}
-                              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = '#EFE7DF'; (e.currentTarget as HTMLElement).style.color = '#5a5048'; }}
+                              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--t-border-2)'; (e.currentTarget as HTMLElement).style.color = 'var(--t-text-2)'; }}
                             >
-                              {a.name} <span style={{ color: '#c9bdb5' }}>+{formatCurrency(a.price)}</span>
+                              {a.name} <span style={{ color: 'var(--t-text-4)' }}>+{formatCurrency(a.price)}</span>
                             </button>
                           ))}
                         </div>
@@ -351,7 +351,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
               })}
 
               {items.length === 0 && (
-                <p style={{ fontSize: 12, color: '#9a8f86', textAlign: 'center', padding: '16px 0' }}>No quedan productos en el pedido</p>
+                <p style={{ fontSize: 12, color: 'var(--t-text-3)', textAlign: 'center', padding: '16px 0' }}>No quedan productos en el pedido</p>
               )}
             </div>
           </section>
@@ -360,13 +360,13 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
           <section>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
               <User style={{ width: 14, height: 14, color: '#FF6A1A' }} />
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#4a4540' }}>Datos del cliente</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--t-text-1)' }}>Datos del cliente</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <input type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Nombre completo *"
-                style={{ width: '100%', borderRadius: 12, border: '1.5px solid #EFE7DF', padding: '10px 13px', fontFamily: sg, fontSize: 13, color: '#1B1512', outline: 'none', boxSizing: 'border-box' }} />
+                style={{ width: '100%', borderRadius: 12, border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', padding: '10px 13px', fontFamily: sg, fontSize: 13, color: 'var(--t-text-1)', outline: 'none', boxSizing: 'border-box' }} />
               <input type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="Celular *"
-                style={{ width: '100%', borderRadius: 12, border: '1.5px solid #EFE7DF', padding: '10px 13px', fontFamily: sg, fontSize: 13, color: '#1B1512', outline: 'none', boxSizing: 'border-box' }} />
+                style={{ width: '100%', borderRadius: 12, border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', padding: '10px 13px', fontFamily: sg, fontSize: 13, color: 'var(--t-text-1)', outline: 'none', boxSizing: 'border-box' }} />
             </div>
           </section>
 
@@ -374,7 +374,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
           <section>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
               <Truck style={{ width: 14, height: 14, color: '#FF6A1A' }} />
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#4a4540' }}>Entrega</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--t-text-1)' }}>Entrega</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {DELIVERY_TYPES.map((t) => {
@@ -384,8 +384,8 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
                     style={{
                       padding: '10px 12px', borderRadius: 999, fontFamily: sg, fontWeight: 600, fontSize: 13,
                       cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                      transition: 'all .12s', border: `2px solid ${active ? '#FF6A1A' : '#EFE7DF'}`,
-                      background: '#fff', color: active ? '#FF6A1A' : '#5a5048',
+                      transition: 'all .12s', border: `2px solid ${active ? '#FF6A1A' : 'var(--t-border-2)'}`,
+                      background: 'var(--t-surface)', color: active ? '#FF6A1A' : 'var(--t-text-2)',
                     }}>
                     <span>{t.emoji}</span> {t.label}
                   </button>
@@ -395,9 +395,9 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
             {deliveryType === 'domicilio' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
                 <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Dirección *"
-                  style={{ width: '100%', borderRadius: 12, border: '1.5px solid #EFE7DF', padding: '10px 13px', fontFamily: sg, fontSize: 13, color: '#1B1512', outline: 'none', boxSizing: 'border-box' }} />
+                  style={{ width: '100%', borderRadius: 12, border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', padding: '10px 13px', fontFamily: sg, fontSize: 13, color: 'var(--t-text-1)', outline: 'none', boxSizing: 'border-box' }} />
                 <input type="text" value={barrio} onChange={(e) => setBarrio(e.target.value)} placeholder="Barrio o sector"
-                  style={{ width: '100%', borderRadius: 12, border: '1.5px solid #EFE7DF', padding: '10px 13px', fontFamily: sg, fontSize: 13, color: '#1B1512', outline: 'none', boxSizing: 'border-box' }} />
+                  style={{ width: '100%', borderRadius: 12, border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', padding: '10px 13px', fontFamily: sg, fontSize: 13, color: 'var(--t-text-1)', outline: 'none', boxSizing: 'border-box' }} />
               </div>
             )}
           </section>
@@ -406,7 +406,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
           <section>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
               <CreditCard style={{ width: 14, height: 14, color: '#FF6A1A' }} />
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#4a4540' }}>Método de pago</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--t-text-1)' }}>Método de pago</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {PAYMENT_METHODS.map((m) => {
@@ -416,8 +416,8 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
                     style={{
                       padding: '10px 12px', borderRadius: 999, fontFamily: sg, fontWeight: 600, fontSize: 13,
                       cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                      transition: 'all .12s', border: `2px solid ${active ? '#FF6A1A' : '#EFE7DF'}`,
-                      background: '#fff', color: active ? '#FF6A1A' : '#5a5048',
+                      transition: 'all .12s', border: `2px solid ${active ? '#FF6A1A' : 'var(--t-border-2)'}`,
+                      background: 'var(--t-surface)', color: active ? '#FF6A1A' : 'var(--t-text-2)',
                     }}>
                     <span>{m.emoji}</span> {m.value}
                   </button>
@@ -432,17 +432,17 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
         </div>
 
         {/* Footer */}
-        <div style={{ flexShrink: 0, borderTop: '1px solid #F1EAE3', background: '#FAFAF9', padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ flexShrink: 0, borderTop: '1px solid var(--t-border)', background: 'var(--t-surface-2)', padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           {items.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 13, color: '#9a8f86', fontWeight: 600 }}>Total actualizado</span>
+              <span style={{ fontSize: 13, color: 'var(--t-text-3)', fontWeight: 600 }}>Total actualizado</span>
               <span style={{ fontWeight: 800, fontSize: 18, color: '#FF6A1A' }}>{formatCurrency(total)}</span>
             </div>
           )}
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={onClose}
-              style={{ padding: '12px 18px', borderRadius: 999, border: '1.5px solid #E7DED6', background: '#fff', color: '#5a5048', fontFamily: sg, fontSize: 14, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}
+              style={{ padding: '12px 18px', borderRadius: 999, border: '1.5px solid var(--t-border)', background: 'var(--t-surface)', color: 'var(--t-text-2)', fontFamily: sg, fontSize: 14, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}
             >
               Cancelar
             </button>

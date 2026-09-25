@@ -37,14 +37,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   return (
-    <div className="flex h-screen" style={{ background: '#FBF8F5', fontFamily: "var(--font-sans, sans-serif)" }}>
+    <div className="flex h-screen" style={{ background: 'var(--t-bg)', fontFamily: "var(--font-sans, sans-serif)" }}>
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} collapsed={sidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(c => !c)} />
 
       <div className="flex flex-1 flex-col min-w-0">
         {/* Top bar — solo visible en mobile */}
         <header
           className="flex md:hidden items-center gap-3 px-4 sticky top-0 z-30"
-          style={{ height: 56, background: '#1B1512', borderBottom: '1px solid rgba(255,255,255,.08)' }}
+          style={{ height: 56, background: 'var(--t-sb-to)', borderBottom: '1px solid rgba(255,255,255,.08)' }}
         >
           <button
             onClick={() => setSidebarOpen(true)}

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { X, Phone, MapPin, MessageSquare, Package } from 'lucide-react';
@@ -72,14 +72,14 @@ export function OrderDetailModal({
       style={{
         position: 'fixed', inset: 0, zIndex: 50,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(27,21,18,.45)', backdropFilter: 'blur(4px)',
+        background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(4px)',
         fontFamily: sg,
       }}
       onClick={onClose}
     >
       <div
         style={{
-          background: '#fff', borderRadius: 24, width: '100%', maxWidth: 560,
+          background: 'var(--t-surface)', borderRadius: 24, width: '100%', maxWidth: 560,
           maxHeight: '90vh', display: 'flex', flexDirection: 'column',
           boxShadow: '0 32px 64px -20px rgba(0,0,0,.35)',
           margin: '0 16px', overflow: 'hidden',
@@ -89,7 +89,7 @@ export function OrderDetailModal({
         {/* Header */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '20px 24px 16px', borderBottom: '1px solid #F0EBE6',
+          padding: '20px 24px 16px', borderBottom: '1px solid var(--t-border)',
           flexShrink: 0,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -100,10 +100,10 @@ export function OrderDetailModal({
               <Package size={18} color="#FF6A1A" />
             </div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 16, color: '#1B1512', letterSpacing: '-.01em' }}>
+              <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--t-text-1)', letterSpacing: '-.01em' }}>
                 Pedido {order.orderNumber}
               </div>
-              <div style={{ fontFamily: sm, fontSize: 11, color: '#9a8f86', marginTop: 1 }}>
+              <div style={{ fontFamily: sm, fontSize: 11, color: 'var(--t-text-3)', marginTop: 1 }}>
                 {formatDate(order.createdAt)}
               </div>
             </div>
@@ -111,9 +111,9 @@ export function OrderDetailModal({
           <button
             onClick={onClose}
             style={{
-              width: 32, height: 32, borderRadius: 999, border: '1.5px solid #E7DED6',
-              background: '#fff', display: 'grid', placeItems: 'center',
-              cursor: 'pointer', color: '#9a8f86', flexShrink: 0,
+              width: 32, height: 32, borderRadius: 999, border: '1.5px solid var(--t-border)',
+              background: 'var(--t-surface)', display: 'grid', placeItems: 'center',
+              cursor: 'pointer', color: 'var(--t-text-3)', flexShrink: 0,
             }}
           >
             <X size={15} />
@@ -127,7 +127,7 @@ export function OrderDetailModal({
           {currentStatus && (
             <div style={{ marginBottom: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 12, color: '#9a8f86' }}>Estado actual:</span>
+                <span style={{ fontSize: 12, color: 'var(--t-text-3)' }}>Estado actual:</span>
                 <span style={{
                   borderRadius: 999, padding: '4px 12px', fontSize: 12, fontWeight: 700,
                   color: '#fff', background: currentStatus.color,
@@ -142,37 +142,37 @@ export function OrderDetailModal({
           <div style={{ marginBottom: 20 }}>
             <SectionLabel>Cliente</SectionLabel>
             <div style={{
-              background: '#FBF8F5', borderRadius: 14, padding: '14px 16px',
-              border: '1px solid #EFE7DF', display: 'flex', flexDirection: 'column', gap: 8,
+              background: 'var(--t-surface-2)', borderRadius: 14, padding: '14px 16px',
+              border: '1px solid var(--t-border-2)', display: 'flex', flexDirection: 'column', gap: 8,
             }}>
-              <div style={{ fontWeight: 700, fontSize: 15, color: '#1B1512' }}>
+              <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--t-text-1)' }}>
                 {order.customerName}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, color: '#5a5048' }}>
-                <Phone size={13} color="#9a8f86" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, color: 'var(--t-text-2)' }}>
+                <Phone size={13} color="var(--t-text-3)" />
                 {order.customerPhone}
               </div>
               {order.customerAddress && (
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: 13, color: '#5a5048' }}>
-                  <MapPin size={13} color="#9a8f86" style={{ flexShrink: 0, marginTop: 1 }} />
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: 13, color: 'var(--t-text-2)' }}>
+                  <MapPin size={13} color="var(--t-text-3)" style={{ flexShrink: 0, marginTop: 1 }} />
                   {order.customerAddress}
-                  {order.barrio && <span style={{ color: '#9a8f86' }}>— {order.barrio}</span>}
+                  {order.barrio && <span style={{ color: 'var(--t-text-3)' }}>— {order.barrio}</span>}
                 </div>
               )}
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
                 {deliveryEmoji && (
                   <span style={{
                     display: 'inline-flex', alignItems: 'center', gap: 5,
-                    background: '#fff', border: '1.5px solid #E7DED6', borderRadius: 999,
-                    padding: '4px 10px', fontSize: 12, fontWeight: 600, color: '#1B1512',
+                    background: 'var(--t-surface)', border: '1.5px solid var(--t-border)', borderRadius: 999,
+                    padding: '4px 10px', fontSize: 12, fontWeight: 600, color: 'var(--t-text-1)',
                   }}>
                     {deliveryEmoji} {order.deliveryType === 'domicilio' ? 'Domicilio' : 'Recoger en tienda'}
                   </span>
                 )}
                 <span style={{
                   display: 'inline-flex', alignItems: 'center', gap: 5,
-                  background: '#fff', border: '1.5px solid #E7DED6', borderRadius: 999,
-                  padding: '4px 10px', fontSize: 12, fontWeight: 600, color: '#1B1512',
+                  background: 'var(--t-surface)', border: '1.5px solid var(--t-border)', borderRadius: 999,
+                  padding: '4px 10px', fontSize: 12, fontWeight: 600, color: 'var(--t-text-1)',
                 }}>
                   {paymentEmoji} {order.paymentMethod}
                 </span>
@@ -183,13 +183,13 @@ export function OrderDetailModal({
           {/* Items */}
           <div style={{ marginBottom: 20 }}>
             <SectionLabel>Ítems del pedido</SectionLabel>
-            <div style={{ border: '1px solid #EFE7DF', borderRadius: 14, overflow: 'hidden' }}>
+            <div style={{ border: '1px solid var(--t-border-2)', borderRadius: 14, overflow: 'hidden' }}>
               {order.items.map((item, i) => (
                 <div
                   key={i}
                   style={{
                     padding: '12px 16px',
-                    borderBottom: i < order.items.length - 1 ? '1px solid #F0EBE6' : 'none',
+                    borderBottom: i < order.items.length - 1 ? '1px solid var(--t-border)' : 'none',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
@@ -199,13 +199,13 @@ export function OrderDetailModal({
                       return (
                         <div style={{
                           width: 56, height: 56, borderRadius: 10, flexShrink: 0,
-                          background: '#fff', border: '1px solid #e5e7eb',
+                          background: 'var(--t-surface)', border: '1px solid var(--t-border)',
                           display: 'grid', placeItems: 'center',
                         }}>
                           {img ? (
                             <img src={img} alt={item.productName} width={44} height={44} style={{ objectFit: 'contain' }} />
                           ) : (
-                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#C8BFBB" strokeWidth="1.5" strokeLinecap="round">
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--t-border-3)" strokeWidth="1.5" strokeLinecap="round">
                               <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
                             </svg>
                           )}
@@ -216,7 +216,7 @@ export function OrderDetailModal({
                     {/* Info */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-                        <div style={{ fontWeight: 600, fontSize: 14, color: '#1B1512' }}>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--t-text-1)' }}>
                           <span style={{
                             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                             width: 20, height: 20, borderRadius: 6, background: '#FF6A1A',
@@ -226,17 +226,17 @@ export function OrderDetailModal({
                           </span>
                           {item.productName}
                         </div>
-                        <div style={{ fontWeight: 700, fontSize: 14, color: '#1B1512', flexShrink: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--t-text-1)', flexShrink: 0 }}>
                           {formatCurrency(item.subtotal)}
                         </div>
                       </div>
                       {item.additionals.length > 0 && (
-                        <div style={{ marginTop: 4, fontSize: 12, color: '#9a8f86', paddingLeft: 27 }}>
+                        <div style={{ marginTop: 4, fontSize: 12, color: 'var(--t-text-3)', paddingLeft: 27 }}>
                           + {item.additionals.map((a) => a.name).join(', ')}
                         </div>
                       )}
                       {item.specialInstructions && (
-                        <div style={{ marginTop: 3, fontSize: 12, color: '#9a8f86', fontStyle: 'italic', paddingLeft: 27 }}>
+                        <div style={{ marginTop: 3, fontSize: 12, color: 'var(--t-text-3)', fontStyle: 'italic', paddingLeft: 27 }}>
                           &ldquo;{item.specialInstructions}&rdquo;
                         </div>
                       )}
@@ -246,9 +246,9 @@ export function OrderDetailModal({
               ))}
               <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '12px 16px', background: '#FBF8F5',
+                padding: '12px 16px', background: 'var(--t-surface-2)',
               }}>
-                <span style={{ fontWeight: 700, fontSize: 14, color: '#1B1512' }}>Total</span>
+                <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--t-text-1)' }}>Total</span>
                 <span style={{ fontWeight: 800, fontSize: 16, color: '#FF6A1A' }}>{formatCurrency(order.total)}</span>
               </div>
             </div>
@@ -259,10 +259,10 @@ export function OrderDetailModal({
             <div style={{ marginBottom: 20 }}>
               <SectionLabel>Notas</SectionLabel>
               <div style={{
-                display: 'flex', gap: 8, background: '#FBF8F5', borderRadius: 12,
-                padding: '12px 14px', border: '1px solid #EFE7DF', fontSize: 13, color: '#5a5048',
+                display: 'flex', gap: 8, background: 'var(--t-surface-2)', borderRadius: 12,
+                padding: '12px 14px', border: '1px solid var(--t-border-2)', fontSize: 13, color: 'var(--t-text-2)',
               }}>
-                <MessageSquare size={14} color="#9a8f86" style={{ flexShrink: 0, marginTop: 1 }} />
+                <MessageSquare size={14} color="var(--t-text-3)" style={{ flexShrink: 0, marginTop: 1 }} />
                 {order.notes}
               </div>
             </div>
@@ -288,9 +288,9 @@ export function OrderDetailModal({
                         ? `2px solid ${s.color}`
                         : isSelected
                           ? `2px solid #FF6A1A`
-                          : '1.5px solid #E7DED6',
-                      background: isCurrent ? s.color : isSelected ? '#FF6A1A' : '#fff',
-                      color: isCurrent || isSelected ? '#fff' : '#5a5048',
+                          : '1.5px solid var(--t-border)',
+                      background: isCurrent ? s.color : isSelected ? '#FF6A1A' : 'var(--t-surface)',
+                      color: isCurrent || isSelected ? '#fff' : 'var(--t-text-2)',
                       opacity: isPending && !isSelected ? 0.5 : 1,
                       transition: 'all .15s',
                     }}
@@ -313,7 +313,7 @@ export function OrderDetailModal({
 
         {/* Footer */}
         <div style={{
-          padding: '16px 24px', borderTop: '1px solid #F0EBE6', flexShrink: 0,
+          padding: '16px 24px', borderTop: '1px solid var(--t-border)', flexShrink: 0,
           display: 'flex', gap: 10,
         }}>
           <button
@@ -335,13 +335,13 @@ export function OrderDetailModal({
           <button
             onClick={onClose}
             style={{
-              padding: '12px 20px', borderRadius: 999, border: '1.5px solid #E7DED6',
-              background: '#fff', color: '#5a5048', fontFamily: sg,
+              padding: '12px 20px', borderRadius: 999, border: '1.5px solid var(--t-border)',
+              background: 'var(--t-surface)', color: 'var(--t-text-2)', fontFamily: sg,
               fontSize: 14, fontWeight: 600, cursor: 'pointer', flexShrink: 0,
               transition: 'background .12s',
             }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FBF8F5'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--t-surface-2)'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--t-surface)'; }}
           >
             Cerrar
           </button>

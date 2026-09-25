@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { Plus, Edit2, Trash2, Check, X } from 'lucide-react';
@@ -84,10 +84,10 @@ export function AdicionalesManager({ restaurantId }: Props) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28 }}>
         <div>
-          <h1 style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-.02em', color: '#1B1512', margin: 0 }}>
+          <h1 style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-.02em', color: 'var(--t-text-1)', margin: 0 }}>
             Adicionales
           </h1>
-          <p style={{ fontSize: 13, color: '#9a8f86', margin: '4px 0 0' }}>
+          <p style={{ fontSize: 13, color: 'var(--t-text-3)', margin: '4px 0 0' }}>
             Complementos que el cliente puede agregar a cualquier producto.
           </p>
         </div>
@@ -108,16 +108,16 @@ export function AdicionalesManager({ restaurantId }: Props) {
       {/* Form */}
       {showForm && (
         <div style={{
-          background: '#fff', borderRadius: 18, border: '1px solid #EFE7DF',
+          background: 'var(--t-surface)', borderRadius: 18, border: '1px solid var(--t-border-2)',
           padding: '20px 24px', marginBottom: 20,
         }}>
-          <h2 style={{ fontWeight: 600, fontSize: 15, color: '#1B1512', margin: '0 0 16px' }}>
+          <h2 style={{ fontWeight: 600, fontSize: 15, color: 'var(--t-text-1)', margin: '0 0 16px' }}>
             {editingId ? 'Editar adicional' : 'Nuevo adicional'}
           </h2>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 12, alignItems: 'end' }}>
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#5a5048', marginBottom: 6 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--t-text-2)', marginBottom: 6 }}>
                 Nombre *
               </label>
               <input
@@ -126,15 +126,15 @@ export function AdicionalesManager({ restaurantId }: Props) {
                 onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
                 placeholder="Ej: Chamoy, Gomitas (4und)"
                 style={{
-                  width: '100%', border: '1.5px solid #E7DED6', borderRadius: 10,
-                  padding: '9px 12px', fontSize: 14, fontFamily: sg, color: '#1B1512',
+                  width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 10,
+                  padding: '9px 12px', fontSize: 14, fontFamily: sg, color: 'var(--t-text-1)',
                   outline: 'none', boxSizing: 'border-box',
                 }}
               />
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#5a5048', marginBottom: 6 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--t-text-2)', marginBottom: 6 }}>
                 Precio
               </label>
               <input
@@ -145,8 +145,8 @@ export function AdicionalesManager({ restaurantId }: Props) {
                 onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))}
                 placeholder="0"
                 style={{
-                  width: 120, border: '1.5px solid #E7DED6', borderRadius: 10,
-                  padding: '9px 12px', fontSize: 14, fontFamily: sg, color: '#1B1512',
+                  width: 120, border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 10,
+                  padding: '9px 12px', fontSize: 14, fontFamily: sg, color: 'var(--t-text-1)',
                   outline: 'none',
                 }}
               />
@@ -159,7 +159,7 @@ export function AdicionalesManager({ restaurantId }: Props) {
                 onChange={(e) => setForm((p) => ({ ...p, isActive: e.target.checked }))}
                 style={{ accentColor: '#FF6A1A', width: 16, height: 16 }}
               />
-              <span style={{ fontSize: 13, fontWeight: 500, color: '#5a5048' }}>Activo</span>
+              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--t-text-2)' }}>Activo</span>
             </label>
           </div>
 
@@ -171,9 +171,9 @@ export function AdicionalesManager({ restaurantId }: Props) {
             <button
               onClick={cancel}
               style={{
-                padding: '9px 18px', border: '1.5px solid #E7DED6', borderRadius: 999,
-                background: '#fff', fontFamily: sg, fontWeight: 600, fontSize: 13,
-                color: '#5a5048', cursor: 'pointer',
+                padding: '9px 18px', border: '1.5px solid var(--t-border)', borderRadius: 999,
+                background: 'var(--t-surface)', fontFamily: sg, fontWeight: 600, fontSize: 13,
+                color: 'var(--t-text-2)', cursor: 'pointer',
               }}
             >
               Cancelar
@@ -197,17 +197,17 @@ export function AdicionalesManager({ restaurantId }: Props) {
       {isLoading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {[1, 2, 3].map((i) => (
-            <div key={i} style={{ background: '#fff', borderRadius: 14, border: '1px solid #EFE7DF', height: 64, opacity: 0.5 }} />
+            <div key={i} style={{ background: 'var(--t-surface)', borderRadius: 14, border: '1px solid var(--t-border-2)', height: 64, opacity: 0.5 }} />
           ))}
         </div>
       ) : adicionales.length === 0 ? (
         <div style={{
-          background: '#fff', borderRadius: 18, border: '1.5px dashed #E7DED6',
+          background: 'var(--t-surface)', borderRadius: 18, border: '1.5px dashed var(--t-border)',
           padding: 48, textAlign: 'center',
         }}>
           <div style={{ fontSize: 36, marginBottom: 12 }}>🍬</div>
-          <p style={{ fontWeight: 600, fontSize: 15, color: '#1B1512', margin: '0 0 6px' }}>Sin adicionales aún</p>
-          <p style={{ fontSize: 13, color: '#9a8f86', margin: 0 }}>
+          <p style={{ fontWeight: 600, fontSize: 15, color: 'var(--t-text-1)', margin: '0 0 6px' }}>Sin adicionales aún</p>
+          <p style={{ fontSize: 13, color: 'var(--t-text-3)', margin: 0 }}>
             Creá el primero para poder asignarlo a tus productos.
           </p>
         </div>
@@ -218,16 +218,16 @@ export function AdicionalesManager({ restaurantId }: Props) {
               key={a.id}
               style={{
                 display: 'flex', alignItems: 'center', gap: 14,
-                background: '#fff', borderRadius: 14, border: '1px solid #EFE7DF',
+                background: 'var(--t-surface)', borderRadius: 14, border: '1px solid var(--t-border-2)',
                 padding: '14px 18px', opacity: a.isActive ? 1 : 0.55,
               }}
             >
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontWeight: 600, fontSize: 14, color: '#1B1512' }}>{a.name}</span>
+                  <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--t-text-1)' }}>{a.name}</span>
                   {!a.isActive && (
                     <span style={{
-                      background: '#F3F4F6', color: '#9CA3AF', fontSize: 10,
+                      background: 'var(--t-surface-2)', color: 'var(--t-text-4)', fontSize: 10,
                       fontFamily: sm, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
                       letterSpacing: '.06em',
                     }}>
@@ -248,14 +248,14 @@ export function AdicionalesManager({ restaurantId }: Props) {
                 >
                   {a.isActive
                     ? <Check size={16} color="#22c55e" />
-                    : <X size={16} color="#d1d5db" />
+                    : <X size={16} color="var(--t-text-4)" />
                   }
                 </button>
                 <button
                   onClick={() => openEdit(a)}
                   style={{ padding: 8, borderRadius: 999, border: 'none', background: 'none', cursor: 'pointer' }}
                 >
-                  <Edit2 size={15} color="#9a8f86" />
+                  <Edit2 size={15} color="var(--t-text-3)" />
                 </button>
                 <button
                   onClick={() => handleDelete(a)}

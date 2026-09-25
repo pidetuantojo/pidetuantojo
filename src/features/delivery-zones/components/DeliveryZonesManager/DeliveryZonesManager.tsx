@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 
@@ -15,12 +15,6 @@ import {
 
 const sg = "var(--font-sans, sans-serif)";
 const sm = "var(--font-mono, monospace)";
-
-const COLOR_PRIMARY = '#FF6A1A';
-const COLOR_BG = '#FBF8F5';
-const COLOR_BORDER = '#EFE7DF';
-const COLOR_DARK = '#1B1512';
-const COLOR_MUTED = '#9a8f86';
 
 interface ZoneFormState {
   name: string;
@@ -139,10 +133,10 @@ export function DeliveryZonesManager() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: COLOR_DARK, letterSpacing: '-.02em' }}>
+          <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: 'var(--t-text-1)', letterSpacing: '-.02em' }}>
             Zonas de domicilio
           </h2>
-          <p style={{ margin: '4px 0 0', fontSize: 14, color: COLOR_MUTED }}>
+          <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--t-text-3)' }}>
             Definí los barrios o sectores con su precio de envío
           </p>
         </div>
@@ -151,7 +145,7 @@ export function DeliveryZonesManager() {
           style={{
             display: 'flex', alignItems: 'center', gap: 8,
             padding: '10px 18px', borderRadius: 999, border: 'none',
-            background: COLOR_PRIMARY, color: '#fff',
+            background: '#FF6A1A', color: '#fff',
             fontFamily: sg, fontWeight: 700, fontSize: 14, cursor: 'pointer',
           }}
         >
@@ -164,13 +158,13 @@ export function DeliveryZonesManager() {
 
       {/* Formulario inline */}
       {showForm && (
-        <section style={{ background: '#fff', border: `1.5px solid ${COLOR_PRIMARY}`, borderRadius: 16, padding: 20 }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 700, color: COLOR_DARK }}>
+        <section style={{ background: 'var(--t-surface)', border: '1.5px solid #FF6A1A', borderRadius: 16, padding: 20 }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 700, color: 'var(--t-text-1)' }}>
             {editing ? `Editar zona: ${editing.name}` : 'Nueva zona'}
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div>
-              <label style={{ display: 'block', fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: COLOR_MUTED, textTransform: 'uppercase', marginBottom: 6 }}>
+              <label style={{ display: 'block', fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', textTransform: 'uppercase', marginBottom: 6 }}>
                 Nombre del sector / barrio
               </label>
               <input
@@ -179,14 +173,14 @@ export function DeliveryZonesManager() {
                 onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
                 placeholder="Ej: Centro, Laureles, Envigado..."
                 style={{
-                  width: '100%', border: `1.5px solid ${COLOR_BORDER}`, borderRadius: 10,
-                  padding: '10px 12px', fontSize: 14, fontFamily: sg, color: COLOR_DARK,
+                  width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 10,
+                  padding: '10px 12px', fontSize: 14, fontFamily: sg, color: 'var(--t-text-1)',
                   outline: 'none', boxSizing: 'border-box',
                 }}
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: COLOR_MUTED, textTransform: 'uppercase', marginBottom: 6 }}>
+              <label style={{ display: 'block', fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', textTransform: 'uppercase', marginBottom: 6 }}>
                 Precio del domicilio ($)
               </label>
               <input
@@ -196,8 +190,8 @@ export function DeliveryZonesManager() {
                 placeholder="Ej: 5000"
                 min="0"
                 style={{
-                  width: '100%', border: `1.5px solid ${COLOR_BORDER}`, borderRadius: 10,
-                  padding: '10px 12px', fontSize: 14, fontFamily: sg, color: COLOR_DARK,
+                  width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 10,
+                  padding: '10px 12px', fontSize: 14, fontFamily: sg, color: 'var(--t-text-1)',
                   outline: 'none', boxSizing: 'border-box',
                 }}
               />
@@ -212,8 +206,8 @@ export function DeliveryZonesManager() {
                 onClick={cancelForm}
                 style={{
                   flex: 1, padding: '10px', borderRadius: 999,
-                  border: `1.5px solid ${COLOR_BORDER}`, background: '#fff',
-                  fontFamily: sg, fontWeight: 600, fontSize: 14, color: COLOR_MUTED,
+                  border: '1.5px solid var(--t-border)', background: 'var(--t-surface)',
+                  fontFamily: sg, fontWeight: 600, fontSize: 14, color: 'var(--t-text-3)',
                   cursor: 'pointer',
                 }}
               >
@@ -224,7 +218,7 @@ export function DeliveryZonesManager() {
                 disabled={isPending}
                 style={{
                   flex: 2, padding: '10px', borderRadius: 999, border: 'none',
-                  background: COLOR_PRIMARY, color: '#fff',
+                  background: '#FF6A1A', color: '#fff',
                   fontFamily: sg, fontWeight: 700, fontSize: 14,
                   cursor: isPending ? 'default' : 'pointer',
                   opacity: isPending ? 0.7 : 1,
@@ -240,31 +234,31 @@ export function DeliveryZonesManager() {
       {/* Lista de zonas */}
       <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke={COLOR_MUTED} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--t-text-3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8zM5.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM18.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>
           </svg>
-          <span style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.08em', color: COLOR_MUTED, textTransform: 'uppercase' }}>
+          <span style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.08em', color: 'var(--t-text-3)', textTransform: 'uppercase' }}>
             Zonas configuradas ({zones.length})
           </span>
         </div>
 
         {zones.length === 0 ? (
           <div style={{
-            border: `2px dashed ${COLOR_BORDER}`, borderRadius: 16,
+            border: '2px dashed var(--t-border)', borderRadius: 16,
             padding: '40px 20px', textAlign: 'center',
-            background: COLOR_BG,
+            background: 'var(--t-surface-2)',
           }}>
             <div style={{ fontSize: 36, marginBottom: 12 }}>🗺️</div>
-            <p style={{ fontFamily: sg, fontWeight: 700, fontSize: 15, color: COLOR_DARK, margin: '0 0 6px' }}>
+            <p style={{ fontFamily: sg, fontWeight: 700, fontSize: 15, color: 'var(--t-text-1)', margin: '0 0 6px' }}>
               Todavía no hay zonas configuradas
             </p>
-            <p style={{ fontFamily: sg, fontSize: 13, color: COLOR_MUTED, margin: '0 0 16px' }}>
+            <p style={{ fontFamily: sg, fontSize: 13, color: 'var(--t-text-3)', margin: '0 0 16px' }}>
               Agregá barrios o sectores con su precio de envío correspondiente
             </p>
             <button
               onClick={openAdd}
               style={{
-                fontFamily: sg, fontWeight: 700, fontSize: 13, color: COLOR_PRIMARY,
+                fontFamily: sg, fontWeight: 700, fontSize: 13, color: '#FF6A1A',
                 background: 'none', border: 'none', cursor: 'pointer', padding: 0, borderRadius: 999,
               }}
             >
@@ -307,18 +301,18 @@ function ZoneRow({ zone, onEdit, onToggleActive, onDelete, isToggling, isDeletin
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12,
-      background: '#fff', border: `1px solid #EFE7DF`,
+      background: 'var(--t-surface)', border: '1px solid var(--t-border-2)',
       borderRadius: 14, padding: '12px 16px',
       boxShadow: '0 1px 4px rgba(0,0,0,.04)',
     }}>
       {/* Sort order */}
-      <span style={{ fontFamily: sm, fontSize: 11, color: '#9a8f86', minWidth: 18, textAlign: 'center' }}>
+      <span style={{ fontFamily: sm, fontSize: 11, color: 'var(--t-text-3)', minWidth: 18, textAlign: 'center' }}>
         {zone.sortOrder}
       </span>
 
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: sg, fontWeight: 700, fontSize: 14, color: '#1B1512' }}>
+        <div style={{ fontFamily: sg, fontWeight: 700, fontSize: 14, color: 'var(--t-text-1)' }}>
           {zone.name}
         </div>
         <div style={{ fontFamily: sg, fontWeight: 800, fontSize: 13, color: '#FF6A1A', marginTop: 1 }}>
@@ -330,15 +324,14 @@ function ZoneRow({ zone, onEdit, onToggleActive, onDelete, isToggling, isDeletin
       <span style={{
         padding: '4px 10px', borderRadius: 999,
         fontFamily: sm, fontSize: 10, fontWeight: 700, letterSpacing: '.04em',
-        background: zone.isActive ? '#d1fae5' : '#f3f4f6',
-        color: zone.isActive ? '#059669' : '#6b7280',
+        background: zone.isActive ? '#d1fae5' : 'var(--t-surface-2)',
+        color: zone.isActive ? '#059669' : 'var(--t-text-3)',
       }}>
         {zone.isActive ? 'Activa' : 'Inactiva'}
       </span>
 
       {/* Acciones */}
       <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-        {/* Toggle activo */}
         <button
           onClick={() => onToggleActive(zone)}
           disabled={isToggling}
@@ -346,7 +339,7 @@ function ZoneRow({ zone, onEdit, onToggleActive, onDelete, isToggling, isDeletin
           style={{
             width: 32, height: 32, borderRadius: 999, border: 'none', background: 'none',
             cursor: isToggling ? 'default' : 'pointer', display: 'grid', placeItems: 'center',
-            color: '#9a8f86', opacity: isToggling ? 0.5 : 1,
+            color: 'var(--t-text-3)', opacity: isToggling ? 0.5 : 1,
           }}
         >
           {zone.isActive ? (
@@ -362,13 +355,12 @@ function ZoneRow({ zone, onEdit, onToggleActive, onDelete, isToggling, isDeletin
           )}
         </button>
 
-        {/* Editar */}
         <button
           onClick={() => onEdit(zone)}
           title="Editar"
           style={{
             width: 32, height: 32, borderRadius: 999, border: 'none', background: 'none',
-            cursor: 'pointer', display: 'grid', placeItems: 'center', color: '#9a8f86',
+            cursor: 'pointer', display: 'grid', placeItems: 'center', color: 'var(--t-text-3)',
           }}
         >
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -377,7 +369,6 @@ function ZoneRow({ zone, onEdit, onToggleActive, onDelete, isToggling, isDeletin
           </svg>
         </button>
 
-        {/* Eliminar */}
         <button
           onClick={() => onDelete(zone)}
           disabled={isDeleting}
@@ -385,7 +376,7 @@ function ZoneRow({ zone, onEdit, onToggleActive, onDelete, isToggling, isDeletin
           style={{
             width: 32, height: 32, borderRadius: 999, border: 'none', background: 'none',
             cursor: isDeleting ? 'default' : 'pointer', display: 'grid', placeItems: 'center',
-            color: '#9a8f86', opacity: isDeleting ? 0.5 : 1,
+            color: 'var(--t-text-3)', opacity: isDeleting ? 0.5 : 1,
           }}
         >
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

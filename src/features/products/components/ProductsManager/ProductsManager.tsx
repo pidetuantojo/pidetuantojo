@@ -109,8 +109,8 @@ export function ProductsManager() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Productos</h2>
-          <p className="mt-0.5 text-sm text-gray-500">
+          <h2 className="text-2xl font-bold" style={{ color: 'var(--t-text-1)' }}>Productos</h2>
+          <p className="mt-0.5 text-sm" style={{ color: 'var(--t-text-2)' }}>
             {products.length} producto{products.length !== 1 ? 's' : ''} en el menú
           </p>
         </div>
@@ -123,13 +123,18 @@ export function ProductsManager() {
       {/* Filtros */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'var(--t-text-4)' }} />
           <input
             type="text"
             placeholder="Buscar producto..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+            className="w-full rounded-lg py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+            style={{
+              border: '1px solid var(--t-input-border)',
+              background: 'var(--t-input-bg)',
+              color: 'var(--t-text-1)',
+            }}
           />
         </div>
         <Select
@@ -147,11 +152,11 @@ export function ProductsManager() {
       {/* Lista */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <Package className="h-12 w-12 text-gray-300" />
-          <h3 className="mt-4 text-lg font-medium text-gray-900">
+          <Package className="h-12 w-12" style={{ color: 'var(--t-text-4)' }} />
+          <h3 className="mt-4 text-lg font-medium" style={{ color: 'var(--t-text-1)' }}>
             {search || filterCategory ? 'Sin resultados' : 'Sin productos'}
           </h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm" style={{ color: 'var(--t-text-2)' }}>
             {search || filterCategory
               ? 'Probá con otros filtros.'
               : 'Creá los productos de tu menú.'}

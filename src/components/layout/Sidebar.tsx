@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/features/auth';
 import { Logo, LogoMark } from '@/components/ui/Logo';
+import { useTheme } from '@/components/providers/ThemeProvider';
 import { useRestaurant } from '@/features/restaurants/hooks/useRestaurants';
 import { ROUTES } from '@/constants/routes';
 
@@ -140,6 +141,7 @@ interface SidebarProps {
 
 export function Sidebar({ open = false, onClose, collapsed = false, onToggleCollapse }: SidebarProps) {
   const { user, signOut } = useAuth();
+  const { theme, toggle: toggleTheme } = useTheme();
   const pathname = usePathname();
   const isSuperAdmin = user?.role === 'super_admin';
   const isViewOnly = user?.role === 'restaurant_view';
@@ -165,7 +167,7 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
       className={`flex flex-shrink-0 flex-col fixed inset-y-0 left-0 z-50 md:static md:z-auto transition-all duration-300 ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
       style={{
         width: collapsed ? 68 : 260,
-        background: 'radial-gradient(120% 60% at 20% 0%, #3a2417, #1B1512 55%)',
+        background: 'radial-gradient(120% 60% at 20% 0%, var(--t-sb-from), var(--t-sb-to) 55%)',
         minHeight: '100vh',
         padding: collapsed ? '26px 10px' : '26px 18px',
         fontFamily: sg,
@@ -196,7 +198,7 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
       </div>
 
       {/* Divider */}
-      <div style={{ height: 1, background: 'rgba(255,255,255,.08)', margin: '22px 8px' }} />
+      <div style={{ height: 1, background: 'var(--t-sb-border)', margin: '22px 8px' }} />
 
       {/* Restaurant selector */}
       {!isSuperAdmin && restaurant && (
@@ -205,7 +207,7 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
             display: 'flex', alignItems: 'center', gap: 11,
             padding: collapsed ? '11px 4px' : '11px 12px',
             justifyContent: collapsed ? 'center' : 'flex-start',
-            borderRadius: 13, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.09)',
+            borderRadius: 13, background: 'var(--t-sb-glass)', border: '1px solid var(--t-sb-border)',
             marginBottom: 20,
           }}
         >
@@ -228,7 +230,7 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
               <div style={{ fontWeight: 600, fontSize: 14, color: '#fbf6f1', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {restaurant.name}
               </div>
-              <div style={{ fontFamily: sm, fontSize: 10, color: restaurant.isActive ? '#7BD88F' : '#b8aaa0' }}>
+              <div style={{ fontFamily: sm, fontSize: 10, color: restaurant.isActive ? '#7BD88F' : 'var(--t-sb-muted)' }}>
                 {restaurant.isActive ? '● Abierto' : '● Cerrado'}
               </div>
             </div>
@@ -254,7 +256,7 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
                 borderRadius: 11, fontWeight: 500, fontSize: 14, textDecoration: 'none',
                 transition: 'background .15s, color .15s',
                 background: active ? 'linear-gradient(135deg, rgba(255,138,43,.22), rgba(234,59,46,.14))' : 'transparent',
-                color: active ? '#fff' : '#b8aaa0',
+                color: active ? '#fff' : 'var(--t-sb-muted)',
               }}
             >
               {icon}
@@ -273,8 +275,8 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
           style={{
             alignItems: 'center', justifyContent: 'center',
             width: '100%', padding: '9px 0', marginBottom: 8,
-            borderRadius: 11, border: 'none', background: 'rgba(255,255,255,.06)',
-            cursor: 'pointer', color: '#b8aaa0', transition: 'background .15s',
+            borderRadius: 11, border: 'none', background: 'var(--t-sb-glass)',
+            cursor: 'pointer', color: 'var(--t-sb-muted)', transition: 'background .15s',
           }}
           title={collapsed ? 'Expandir' : 'Contraer'}
         >
@@ -289,7 +291,7 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
           <div
             style={{
               display: 'flex', alignItems: 'center', gap: 11, padding: '12px 10px',
-              borderRadius: 12, background: 'rgba(255,255,255,.05)',
+              borderRadius: 12, background: 'var(--t-sb-glass)',
             }}
           >
             <div
@@ -306,12 +308,38 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
               <div style={{ fontWeight: 600, fontSize: 13, color: '#fbf6f1', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {user?.displayName ?? 'Admin'}
               </div>
-              <div style={{ fontFamily: sm, fontSize: 10, color: '#b8aaa0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{ fontFamily: sm, fontSize: 10, color: 'var(--t-sb-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {user?.email}
               </div>
             </div>
           </div>
         )}
+
+        {/* Toggle tema */}
+        <button
+          onClick={toggleTheme}
+          title={collapsed ? (theme === 'dark' ? 'Modo claro' : 'Modo oscuro') : undefined}
+          style={{
+            display: 'flex', alignItems: 'center',
+            gap: collapsed ? 0 : 12,
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            padding: collapsed ? '11px 0' : '11px 14px',
+            borderRadius: 11, fontWeight: 500, fontSize: 14, color: 'var(--t-sb-muted)',
+            background: 'none', border: 'none', cursor: 'pointer', width: '100%',
+            marginBottom: 2, fontFamily: sg, transition: 'color .15s',
+          }}
+        >
+          {theme === 'dark' ? (
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          )}
+          {!collapsed && (theme === 'dark' ? 'Modo claro' : 'Modo oscuro')}
+        </button>
 
         <button
           onClick={() => signOut()}
@@ -321,7 +349,7 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
             gap: collapsed ? 0 : 12,
             justifyContent: collapsed ? 'center' : 'flex-start',
             padding: collapsed ? '11px 0' : '11px 14px',
-            borderRadius: 11, fontWeight: 500, fontSize: 14, color: '#b8aaa0',
+            borderRadius: 11, fontWeight: 500, fontSize: 14, color: 'var(--t-sb-muted)',
             background: 'none', border: 'none', cursor: 'pointer', width: '100%',
             marginTop: 6, fontFamily: sg, transition: 'color .15s',
           }}

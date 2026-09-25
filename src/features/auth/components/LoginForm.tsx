@@ -140,7 +140,7 @@ export function LoginForm() {
       </div>
 
       {/* ── Panel derecho (formulario) ── */}
-      <div className="flex flex-1 flex-col items-center justify-center px-14 py-12" style={{ background: '#FBF8F5' }}>
+      <div className="flex flex-1 flex-col items-center justify-center px-14 py-12" style={{ background: 'var(--t-auth-bg, var(--t-bg))' }}>
 
         {/* Logo mobile */}
         <div className="mb-8 lg:hidden">
@@ -148,16 +148,16 @@ export function LoginForm() {
         </div>
 
         <div className="w-full max-w-[360px]">
-          <h1 style={{ fontWeight: 600, fontSize: 26, letterSpacing: '-0.02em', color: '#1B1512', margin: '0 0 6px' }}>
+          <h1 style={{ fontWeight: 600, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--t-text-1)', margin: '0 0 6px' }}>
             Ingresá a tu cuenta
           </h1>
-          <p style={{ fontSize: 14, color: '#8a7f76', margin: '0 0 30px' }}>
+          <p style={{ fontSize: 14, color: 'var(--t-text-3)', margin: '0 0 30px' }}>
             Gestioná tu local desde donde estés.
           </p>
 
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: 18 }}>
-              <label style={{ fontWeight: 500, fontSize: 13, color: '#5a5048', display: 'block', marginBottom: 7 }}>
+              <label style={{ fontWeight: 500, fontSize: 13, color: 'var(--t-text-2)', display: 'block', marginBottom: 7 }}>
                 Correo electrónico
               </label>
               <input
@@ -166,15 +166,15 @@ export function LoginForm() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="hola@turestaurante.com"
-                style={{ fontFamily: sg, fontSize: 15, color: '#1B1512', width: '100%', border: '1.5px solid #E7DED6', background: '#fff', borderRadius: 12, padding: '14px 16px', outline: 'none', transition: 'border-color .15s, box-shadow .15s' }}
+                style={{ fontFamily: sg, fontSize: 15, color: 'var(--t-text-1)', width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 12, padding: '14px 16px', outline: 'none', transition: 'border-color .15s, box-shadow .15s' }}
                 onFocus={(e) => { e.target.style.borderColor = '#FF6A1A'; e.target.style.boxShadow = '0 0 0 4px rgba(255,106,26,.13)'; }}
-                onBlur={(e) => { e.target.style.borderColor = '#E7DED6'; e.target.style.boxShadow = 'none'; }}
+                onBlur={(e) => { e.target.style.borderColor = 'var(--t-input-border)'; e.target.style.boxShadow = 'none'; }}
               />
             </div>
 
             <div style={{ marginBottom: 14 }}>
               <div className="flex items-baseline justify-between" style={{ marginBottom: 7 }}>
-                <label style={{ fontWeight: 500, fontSize: 13, color: '#5a5048' }}>Contraseña</label>
+                <label style={{ fontWeight: 500, fontSize: 13, color: 'var(--t-text-2)' }}>Contraseña</label>
                 <button type="button" style={{ fontFamily: sg, fontSize: 12, color: '#FF6A1A', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', padding: 0, borderRadius: 999 }}>
                   ¿La olvidaste?
                 </button>
@@ -185,9 +185,9 @@ export function LoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                style={{ fontFamily: sg, fontSize: 15, color: '#1B1512', width: '100%', border: '1.5px solid #E7DED6', background: '#fff', borderRadius: 12, padding: '14px 16px', outline: 'none', transition: 'border-color .15s, box-shadow .15s' }}
+                style={{ fontFamily: sg, fontSize: 15, color: 'var(--t-text-1)', width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 12, padding: '14px 16px', outline: 'none', transition: 'border-color .15s, box-shadow .15s' }}
                 onFocus={(e) => { e.target.style.borderColor = '#FF6A1A'; e.target.style.boxShadow = '0 0 0 4px rgba(255,106,26,.13)'; }}
-                onBlur={(e) => { e.target.style.borderColor = '#E7DED6'; e.target.style.boxShadow = 'none'; }}
+                onBlur={(e) => { e.target.style.borderColor = 'var(--t-input-border)'; e.target.style.boxShadow = 'none'; }}
               />
             </div>
 
@@ -216,7 +216,7 @@ export function LoginForm() {
             </button>
           </form>
 
-          <p style={{ fontSize: 13, color: '#8a7f76', textAlign: 'center', margin: '26px 0 0' }}>
+          <p style={{ fontSize: 13, color: 'var(--t-text-3)', textAlign: 'center', margin: '26px 0 0' }}>
             ¿No tenés cuenta?{' '}
             <a href="/registrar-local" style={{ color: '#FF6A1A', textDecoration: 'none', fontWeight: 600 }}>
               Registrá tu local

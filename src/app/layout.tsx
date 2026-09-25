@@ -3,6 +3,7 @@ import { Unbounded, Manrope, DM_Mono, Lexend } from 'next/font/google';
 import * as RadixTooltip from '@radix-ui/react-tooltip';
 import { AuthProvider } from '@/features/auth';
 import { QueryProvider } from '@/components/providers/QueryProvider';
+import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import './globals.css';
 
 const unbounded = Unbounded({ subsets: ['latin'], variable: '--font-display', weight: ['600', '700'] });
@@ -27,6 +28,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es">
       <body className={`${unbounded.variable} ${manrope.variable} ${dmMono.variable} ${lexend.variable} ${manrope.className}`}>
+        {/* Anti-flash: aplica el tema ANTES de que React hidrate */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem('theme');if(t==='dark'){document.documentElement.classList.add('dark');document.documentElement.setAttribute('data-theme','dark');}}catch(e){}` }} />
+
         {/* SVG defs globales — máscara compartida por todos los LogoMark */}
         <svg width="0" height="0" aria-hidden="true" style={{ position: 'absolute' }}>
           <defs>
@@ -41,7 +46,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </svg>
         <RadixTooltip.Provider delayDuration={300}>
           <QueryProvider>
-            <AuthProvider>{children}</AuthProvider>
+            <ThemeProvider>
+              <AuthProvider>{children}</AuthProvider>
+            </ThemeProvider>
           </QueryProvider>
         </RadixTooltip.Provider>
       </body>

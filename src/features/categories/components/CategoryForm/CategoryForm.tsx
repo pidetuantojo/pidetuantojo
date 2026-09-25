@@ -78,7 +78,7 @@ export function CategoryForm({
             className="h-4 w-4 rounded accent-orange-500"
             disabled={isPending}
           />
-          <span className="text-sm font-medium text-gray-700">Categoría activa</span>
+          <span className="text-sm font-medium text-[var(--t-text-2)]">Categoría activa</span>
         </label>
 
         {mutationError && (
@@ -86,7 +86,7 @@ export function CategoryForm({
         )}
       </div>
 
-      <div className="flex gap-3 border-t border-gray-100 bg-gray-50 px-6 py-4">
+      <div className="flex gap-3 border-t border-[var(--t-border)] bg-[var(--t-surface-2)] px-6 py-4">
         <Button type="button" variant="secondary" onClick={onCancel} disabled={isPending} className="flex-1">
           Cancelar
         </Button>

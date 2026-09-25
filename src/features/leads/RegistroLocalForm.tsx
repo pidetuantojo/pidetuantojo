@@ -131,13 +131,13 @@ export function RegistroLocalForm() {
   // ── field style helpers ──────────────────────────────────────────────────
 
   const input = (error?: string): CSSProperties => ({
-    width: '100%', fontFamily: sg, fontSize: 14, color: '#1B1512',
-    background: '#fff', border: `1.5px solid ${error ? '#EA3B2E' : '#E7DED6'}`,
+    width: '100%', fontFamily: sg, fontSize: 14, color: 'var(--t-text-1)',
+    background: 'var(--t-input-bg)', border: `1.5px solid ${error ? '#EA3B2E' : 'var(--t-input-border)'}`,
     borderRadius: 10, padding: '11px 14px', outline: 'none', boxSizing: 'border-box',
   });
 
   const label: CSSProperties = {
-    fontFamily: sg, fontSize: 11, fontWeight: 700, color: '#7a6f67',
+    fontFamily: sg, fontSize: 11, fontWeight: 700, color: 'var(--t-text-2)',
     letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 6, display: 'block',
   };
 
@@ -148,7 +148,7 @@ export function RegistroLocalForm() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: `
-        body { margin: 0; background: #FBF8F5; }
+        body { margin: 0; background: var(--t-bg); }
         .rl-layout { display: flex; min-height: 100vh; }
         .rl-panel { width: 400px; min-width: 400px; position: sticky; top: 0; height: 100vh; overflow: hidden; }
         .rl-main { flex: 1; display: flex; flex-direction: column; min-height: 100vh; overflow-y: auto; }
@@ -178,15 +178,15 @@ export function RegistroLocalForm() {
       <div className="rl-header" style={{
         position: 'sticky', top: 0, zIndex: 10,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: 'rgba(251,248,245,.92)', backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid #EFE7DF',
+        background: 'var(--t-nav-glass)', backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid var(--t-border)',
       }}>
         <Logo variant="light" size={15} />
         <Link href="/" style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
-          fontFamily: sg, fontSize: 13, fontWeight: 600, color: '#5a4f47',
+          fontFamily: sg, fontSize: 13, fontWeight: 600, color: 'var(--t-text-2)',
           textDecoration: 'none', padding: '8px 14px',
-          border: '1.5px solid #E7DED6', borderRadius: 10, background: '#fff',
+          border: '1.5px solid var(--t-border)', borderRadius: 10, background: 'var(--t-surface)',
         }}>
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <path d="M19 12H5M12 5l-7 7 7 7"/>
@@ -199,13 +199,13 @@ export function RegistroLocalForm() {
         // ── success ──────────────────────────────────────────────────────────
         <div style={{
           flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-          justifyContent: 'center', padding: '60px 24px', background: '#FBF8F5',
+          justifyContent: 'center', padding: '60px 24px', background: 'var(--t-bg)',
         }}>
           <div style={{
-            background: '#fff', borderRadius: 24, padding: '52px 48px',
+            background: 'var(--t-surface)', borderRadius: 24, padding: '52px 48px',
             maxWidth: 500, width: '100%', textAlign: 'center',
             boxShadow: '0 24px 60px -20px rgba(27,21,18,.12)',
-            border: '1px solid #F0E8E1',
+            border: '1px solid var(--t-border)',
           }}>
             {/* checkmark */}
             <div style={{
@@ -221,15 +221,15 @@ export function RegistroLocalForm() {
 
             <h1 style={{
               fontFamily: sg, fontSize: 28, fontWeight: 700,
-              color: '#1B1512', letterSpacing: '-0.03em', margin: '0 0 12px',
+              color: 'var(--t-text-1)', letterSpacing: '-0.03em', margin: '0 0 12px',
             }}>
               ¡Tu solicitud llegó!
             </h1>
-            <p style={{ fontFamily: sg, fontSize: 15, color: '#7a6f67', lineHeight: 1.6, margin: '0 0 8px' }}>
-              Nos ponemos en contacto por WhatsApp en las próximas <strong style={{ color: '#1B1512' }}>24 horas</strong> para mostrarte todo lo que Pide Tu Antojo puede hacer por <strong style={{ color: '#1B1512' }}>{form.nombreNegocio}</strong>.
+            <p style={{ fontFamily: sg, fontSize: 15, color: 'var(--t-text-2)', lineHeight: 1.6, margin: '0 0 8px' }}>
+              Nos ponemos en contacto por WhatsApp en las próximas <strong style={{ color: 'var(--t-text-1)' }}>24 horas</strong> para mostrarte todo lo que Pide Tu Antojo puede hacer por <strong style={{ color: 'var(--t-text-1)' }}>{form.nombreNegocio}</strong>.
             </p>
-            <p style={{ fontFamily: sg, fontSize: 13, color: '#a89e95', margin: '0 0 36px' }}>
-              Revisá tu WhatsApp: <strong style={{ color: '#5a4f47' }}>{form.whatsapp}</strong>
+            <p style={{ fontFamily: sg, fontSize: 13, color: 'var(--t-text-3)', margin: '0 0 36px' }}>
+              Revisá tu WhatsApp: <strong style={{ color: 'var(--t-text-2)' }}>{form.whatsapp}</strong>
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -243,8 +243,8 @@ export function RegistroLocalForm() {
                 Ir al inicio
               </Link>
               <button onClick={handleReset} style={{
-                width: '100%', fontFamily: sg, fontWeight: 600, fontSize: 14, color: '#7a6f67',
-                background: 'transparent', border: '1.5px solid #E7DED6', borderRadius: 12,
+                width: '100%', fontFamily: sg, fontWeight: 600, fontSize: 14, color: 'var(--t-text-2)',
+                background: 'transparent', border: '1.5px solid var(--t-border)', borderRadius: 12,
                 padding: '13px 0', cursor: 'pointer',
               }}>
                 Registrar otro local
@@ -301,16 +301,16 @@ export function RegistroLocalForm() {
           </div>
 
           {/* ── right: form ── */}
-          <div className="rl-main" style={{ background: '#FBF8F5' }}>
+          <div className="rl-main" style={{ background: 'var(--t-bg)' }}>
             <div className="rl-form-area" style={{ maxWidth: 600, width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
 
               <h1 style={{
                 fontFamily: sg, fontSize: 30, fontWeight: 700,
-                color: '#1B1512', letterSpacing: '-0.03em', margin: '0 0 6px',
+                color: 'var(--t-text-1)', letterSpacing: '-0.03em', margin: '0 0 6px',
               }}>
                 Registrá tu local
               </h1>
-              <p style={{ fontFamily: sg, fontSize: 14, color: '#9a8f86', margin: '0 0 32px', lineHeight: 1.6 }}>
+              <p style={{ fontFamily: sg, fontSize: 14, color: 'var(--t-text-3)', margin: '0 0 32px', lineHeight: 1.6 }}>
                 Completá el formulario y te contactamos en menos de 24 horas.
               </p>
 
@@ -346,7 +346,7 @@ export function RegistroLocalForm() {
                     <div style={{ position: 'relative' }}>
                       <span style={{
                         position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)',
-                        fontFamily: sg, fontSize: 14, color: '#a89e95', pointerEvents: 'none',
+                        fontFamily: sg, fontSize: 14, color: 'var(--t-text-4)', pointerEvents: 'none',
                       }}>@</span>
                       <input className="rl-inp" style={{ ...input(), paddingLeft: 26 }} placeholder="tunegocio"
                         value={form.instagram} onChange={(e) => set('instagram', e.target.value)} />
@@ -408,9 +408,9 @@ export function RegistroLocalForm() {
                   <div className="rl-full" style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginTop: 4 }}>
                     <input type="checkbox" id="rl-auth" checked={autoriza} onChange={(e) => setAutoriza(e.target.checked)}
                       style={{ marginTop: 3, accentColor: '#FF6A1A', width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }} />
-                    <label htmlFor="rl-auth" style={{ fontFamily: sg, fontSize: 12.5, color: '#7a6f67', lineHeight: 1.55, cursor: 'pointer' }}>
-                      Autorizo a <strong style={{ color: '#1B1512' }}>Pide Tu Antojo</strong> a contactarme por WhatsApp y correo electrónico con información sobre la plataforma.{' '}
-                      <span style={{ color: '#a89e95' }}>Ley 1581 de 2012 — Protección de datos personales.</span>
+                    <label htmlFor="rl-auth" style={{ fontFamily: sg, fontSize: 12.5, color: 'var(--t-text-2)', lineHeight: 1.55, cursor: 'pointer' }}>
+                      Autorizo a <strong style={{ color: 'var(--t-text-1)' }}>Pide Tu Antojo</strong> a contactarme por WhatsApp y correo electrónico con información sobre la plataforma.{' '}
+                      <span style={{ color: 'var(--t-text-4)' }}>Ley 1581 de 2012 — Protección de datos personales.</span>
                     </label>
                   </div>
 
@@ -434,7 +434,7 @@ export function RegistroLocalForm() {
                     }}>
                       {loading ? 'Enviando...' : 'Registrarme'}
                     </button>
-                    <p style={{ fontFamily: sg, fontSize: 11.5, color: '#a89e95', textAlign: 'center', marginTop: 10 }}>
+                    <p style={{ fontFamily: sg, fontSize: 11.5, color: 'var(--t-text-4)', textAlign: 'center', marginTop: 10 }}>
                       Tus datos están seguros con nosotros
                     </p>
                   </div>

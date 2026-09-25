@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -74,7 +74,7 @@ export default function ConfiguracionPage() {
               fontFamily: sm,
               fontSize: 10,
               letterSpacing: '.1em',
-              color: '#9a8f86',
+              color: 'var(--t-text-3)',
               textTransform: 'uppercase',
               marginBottom: 6,
             }}
@@ -86,13 +86,13 @@ export default function ConfiguracionPage() {
               fontWeight: 700,
               fontSize: 22,
               letterSpacing: '-.02em',
-              color: '#1B1512',
+              color: 'var(--t-text-1)',
               margin: 0,
             }}
           >
             Tu restaurante
           </h1>
-          <p style={{ fontSize: 13, color: '#9a8f86', margin: '3px 0 0' }}>
+          <p style={{ fontSize: 13, color: 'var(--t-text-3)', margin: '3px 0 0' }}>
             Editá el nombre, descripción, teléfono, logo y tema visual de tu menú.
           </p>
         </div>
@@ -117,13 +117,13 @@ export default function ConfiguracionPage() {
           <div
             style={{
               borderRadius: 18,
-              border: '1px solid #EFE7DF',
-              background: '#fff',
+              border: '1px solid var(--t-border-2)',
+              background: 'var(--t-surface)',
               padding: 32,
               textAlign: 'center',
             }}
           >
-            <p style={{ fontSize: 14, color: '#9a8f86' }}>Restaurante no encontrado.</p>
+            <p style={{ fontSize: 14, color: 'var(--t-text-3)' }}>Restaurante no encontrado.</p>
           </div>
         ) : (
           <>
@@ -131,8 +131,8 @@ export default function ConfiguracionPage() {
             <div
               style={{
                 borderRadius: 18,
-                border: '1px solid #EFE7DF',
-                background: '#fff',
+                border: '1px solid var(--t-border-2)',
+                background: 'var(--t-surface)',
                 padding: '16px 20px',
                 flexShrink: 0,
               }}
@@ -142,7 +142,7 @@ export default function ConfiguracionPage() {
                   fontFamily: sm,
                   fontSize: 10,
                   letterSpacing: '.08em',
-                  color: '#9a8f86',
+                  color: 'var(--t-text-3)',
                   textTransform: 'uppercase',
                   marginBottom: 10,
                 }}
@@ -156,19 +156,19 @@ export default function ConfiguracionPage() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 10,
-                    background: '#FBF8F5',
-                    border: '1.5px solid #E7DED6',
+                    background: 'var(--t-input-bg)',
+                    border: '1.5px solid var(--t-input-border)',
                     borderRadius: 12,
                     padding: '10px 14px',
                     minWidth: 0,
                   }}
                 >
-                  <ExternalLink size={15} color="#9a8f86" style={{ flexShrink: 0 }} />
+                  <ExternalLink size={15} color="var(--t-text-3)" style={{ flexShrink: 0 }} />
                   <span
                     style={{
                       fontFamily: sm,
                       fontSize: 12,
-                      color: '#5a5048',
+                      color: 'var(--t-text-2)',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
@@ -189,12 +189,12 @@ export default function ConfiguracionPage() {
                     gap: 7,
                     padding: '10px 14px',
                     borderRadius: 12,
-                    background: '#FBF8F5',
-                    border: '1.5px solid #E7DED6',
+                    background: 'var(--t-surface-2)',
+                    border: '1.5px solid var(--t-border)',
                     fontFamily: sg,
                     fontSize: 13,
                     fontWeight: 600,
-                    color: '#5a5048',
+                    color: 'var(--t-text-2)',
                     textDecoration: 'none',
                     flexShrink: 0,
                     cursor: 'pointer',
@@ -211,12 +211,12 @@ export default function ConfiguracionPage() {
                     gap: 7,
                     padding: '10px 14px',
                     borderRadius: 999,
-                    background: copied ? '#f0faf4' : '#FBF8F5',
-                    border: `1.5px solid ${copied ? '#2C7A52' : '#E7DED6'}`,
+                    background: copied ? '#f0faf4' : 'var(--t-surface-2)',
+                    border: `1.5px solid ${copied ? '#2C7A52' : 'var(--t-border)'}`,
                     fontFamily: sg,
                     fontSize: 13,
                     fontWeight: 600,
-                    color: copied ? '#2C7A52' : '#5a5048',
+                    color: copied ? '#2C7A52' : 'var(--t-text-2)',
                     cursor: 'pointer',
                     flexShrink: 0,
                     transition: 'all .15s',
@@ -233,8 +233,8 @@ export default function ConfiguracionPage() {
               style={{
                 overflow: 'hidden',
                 borderRadius: 18,
-                border: '1px solid #EFE7DF',
-                background: '#fff',
+                border: '1px solid var(--t-border-2)',
+                background: 'var(--t-surface)',
                 flexShrink: 0,
               }}
             >
@@ -267,7 +267,7 @@ export default function ConfiguracionPage() {
             fontSize: 11,
             fontWeight: 600,
             letterSpacing: '.08em',
-            color: '#9a8f86',
+            color: 'var(--t-text-3)',
             textTransform: 'uppercase',
             display: 'flex',
             alignItems: 'center',

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import {
@@ -68,7 +68,7 @@ async function apiDeleteUser(uid: string) {
 function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <label style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.08em', color: '#9a8f86', textTransform: 'uppercase' }}>
+      <label style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.08em', color: 'var(--t-text-3)', textTransform: 'uppercase' }}>
         {label}
       </label>
       {children}
@@ -100,18 +100,18 @@ function Field({
         width: '100%',
         padding: '11px 14px',
         borderRadius: 10,
-        border: '1.5px solid #E7DED6',
-        background: disabled ? '#f5f0ec' : '#fff',
+        border: '1.5px solid var(--t-input-border)',
+        background: disabled ? 'var(--t-surface-2)' : 'var(--t-input-bg)',
         fontFamily: sg,
         fontSize: 14,
-        color: '#1B1512',
+        color: 'var(--t-text-1)',
         outline: 'none',
         boxSizing: 'border-box',
         transition: 'border-color .15s',
         cursor: disabled ? 'not-allowed' : 'text',
       }}
       onFocus={(e) => { if (!disabled) e.target.style.borderColor = '#FF6A1A'; }}
-      onBlur={(e) => { e.target.style.borderColor = '#E7DED6'; }}
+      onBlur={(e) => { e.target.style.borderColor = 'var(--t-input-border)'; }}
     />
   );
 }
@@ -124,7 +124,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
       style={{
         display: 'flex', alignItems: 'center', gap: 6,
         background: 'none', border: 'none', cursor: 'pointer',
-        fontFamily: sg, fontSize: 13, fontWeight: 600, color: '#9a8f86',
+        fontFamily: sg, fontSize: 13, fontWeight: 600, color: 'var(--t-text-3)',
         padding: 0, marginBottom: 24,
       }}
     >
@@ -159,8 +159,8 @@ function ActionButton({
     },
     ghost: {
       background: 'transparent',
-      color: '#9a8f86',
-      border: '1.5px solid #E7DED6',
+      color: 'var(--t-text-3)',
+      border: '1.5px solid var(--t-border)',
     },
     danger: {
       background: 'transparent',
@@ -259,20 +259,20 @@ function CreateView({ restaurantId, onBack, onCreated }: CreateViewProps) {
       <BackButton onClick={onBack} />
 
       <div style={{ marginBottom: 28 }}>
-        <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.1em', color: '#9a8f86', textTransform: 'uppercase', marginBottom: 6 }}>
+        <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.1em', color: 'var(--t-text-3)', textTransform: 'uppercase', marginBottom: 6 }}>
           Equipo · Nuevo usuario
         </div>
-        <h1 style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-.02em', color: '#1B1512', margin: 0 }}>
+        <h1 style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-.02em', color: 'var(--t-text-1)', margin: 0 }}>
           Agregar usuario
         </h1>
-        <p style={{ fontSize: 13, color: '#9a8f86', margin: '4px 0 0' }}>
+        <p style={{ fontSize: 13, color: 'var(--t-text-3)', margin: '4px 0 0' }}>
           Este usuario podrá ver pedidos y contabilidad, pero no podrá modificar la configuración del restaurante.
         </p>
       </div>
 
       <form onSubmit={handleSubmit}>
         <div style={{
-          borderRadius: 16, border: '1px solid #EFE7DF', background: '#fff',
+          borderRadius: 16, border: '1px solid var(--t-border-2)', background: 'var(--t-surface)',
           padding: '24px', display: 'flex', flexDirection: 'column', gap: 20,
         }}>
           <FieldGroup label="Nombre completo">
@@ -390,13 +390,13 @@ function EditView({ user, onBack, onUpdated, onDeleted }: EditViewProps) {
       <BackButton onClick={onBack} />
 
       <div style={{ marginBottom: 28 }}>
-        <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.1em', color: '#9a8f86', textTransform: 'uppercase', marginBottom: 6 }}>
+        <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.1em', color: 'var(--t-text-3)', textTransform: 'uppercase', marginBottom: 6 }}>
           Equipo · Editar usuario
         </div>
-        <h1 style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-.02em', color: '#1B1512', margin: 0 }}>
+        <h1 style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-.02em', color: 'var(--t-text-1)', margin: 0 }}>
           {user.displayName ?? user.email}
         </h1>
-        <p style={{ fontFamily: sm, fontSize: 12, color: '#9a8f86', margin: '4px 0 0' }}>
+        <p style={{ fontFamily: sm, fontSize: 12, color: 'var(--t-text-3)', margin: '4px 0 0' }}>
           {user.email}
         </p>
       </div>
@@ -405,8 +405,8 @@ function EditView({ user, onBack, onUpdated, onDeleted }: EditViewProps) {
 
         {/* Datos */}
         <form onSubmit={handleSaveInfo}>
-          <div style={{ borderRadius: 16, border: '1px solid #EFE7DF', background: '#fff', padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.08em', color: '#9a8f86', textTransform: 'uppercase' }}>
+          <div style={{ borderRadius: 16, border: '1px solid var(--t-border-2)', background: 'var(--t-surface)', padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.08em', color: 'var(--t-text-3)', textTransform: 'uppercase' }}>
               Datos del usuario
             </div>
 
@@ -432,8 +432,8 @@ function EditView({ user, onBack, onUpdated, onDeleted }: EditViewProps) {
 
         {/* Contraseña */}
         <form onSubmit={handleSavePassword}>
-          <div style={{ borderRadius: 16, border: '1px solid #EFE7DF', background: '#fff', padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.08em', color: '#9a8f86', textTransform: 'uppercase' }}>
+          <div style={{ borderRadius: 16, border: '1px solid var(--t-border-2)', background: 'var(--t-surface)', padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.08em', color: 'var(--t-text-3)', textTransform: 'uppercase' }}>
               Cambiar contraseña
             </div>
 
@@ -458,7 +458,7 @@ function EditView({ user, onBack, onUpdated, onDeleted }: EditViewProps) {
         </form>
 
         {/* Zona de peligro */}
-        <div style={{ borderRadius: 16, border: '1px solid #fecaca', background: '#fff', padding: 24 }}>
+        <div style={{ borderRadius: 16, border: '1px solid #fecaca', background: 'var(--t-surface)', padding: 24 }}>
           <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.08em', color: '#ef4444', textTransform: 'uppercase', marginBottom: 12 }}>
             Zona de peligro
           </div>
@@ -466,8 +466,8 @@ function EditView({ user, onBack, onUpdated, onDeleted }: EditViewProps) {
           {!confirmDelete ? (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
               <div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: '#1B1512', margin: '0 0 2px' }}>Eliminar usuario</p>
-                <p style={{ fontSize: 13, color: '#9a8f86', margin: 0 }}>Esta acción no se puede deshacer.</p>
+                <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--t-text-1)', margin: '0 0 2px' }}>Eliminar usuario</p>
+                <p style={{ fontSize: 13, color: 'var(--t-text-3)', margin: 0 }}>Esta acción no se puede deshacer.</p>
               </div>
               <ActionButton variant="danger" onClick={() => setConfirmDelete(true)}>
                 Eliminar
@@ -475,7 +475,7 @@ function EditView({ user, onBack, onUpdated, onDeleted }: EditViewProps) {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <p style={{ fontSize: 14, color: '#1B1512', margin: 0 }}>
+              <p style={{ fontSize: 14, color: 'var(--t-text-1)', margin: 0 }}>
                 ¿Confirmás que querés eliminar a <strong>{user.displayName ?? user.email}</strong>?
               </p>
               {deleteError && (
@@ -516,13 +516,13 @@ function ListView({ users, isLoading, onAdd, onEdit }: ListViewProps) {
   return (
     <div>
       <div style={{ marginBottom: 28 }}>
-        <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.1em', color: '#9a8f86', textTransform: 'uppercase', marginBottom: 6 }}>
+        <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.1em', color: 'var(--t-text-3)', textTransform: 'uppercase', marginBottom: 6 }}>
           Equipo
         </div>
-        <h1 style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-.02em', color: '#1B1512', margin: 0 }}>
+        <h1 style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-.02em', color: 'var(--t-text-1)', margin: 0 }}>
           Usuarios de acceso
         </h1>
-        <p style={{ fontSize: 13, color: '#9a8f86', margin: '4px 0 0' }}>
+        <p style={{ fontSize: 13, color: 'var(--t-text-3)', margin: '4px 0 0' }}>
           Podés agregar hasta {MAX_VIEW_USERS} usuarios con acceso limitado (pedidos y contabilidad).
         </p>
       </div>
@@ -538,10 +538,10 @@ function ListView({ users, isLoading, onAdd, onEdit }: ListViewProps) {
           </div>
         ) : users.length === 0 ? (
           <div style={{
-            borderRadius: 16, border: '1.5px dashed #E7DED6', background: '#fff',
+            borderRadius: 16, border: '1.5px dashed var(--t-border)', background: 'var(--t-surface)',
             padding: '40px 24px', textAlign: 'center',
           }}>
-            <p style={{ fontSize: 14, color: '#9a8f86', margin: 0 }}>
+            <p style={{ fontSize: 14, color: 'var(--t-text-3)', margin: 0 }}>
               Todavía no hay usuarios de acceso. Agregá hasta {MAX_VIEW_USERS}.
             </p>
           </div>
@@ -552,7 +552,7 @@ function ListView({ users, isLoading, onAdd, onEdit }: ListViewProps) {
               onClick={() => onEdit(u)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 14,
-                borderRadius: 999, border: '1px solid #EFE7DF', background: '#fff',
+                borderRadius: 999, border: '1px solid var(--t-border-2)', background: 'var(--t-surface)',
                 padding: '14px 18px', width: '100%', cursor: 'pointer',
                 textAlign: 'left', transition: 'border-color .15s, box-shadow .15s',
                 fontFamily: sg,
@@ -562,7 +562,7 @@ function ListView({ users, isLoading, onAdd, onEdit }: ListViewProps) {
                 (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 0 3px rgba(255,106,26,.08)';
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.borderColor = '#EFE7DF';
+                (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--t-border-2)';
                 (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
               }}
             >
@@ -578,10 +578,10 @@ function ListView({ users, isLoading, onAdd, onEdit }: ListViewProps) {
 
               {/* Info */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 600, fontSize: 14, color: '#1B1512', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--t-text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {u.displayName ?? '—'}
                 </div>
-                <div style={{ fontFamily: sm, fontSize: 11, color: '#9a8f86', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontFamily: sm, fontSize: 11, color: 'var(--t-text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {u.email}
                 </div>
               </div>
@@ -589,14 +589,14 @@ function ListView({ users, isLoading, onAdd, onEdit }: ListViewProps) {
               {/* Badge */}
               <div style={{
                 fontFamily: sm, fontSize: 10, letterSpacing: '.06em', textTransform: 'uppercase',
-                color: '#9a8f86', background: '#f5f0ec', borderRadius: 6,
+                color: 'var(--t-text-3)', background: 'var(--t-surface-2)', borderRadius: 6,
                 padding: '4px 9px', flexShrink: 0,
               }}>
                 Solo lectura
               </div>
 
               {/* Arrow */}
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#c4b8af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--t-border-3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                 <path d="M9 18l6-6-6-6" />
               </svg>
             </button>
@@ -612,7 +612,7 @@ function ListView({ users, isLoading, onAdd, onEdit }: ListViewProps) {
           Agregar usuario
         </ActionButton>
         {atLimit && (
-          <span style={{ fontSize: 13, color: '#9a8f86' }}>
+          <span style={{ fontSize: 13, color: 'var(--t-text-3)' }}>
             Límite de {MAX_VIEW_USERS} usuarios alcanzado
           </span>
         )}
