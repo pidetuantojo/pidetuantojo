@@ -152,7 +152,7 @@ export function RegistroLocalForm() {
       <style dangerouslySetInnerHTML={{ __html: `
         body { margin: 0; background: var(--t-bg); }
         .rl-layout { display: flex; min-height: 100vh; }
-        .rl-panel { width: 400px; min-width: 400px; overflow: hidden; height: 100vh; }
+        .rl-panel { width: 400px; min-width: 400px; overflow: hidden; height: 100vh; position: sticky; top: 0; }
         .rl-main { flex: 1; display: flex; flex-direction: column; min-height: 100vh; overflow-y: auto; }
         .rl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .rl-full { grid-column: 1 / -1; }
@@ -167,6 +167,7 @@ export function RegistroLocalForm() {
         @media (max-width: 860px) {
           .rl-layout { flex-direction: column; }
           .rl-panel { width: 100%; min-width: 0; height: auto; position: static; }
+          .rl-main { overflow-y: visible; min-height: auto; }
           .rl-panel-inner { padding: 28px 20px 32px; }
           .rl-benefits { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
           .rl-grid { grid-template-columns: 1fr; }
@@ -284,7 +285,6 @@ export function RegistroLocalForm() {
           <div className="rl-panel" style={{
             background: 'linear-gradient(155deg,#FF8A2B 0%,#FF6A1A 45%,#EA3B2E 100%)',
             display: 'flex', flexDirection: 'column', justifyContent: 'center',
-            position: 'sticky', top: 0, overflow: 'hidden',
           }}>
             {/* decorative circles */}
             <div style={{ position: 'absolute', top: -80, right: -80, width: 280, height: 280, borderRadius: '50%', background: 'rgba(255,255,255,.08)', pointerEvents: 'none' }} />
