@@ -197,7 +197,7 @@ export function PaymentMethodsManager() {
           Métodos de pago
         </h2>
         <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--t-text-3)' }}>
-          Elegí cómo te pueden pagar tus clientes. Lo que actives acá es lo que verán al confirmar su pedido. Al menos uno debe quedar activo.
+          Elige cómo te pueden pagar tus clientes. Lo que actives acá es lo que verán al confirmar su pedido. Al menos uno debe quedar activo.
         </p>
       </div>
 
@@ -233,7 +233,7 @@ export function PaymentMethodsManager() {
           <div>
             <span style={sectionLabelStyle}>Cuentas para transferencias ({transferAccounts.length})</span>
             <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--t-text-3)' }}>
-              Nequi, Daviplata, BreB, Bancolombia u otros bancos. Podés agregar todas las cuentas que quieras.
+              Nequi, Daviplata, BreB, Bancolombia u otros bancos. Puedes agregar todas las cuentas que quieras.
             </p>
           </div>
           <button
@@ -248,7 +248,7 @@ export function PaymentMethodsManager() {
 
         {transferAccounts.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '28px 20px', color: 'var(--t-text-3)', fontSize: 13 }}>
-            Todavía no agregaste cuentas. Agregá una para que tus clientes puedan pagarte por transferencia.
+            Todavía no has agregado cuentas. Agrega una para que tus clientes puedan pagarte por transferencia.
           </div>
         ) : (
           transferAccounts.map((method) => {
@@ -346,7 +346,7 @@ export function PaymentMethodsManager() {
                 <p style={{ fontSize: 12, color: '#ef4444', margin: '6px 0 0' }}>{formError}</p>
               ) : (
                 <p style={{ fontSize: 12, color: 'var(--t-text-3)', margin: '6px 0 0' }}>
-                  Si lo dejás vacío, tus clientes verán solo el nombre del método y le pasás los datos por WhatsApp.
+                  Si lo dejas vacío, tus clientes verán solo el nombre del método y le pasas los datos por WhatsApp.
                 </p>
               )}
             </div>

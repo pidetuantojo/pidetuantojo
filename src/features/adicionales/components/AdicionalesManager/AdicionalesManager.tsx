@@ -122,7 +122,7 @@ export function AdicionalesManager({ restaurantId }: Props) {
           <div style={{ fontSize: 36, marginBottom: 12 }}>🍬</div>
           <p style={{ fontWeight: 600, fontSize: 15, color: 'var(--t-text-1)', margin: '0 0 6px' }}>Sin adicionales aún</p>
           <p style={{ fontSize: 13, color: 'var(--t-text-3)', margin: 0 }}>
-            Creá el primero para poder asignarlo a tus productos.
+            Crea el primero para poder asignarlo a tus productos.
           </p>
         </div>
       ) : (

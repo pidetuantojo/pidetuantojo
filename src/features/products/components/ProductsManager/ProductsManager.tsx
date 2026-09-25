@@ -158,8 +158,8 @@ export function ProductsManager() {
           </h3>
           <p className="mt-1 text-sm" style={{ color: 'var(--t-text-2)' }}>
             {search || filterCategory
-              ? 'Probá con otros filtros.'
-              : 'Creá los productos de tu menú.'}
+              ? 'Prueba con otros filtros.'
+              : 'Crea los productos de tu menú.'}
           </p>
           {!search && !filterCategory && (
             <Button onClick={handleAdd} className="mt-4">

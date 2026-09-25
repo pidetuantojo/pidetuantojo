@@ -36,7 +36,7 @@ export default function NuevoProductoPage() {
         </button>
         <div>
           <h1 className="text-xl font-bold text-[var(--t-text-1)]">Nuevo producto</h1>
-          <p className="text-sm text-[var(--t-text-3)]">Completá los datos del producto</p>
+          <p className="text-sm text-[var(--t-text-3)]">Completa los datos del producto</p>
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 import { formatCurrency } from '@/lib/utils';
@@ -13,13 +13,28 @@ interface MenuListLayoutProps {
   secondaryColor: string;
   restaurantClosed?: boolean;
   onSelect: (product: Product) => void;
+  activeCategoryId?: string;
 }
 
 const sg = "var(--font-sans, sans-serif)";
 
-export function MenuListLayout({ categories, products, primaryColor, secondaryColor, restaurantClosed, onSelect }: MenuListLayoutProps) {
+export function MenuListLayout({ categories, products, primaryColor, secondaryColor, restaurantClosed, onSelect, activeCategoryId }: MenuListLayoutProps) {
   // All categories open by default
   const [openIds, setOpenIds] = useState<Set<string>>(() => new Set(categories.slice(0, 1).map((c) => c.id)));
+
+  // Cuando el sidebar cambia la categoría activa: abrir el acordeón y scrollear
+  useEffect(() => {
+    if (!activeCategoryId) return;
+    setOpenIds((prev) => {
+      if (prev.has(activeCategoryId)) return prev;
+      return new Set([...prev, activeCategoryId]);
+    });
+    const el = document.getElementById(`cat-${activeCategoryId}`);
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  }, [activeCategoryId]);
 
   function toggleCategory(id: string) {
     setOpenIds((prev) => {
@@ -39,7 +54,7 @@ export function MenuListLayout({ categories, products, primaryColor, secondaryCo
         const isOpen = openIds.has(cat.id);
 
         return (
-          <div key={cat.id} style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 24px -18px rgba(0,0,0,.3)' }}>
+          <div key={cat.id} id={`cat-${cat.id}`} style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 24px -18px rgba(0,0,0,.3)' }}>
             {/* Category header */}
             <button
               onClick={() => toggleCategory(cat.id)}

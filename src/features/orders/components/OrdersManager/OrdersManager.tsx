@@ -382,7 +382,7 @@ export function OrdersManager() {
     try {
       await updateStatus(order.id, newStatusId);
     } catch {
-      setDragError('No se pudo mover el pedido. Intentá de nuevo.');
+      setDragError('No se pudo mover el pedido. Intenta de nuevo.');
       setTimeout(() => setDragError(null), 3000);
     }
   }

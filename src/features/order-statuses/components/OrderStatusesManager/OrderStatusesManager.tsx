@@ -139,7 +139,7 @@ export function OrderStatusesManager() {
             style={{ border: '2px dashed var(--t-border)' }}
           >
             <p className="text-sm" style={{ color: 'var(--t-text-4)' }}>
-              No hay estados personalizados. Podés agregar intermedios para tu flujo específico.
+              No hay estados personalizados. Puedes agregar intermedios para tu flujo específico.
             </p>
             <button
               onClick={handleAdd}

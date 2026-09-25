@@ -25,26 +25,7 @@ interface CheckoutData {
   deliveryZoneName?: string;
 }
 
-const SEPARATOR = '\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501';
-
-// Emojis como Unicode escapes para evitar que el bundler los corrompa en Windows.
-const E = {
-  nota:      '\u{1F4DD}', // 📝
-  moto:      '\u{1F6F5}', // 🛵
-  mesa:      '\u{1FA91}', // 🪑
-  recoger:   '\u{1F3C3}', // 🏃
-  motoFee:   '\u{1F3CD}', // 🏍
-  dinero:    '\u{1F4B0}', // 💰
-  recibo:    '\u{1F9FE}', // 🧾
-  pin:       '\u{1F4CD}', // 📍
-  barrio:    '\u{1F3D8}', // 🏘
-  ubicacion: '\u{1F4CC}', // 📌
-  reloj:     '\u{23F0}',  // ⏰
-  telefono:  '\u{1F4DE}', // 📞
-  carrito:   '\u{1F6D2}', // 🛒
-  tarjeta:   '\u{1F4B3}', // 💳
-  gracias:   '\u{1F64F}', // 🙏
-};
+const SEPARATOR = '━━━━━━━━━━━━━━━━━━━';
 
 /** Sin espacio entre "$" y el número: "$15.000" (Intl usa un espacio no separable). */
 function money(amount: number): string {
@@ -73,12 +54,12 @@ export function buildWhatsAppMessage(
 ): string {
   const itemsText = items
     .map((item) => {
-      let line = `\u2022 ${item.quantity} x ${item.productName} (${money(item.subtotal)})`;
+      let line = `• ${item.quantity} x ${item.productName} (${money(item.subtotal)})`;
       item.additionals.forEach((a) => {
         line += `\n   + ${a.name} (+${money(a.price)})`;
       });
       if (item.observacion?.trim()) {
-        line += `\n   ${E.nota} _Nota: ${item.observacion.trim()}_`;
+        line += `\n   📝 _Nota: ${item.observacion.trim()}_`;
       }
       return line;
     })
@@ -87,10 +68,10 @@ export function buildWhatsAppMessage(
   const isDomicilio = checkout.deliveryType === 'domicilio';
   const deliveryLabel =
     isDomicilio
-      ? `${E.moto} Domicilio`
+      ? '🛵 Domicilio'
       : checkout.deliveryType === 'mesa'
-        ? `${E.mesa} Comer en el local${checkout.tableName ? ` \u2014 ${checkout.tableName}` : ''}`
-        : `${E.recoger} Recoger en tienda`;
+        ? `🪑 Comer en el local${checkout.tableName ? ` — ${checkout.tableName}` : ''}`
+        : '🏃 Recoger en tienda';
 
   const feePending = isDeliveryFeePending(checkout.deliveryType, checkout.deliveryFee);
   const hasFee = isDomicilio && checkout.deliveryFee !== undefined;
@@ -105,41 +86,38 @@ export function buildWhatsAppMessage(
         ...(hasFee
           ? [
               `Subtotal: ${money(checkout.subtotal)}`,
-              `${E.motoFee} Domicilio${checkout.deliveryZoneName ? ` (${checkout.deliveryZoneName})` : ''}: ${money(checkout.deliveryFee ?? 0)}`,
+              `🏍 Domicilio${checkout.deliveryZoneName ? ` (${checkout.deliveryZoneName})` : ''}: ${money(checkout.deliveryFee ?? 0)}`,
             ]
           : []),
-        `${E.dinero} *Total del pedido: ${money(total)}*`,
+        `💰 *Total del pedido: ${money(total)}*`,
       ];
 
   const lines = [
-    ...(checkout.orderNumber ? [`${E.recibo} *Orden ${checkout.orderNumber}*`] : []),
-    `Hola *${restaurantName}*, soy *${checkout.customerName.trim()}* y me gustar\u00eda hacer un pedido.`,
+    ...(checkout.orderNumber ? [`🧾 *Orden ${checkout.orderNumber}*`] : []),
+    `Hola *${restaurantName}*, soy *${checkout.customerName.trim()}* y me gustaría hacer un pedido.`,
     SEPARATOR,
     `*Entrega:* ${deliveryLabel}`,
-    ...(isDomicilio && checkout.address ? [`${E.pin} *Direcci\u00f3n:* ${checkout.address}`] : []),
-    ...(isDomicilio && checkout.barrio ? [`${E.barrio} *Barrio:* ${checkout.barrio}`] : []),
-    ...(checkout.location ? [`${E.ubicacion} *Ubicaci\u00f3n:* https://maps.google.com/?q=${checkout.location.lat},${checkout.location.lng}`] : []),
-    ...(checkout.scheduledLabel ? [`${E.reloj} *Programado para:* ${checkout.scheduledLabel}`] : []),
-    `${E.telefono} *Celular:* ${formatPhone(checkout.customerPhone)}`,
+    ...(isDomicilio && checkout.address ? [`📍 *Dirección:* ${checkout.address}`] : []),
+    ...(isDomicilio && checkout.barrio ? [`🏘 *Barrio:* ${checkout.barrio}`] : []),
+    ...(checkout.location ? [`📌 *Ubicación:* https://maps.google.com/?q=${checkout.location.lat},${checkout.location.lng}`] : []),
+    ...(checkout.scheduledLabel ? [`⏰ *Programado para:* ${checkout.scheduledLabel}`] : []),
+    `📞 *Celular:* ${formatPhone(checkout.customerPhone)}`,
     SEPARATOR,
-    `${E.carrito} *Detalle de la orden:*`,
+    `🛒 *Detalle de la orden:*`,
     itemsText,
     SEPARATOR,
-    `${E.tarjeta} *Forma de pago:* ${checkout.paymentLabel}`,
+    `💳 *Forma de pago:* ${checkout.paymentLabel}`,
     ...(checkout.paymentAccount ? [checkout.paymentAccount] : []),
     ``,
     ...totalsLines,
     ``,
-    `\u00a1Gracias! ${E.gracias}`,
+    `¡Gracias! 🙏`,
   ];
 
   return lines.join('\n');
 }
 
-export function openWhatsApp(phone: string, message: string): void {
+export function buildWhatsAppUrl(phone: string, message: string): string {
   const cleanPhone = phone.replace(/\D/g, '');
-  const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
-  // location.href en vez de window.open para no perder el gesto de usuario
-  // en mobile después de un await (Safari iOS, WebViews).
-  window.location.href = url;
+  return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 }

@@ -6,7 +6,7 @@ import type { Product, CreateProductData, UpdateProductData } from '@/types';
 import type { ProductFormData } from '../types/product.types';
 
 const schema = z.object({
-  categoryId: z.string().min(1, 'Seleccioná una categoría'),
+  categoryId: z.string().min(1, 'Selecciona una categoría'),
   name: z.string().min(2, 'Mínimo 2 caracteres'),
   price: z.number().positive('El precio debe ser mayor a 0'),
   sortOrder: z.number().int().min(1, 'Debe ser mayor a 0'),

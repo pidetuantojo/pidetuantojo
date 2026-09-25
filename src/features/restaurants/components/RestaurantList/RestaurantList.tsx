@@ -19,7 +19,7 @@ export function RestaurantList({
         <Utensils className="h-12 w-12 text-[var(--t-text-4)]" />
         <h3 className="mt-4 text-lg font-medium text-[var(--t-text-1)]">Sin restaurantes</h3>
         <p className="mt-1 text-sm text-[var(--t-text-3)]">
-          Creá el primer restaurante para empezar.
+          Crea el primer restaurante para empezar.
         </p>
       </div>
     );

@@ -5,7 +5,7 @@ import { X, Minus, Plus, Trash2, Truck, Store, User, UtensilsCrossed, CalendarCl
 
 import { formatCurrency } from '@/lib/utils';
 import { cartItemCount, cartTotal, useCartStore } from '@/store/cart.store';
-import { buildWhatsAppMessage, openWhatsApp } from '../../helpers/whatsapp.helpers';
+import { buildWhatsAppMessage, buildWhatsAppUrl } from '../../helpers/whatsapp.helpers';
 import type { DeliveryType, PaymentMethod } from '../../helpers/whatsapp.helpers';
 import { checkCanOrder } from '../../helpers/canOrder.helpers';
 import {
@@ -79,7 +79,7 @@ function ZoneDropdown({ zones, value, onChange, hasError, secondaryColor }: Zone
             <span style={{ fontWeight: 800, color: secondaryColor }}>{formatCurrency(selected.price)}</span>
           </span>
         ) : (
-          <span style={{ color: '#9a8f86' }}>Elegí tu zona / barrio</span>
+          <span style={{ color: '#9a8f86' }}>Elige tu zona / barrio</span>
         )}
         <svg
           viewBox="0 0 24 24" width="16" height="16" fill="none"
@@ -167,7 +167,7 @@ function ZoneDropdown({ zones, value, onChange, hasError, secondaryColor }: Zone
 
       {hasError && (
         <p style={{ fontSize: 11, color: '#ef4444', marginTop: 4 }}>
-          Elegí tu zona de domicilio
+          Elige tu zona de domicilio
         </p>
       )}
     </div>
@@ -364,7 +364,8 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
       paymentAccount: selectedPayment?.account,
       location: location ?? undefined,
     });
-    openWhatsApp(restaurantPhone, message);
+    // Construir URL antes de limpiar estado, navegar al final (igual que antojo-express)
+    const whatsappUrl = buildWhatsAppUrl(restaurantPhone, message);
     clearCart();
     setName('');
     setPhone('');
@@ -382,6 +383,9 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
     setSubmitted(false);
     setIsLoading(false);
     setCartOpen(false);
+    // Navegar al final, igual que en antojo-express, para no perder el gesto
+    // de usuario en mobile después del await (Safari iOS, WebViews).
+    window.location.href = whatsappUrl;
   }
 
   const err = (val: string) => submitted && val.trim() === '';
@@ -442,10 +446,10 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                 {copyAlert.copied ? 'Número de cuenta copiado' : 'Datos para transferir'}
               </div>
               <div>
-                Transferí a <strong>{copyAlert.label}</strong>:{' '}
+                Transfiere a <strong>{copyAlert.label}</strong>:{' '}
                 <strong style={{ overflowWrap: 'anywhere' }}>{copyAlert.account}</strong>
               </div>
-              <div style={{ color: '#047857' }}>Enviá el comprobante por WhatsApp al confirmar.</div>
+              <div style={{ color: '#047857' }}>Envía el comprobante por WhatsApp al confirmar.</div>
             </div>
             <button
               type="button"
@@ -528,7 +532,7 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                   Tu pedido está vacío
                 </p>
                 <p style={{ fontSize: 13, color: '#9a8f86', marginTop: 4 }}>
-                  Agregá productos del menú
+                  Agrega productos del menú
                 </p>
               </div>
             ) : (
@@ -727,7 +731,7 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
               {/* Entrega */}
               <div>
                 <p style={{ fontWeight: 800, fontSize: 14, color: '#1B1512', margin: '0 0 10px' }}>
-                  Seleccioná la forma de entrega
+                  Selecciona la forma de entrega
                 </p>
                 {(() => {
                   const activeOptions: { val: DeliveryType; label: string; Icon: React.ElementType }[] = [];
@@ -737,7 +741,7 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                   if (activeOptions.length === 0 && restaurantClosed) {
                     return (
                       <p style={{ margin: 0, fontSize: 12, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 12px', lineHeight: 1.5 }}>
-                        🌙 Estamos cerrados en este momento y no recibimos pedidos. Volvé en nuestro horario de atención.
+                        🌙 Estamos cerrados en este momento y no recibimos pedidos. Vuelve en nuestro horario de atención.
                       </p>
                     );
                   }
@@ -783,7 +787,7 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                 })()}
                 {submitted && deliveryType === '' && (
                   <p style={{ fontSize: 11, color: '#ef4444', marginTop: 6 }}>
-                    Elegí la forma de entrega
+                    Elige la forma de entrega
                   </p>
                 )}
 
@@ -811,11 +815,11 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M3 6h18M3 12h18M8 18h8M12 6v12" />
                       </svg>
-                      {mesas.length > 0 ? 'Elegí tu mesa' : 'Tu mesa'}
+                      {mesas.length > 0 ? 'Elige tu mesa' : 'Tu mesa'}
                     </p>
                     {mesas.length === 0 ? (
                       <p style={{ margin: 0, fontSize: 12, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '8px 12px', lineHeight: 1.5 }}>
-                        🙋 Este local no tiene mesas configuradas. Preguntale al mesero tu número de mesa o dejalo vacío y continuá con tu pedido.
+                        🙋 Este local no tiene mesas configuradas. Pregúntale al mesero tu número de mesa o déjalo vacío y continúa con tu pedido.
                       </p>
                     ) : (
                     <>
@@ -847,11 +851,11 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                       })}
                     </div>
                     <p style={{ margin: '10px 0 0', fontSize: 12, color: '#6b7280', lineHeight: 1.5 }}>
-                      🙋 ¿No sabés en qué mesa estás? Preguntale al mesero.
+                      🙋 ¿No sabes en qué mesa estás? Pregúntale al mesero.
                     </p>
                     {submitted && selectedMesaId === '' && (
                       <p style={{ fontSize: 11, color: '#ef4444', margin: '6px 0 0' }}>
-                        Elegí la mesa en la que estás
+                        Elige la mesa en la que estás
                       </p>
                     )}
                     </>
@@ -1031,7 +1035,7 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                     <div style={{ marginTop: 12, background: '#f9fafb', borderRadius: 14, padding: '12px 14px', border: '1.5px solid #e5e7eb' }}>
                       <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 800, color: '#1B1512', display: 'flex', alignItems: 'center', gap: 6 }}>
                         <CalendarClock size={15} color={secondaryColor} />
-                        ¿Querés programar tu pedido?
+                        ¿Quieres programar tu pedido?
                       </p>
                       <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: scheduleForced ? 'default' : 'pointer', fontSize: 13, fontWeight: 600, color: '#374151' }}>
                         <input
@@ -1045,7 +1049,7 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                       </label>
                       {scheduleForced && (
                         <p style={{ margin: '6px 0 0', fontSize: 12, color: '#92400e', lineHeight: 1.5 }}>
-                          Estamos cerrados en este momento: elegí cuándo querés tu pedido.
+                          Estamos cerrados en este momento: elige cuándo quieres tu pedido.
                         </p>
                       )}
 
@@ -1220,7 +1224,7 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
 
                 {submitted && paymentMethod === '' && (
                   <p style={{ fontSize: 11, color: '#ef4444', marginTop: 6 }}>
-                    Elegí un método de pago
+                    Elige un método de pago
                   </p>
                 )}
               </div>
@@ -1260,7 +1264,7 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                     )}
                     {deliveryType === 'domicilio' && isZonesMode && !selectedZone && (
                       <p style={{ marginTop: 10, fontSize: 12, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '8px 12px', lineHeight: 1.5 }}>
-                        📦 Elegí tu zona para ver el costo de domicilio.
+                        📦 Elige tu zona para ver el costo de domicilio.
                       </p>
                     )}
                   </>

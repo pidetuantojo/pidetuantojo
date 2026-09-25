@@ -134,8 +134,8 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
           <h2 style={{ fontFamily: sg, fontWeight: 800, fontSize: 22, color: sec, margin: '0 0 8px', letterSpacing: '-.02em' }}>¡Estamos cerrados!</h2>
           <p style={{ fontFamily: sg, fontSize: 14, color: '#7a6f66', margin: 0, lineHeight: 1.55 }}>
             {canScheduleWhileClosed
-              ? <>Podés explorar nuestro menú<br />y programar tu pedido para cuando abramos.</>
-              : <>Podés explorar nuestro menú,<br />pero por ahora no recibimos pedidos.</>}
+              ? <>Puedes explorar nuestro menú<br />y programar tu pedido para cuando abramos.</>
+              : <>Puedes explorar nuestro menú,<br />pero por ahora no recibimos pedidos.</>}
           </p>
         </div>
         {restaurant.openingHours && Object.values(restaurant.openingHours).some(Boolean) && (() => {
@@ -177,7 +177,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
         <div style={{ fontSize: 36, marginBottom: 8 }}>📍</div>
         <h2 style={{ fontFamily: sg, fontWeight: 800, fontSize: 26, color: sec, margin: '0 0 8px', letterSpacing: '-.02em' }}>¿Dónde encontrarnos?</h2>
-        {restaurant.city && <p style={{ fontFamily: sg, fontSize: 14, color: '#8a8177', margin: 0 }}>Pasá por la tienda o pedí a domicilio — estamos en {restaurant.city}.</p>}
+        {restaurant.city && <p style={{ fontFamily: sg, fontSize: 14, color: '#8a8177', margin: 0 }}>Pasa por la tienda o pide a domicilio — estamos en {restaurant.city}.</p>}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {restaurant.address && (
@@ -522,7 +522,12 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
           {categories.map((cat) => {
             const active = activeCategoryId === cat.id;
             return (
-              <button key={cat.id} onClick={() => setActiveCategoryId(cat.id)} style={{
+              <button key={cat.id} onClick={() => {
+                setActiveCategoryId(cat.id);
+                if (layout !== 'list') {
+                  requestAnimationFrame(() => document.getElementById('desktop-products')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+                }
+              }} style={{
                 display: 'block', width: '100%', textAlign: 'left',
                 padding: '10px 14px', borderRadius: 10, border: 'none',
                 borderLeft: `3px solid ${active ? pri : 'transparent'}`,
@@ -548,11 +553,11 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
 
           {layout === 'cards' && (
             visibleProducts.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '80px 0', color: '#9a8f86', fontFamily: sg, fontSize: 15 }}>
+              <div id="desktop-products" style={{ textAlign: 'center', padding: '80px 0', color: '#9a8f86', fontFamily: sg, fontSize: 15 }}>
                 Sin productos en esta categoría.
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 24 }}>
+              <div id="desktop-products" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 24 }}>
                 {visibleProducts.map((product) => (
                   <MenuProductCard
                     key={product.id}
@@ -577,6 +582,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
               secondaryColor={sec}
               restaurantClosed={orderingBlocked}
               onSelect={setSelectedProduct}
+              activeCategoryId={activeCategoryId}
             />
           )}
         </div>

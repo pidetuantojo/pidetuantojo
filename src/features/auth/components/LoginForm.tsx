@@ -149,10 +149,10 @@ export function LoginForm() {
 
         <div className="w-full max-w-[360px]">
           <h1 style={{ fontWeight: 600, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--t-text-1)', margin: '0 0 6px' }}>
-            Ingresá a tu cuenta
+            Ingresa a tu cuenta
           </h1>
           <p style={{ fontSize: 14, color: 'var(--t-text-3)', margin: '0 0 30px' }}>
-            Gestioná tu local desde donde estés.
+            Gestiona tu local desde donde estés.
           </p>
 
           <form onSubmit={handleSubmit}>
@@ -217,9 +217,9 @@ export function LoginForm() {
           </form>
 
           <p style={{ fontSize: 13, color: 'var(--t-text-3)', textAlign: 'center', margin: '26px 0 0' }}>
-            ¿No tenés cuenta?{' '}
+            ¿No tienes cuenta?{' '}
             <a href="/registrar-local" style={{ color: '#FF6A1A', textDecoration: 'none', fontWeight: 600 }}>
-              Registrá tu local
+              Registra tu local
             </a>
           </p>
         </div>

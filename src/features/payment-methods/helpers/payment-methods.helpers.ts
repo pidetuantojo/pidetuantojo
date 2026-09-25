@@ -37,7 +37,7 @@ export function validatePaymentAccount(
   account: string,
   bankName = ''
 ): string | null {
-  if (type === 'otro_banco' && bankName.trim().length < 2) return 'Ingresá el nombre del banco';
+  if (type === 'otro_banco' && bankName.trim().length < 2) return 'Ingresa el nombre del banco';
 
   const value = normalizeAccount(type, account);
   if (!value) return null;

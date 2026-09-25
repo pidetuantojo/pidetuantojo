@@ -171,7 +171,7 @@ export function DeliveryMethodsManager() {
     {
       key: 'domicilio' as const,
       label: 'Domicilio',
-      desc: 'Enviás el pedido a la dirección del cliente.',
+      desc: 'Envías el pedido a la dirección del cliente.',
       icon: <IcoDomicilio />,
       isActive: methods.domicilio?.isActive ?? true,
       allowScheduled: methods.domicilio?.allowScheduled ?? false,
@@ -196,7 +196,7 @@ export function DeliveryMethodsManager() {
           Métodos de entrega
         </h2>
         <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--t-text-3)' }}>
-          Activá o desactivá los métodos disponibles para tus clientes. Al menos uno debe quedar activo.
+          Activa o desactiva los métodos disponibles para tus clientes. Al menos uno debe quedar activo.
         </p>
       </div>
 
@@ -286,7 +286,7 @@ export function DeliveryMethodsManager() {
                       <div style={{ textAlign: 'center', padding: '16px 0', color: 'var(--t-text-3)', fontSize: 13 }}>Cargando...</div>
                     ) : mesas.length === 0 ? (
                       <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--t-text-3)', fontSize: 13 }}>
-                        Sin mesas configuradas. Agregá las mesas de tu local.
+                        Sin mesas configuradas. Agrega las mesas de tu local.
                         <div style={{ marginTop: 6, fontSize: 12, color: '#FF6A1A', fontWeight: 600 }}>
                           Mientras no haya mesas, tus clientes podrán pedir sin elegir mesa y se les indicará que pregunten al mesero.
                         </div>

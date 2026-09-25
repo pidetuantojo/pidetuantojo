@@ -4,7 +4,7 @@ import { isTransferMethod } from '@/features/payment-methods/helpers/payment-met
 /** Error de validación del campo "Domiciliario" al asignar una empresa, o null si es válido. */
 export function validateCourierName(driver: Pick<Domiciliario, 'isCompany'>, courierName: string): string | null {
   if (!driver.isCompany) return null;
-  return courierName.trim() ? null : 'Escribí el nombre o código del domiciliario de la empresa';
+  return courierName.trim() ? null : 'Escribe el nombre o código del domiciliario de la empresa';
 }
 
 /** Copia del domiciliario para guardar en el pedido (sin `undefined`: Firestore los rechaza). */

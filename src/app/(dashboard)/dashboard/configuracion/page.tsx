@@ -31,6 +31,12 @@ export default function ConfiguracionPage() {
   const { data: restaurant, isLoading } = useRestaurant(user?.restaurantId);
   const [colors, setColors] = useState<RestaurantColorsPayload>(DEFAULT_COLORS);
   const [copied, setCopied] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  function handleSuccess() {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3500);
+  }
 
   function getMenuUrl(slug: string) {
     return `${window.location.origin}/${slug}`;
@@ -93,7 +99,7 @@ export default function ConfiguracionPage() {
             Tu restaurante
           </h1>
           <p style={{ fontSize: 13, color: 'var(--t-text-3)', margin: '3px 0 0' }}>
-            Editá el nombre, descripción, teléfono, logo y tema visual de tu menú.
+            Edita el nombre, descripción, teléfono, logo y tema visual de tu menú.
           </p>
         </div>
 
@@ -239,7 +245,7 @@ export default function ConfiguracionPage() {
             >
               <RestaurantForm
                 restaurant={restaurant}
-                onSuccess={() => router.push(ROUTES.dashboard.root)}
+                onSuccess={handleSuccess}
                 onCancel={() => router.push(ROUTES.dashboard.root)}
                 onColorsChange={setColors}
               />
@@ -306,6 +312,33 @@ export default function ConfiguracionPage() {
             bannerImage={colors.bannerImage}
           />
         </div>
+      </div>
+      {/* Toast de guardado */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 32,
+          left: '50%',
+          transform: `translateX(-50%) translateY(${saved ? 0 : 16}px)`,
+          opacity: saved ? 1 : 0,
+          transition: 'opacity .25s, transform .25s',
+          pointerEvents: 'none',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          background: '#1a2e1f',
+          color: '#fff',
+          padding: '12px 20px',
+          borderRadius: 14,
+          fontSize: 14,
+          fontWeight: 500,
+          boxShadow: '0 8px 24px rgba(0,0,0,.18)',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        <Check size={16} color="#4ade80" />
+        Tus cambios fueron guardados exitosamente
       </div>
     </div>
   );

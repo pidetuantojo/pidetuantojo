@@ -192,7 +192,7 @@ export function HomeClient({ restaurants }: HomeClientProps) {
               background: 'linear-gradient(135deg,#FF8A2B,#FF6A1A 55%,#EA3B2E)',
               boxShadow: '0 8px 20px -8px rgba(234,59,46,.5)',
             }}>
-              Registrá tu local
+              Registra tu local
             </Link>
           </div>
         </div>
@@ -218,7 +218,7 @@ export function HomeClient({ restaurants }: HomeClientProps) {
               ¿Qué se te antoja hoy?
             </h1>
             <p style={{ fontFamily: sg, fontSize: 16, lineHeight: 1.55, color: 'rgba(255,255,255,.92)', margin: '0 0 26px', maxWidth: 520 }}>
-              Encontrá los restaurantes de tu ciudad, mirá su menú y pedí directo por WhatsApp.
+              Encuentra los restaurantes de tu ciudad, mira su menú y pide directo por WhatsApp.
             </p>
 
             {/* FILTERS — custom Select con z-index alto para que el dropdown salga por encima */}
@@ -265,7 +265,7 @@ export function HomeClient({ restaurants }: HomeClientProps) {
             <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--t-surface)', border: '1px dashed var(--t-border-3)', borderRadius: 18 }}>
               <div style={{ marginBottom: 16, opacity: .3 }}><LogoMark style={{ width: 56, height: 56, color: '#FF6A1A' }} /></div>
               <div style={{ fontFamily: sg, fontWeight: 600, fontSize: 18, color: 'var(--t-text-1)', marginBottom: 6 }}>Todavía no hay restaurantes acá</div>
-              <div style={{ fontFamily: sg, fontSize: 14, color: 'var(--t-text-3)' }}>Probá con otra ciudad o quitá algún filtro.</div>
+              <div style={{ fontFamily: sg, fontSize: 14, color: 'var(--t-text-3)' }}>Prueba con otra ciudad o quita algún filtro.</div>
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
@@ -417,7 +417,7 @@ export function HomeClient({ restaurants }: HomeClientProps) {
             {filtered.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '40px 16px', background: 'var(--t-surface)', border: '1px dashed var(--t-border-3)', borderRadius: 16 }}>
                 <div style={{ fontFamily: sg, fontWeight: 600, fontSize: 15, color: 'var(--t-text-1)', marginBottom: 5 }}>Sin restaurantes acá</div>
-                <div style={{ fontFamily: sg, fontSize: 13, color: 'var(--t-text-3)' }}>Probá otra ciudad o quitá un filtro.</div>
+                <div style={{ fontFamily: sg, fontSize: 13, color: 'var(--t-text-3)' }}>Prueba otra ciudad o quita un filtro.</div>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -430,13 +430,13 @@ export function HomeClient({ restaurants }: HomeClientProps) {
             {/* CTA discreta al pie */}
             <div style={{ textAlign: 'center', padding: '32px 0 16px', borderTop: '1px solid var(--t-border-2)', marginTop: 24 }}>
               <p style={{ fontFamily: sg, fontSize: 12.5, color: 'var(--t-text-4)', margin: '0 0 8px' }}>
-                ¿Tenés un restaurante?
+                ¿Tienes un restaurante?
               </p>
               <Link href="/registrar-local" style={{
                 fontFamily: sg, fontWeight: 600, fontSize: 13, color: '#FF6A1A',
                 textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4,
               }}>
-                Registrá tu local
+                Registra tu local
                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 18l6-6-6-6"/>
                 </svg>

@@ -52,7 +52,7 @@ export function ImageUpload({
       const data = (await res.json()) as { url: string };
       onChange(data.url);
     } catch {
-      setError('No se pudo subir la imagen. Intentá de nuevo.');
+      setError('No se pudo subir la imagen. Intenta de nuevo.');
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = '';

@@ -154,7 +154,7 @@ export function ProductModal({ product, adicionales, primaryColor, onClose }: Pr
                 fontFamily: sm, fontSize: 11, fontWeight: 700, letterSpacing: '.1em',
                 color: '#9a8f86', textTransform: 'uppercase', marginBottom: 12,
               }}>
-                Elegí tus adicionales
+                Elige tus adicionales
               </div>
 
               {/* Sin adicionales */}

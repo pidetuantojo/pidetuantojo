@@ -39,7 +39,7 @@ export default function EditarProductoPage() {
           <h1 className="text-xl font-bold text-[var(--t-text-1)]">
             {product ? `Editar: ${product.name}` : 'Editar producto'}
           </h1>
-          <p className="text-sm text-[var(--t-text-3)]">Modificá los datos del producto</p>
+          <p className="text-sm text-[var(--t-text-3)]">Modifica los datos del producto</p>
         </div>
       </div>
 

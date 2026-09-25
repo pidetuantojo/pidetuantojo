@@ -442,7 +442,7 @@ function EditView({ user, onBack, onUpdated, onDeleted }: EditViewProps) {
             </FieldGroup>
 
             <FieldGroup label="Confirmar contraseña">
-              <Field value={confirmPassword} onChange={setConfirmPassword} placeholder="Repetí la contraseña" type="password" />
+              <Field value={confirmPassword} onChange={setConfirmPassword} placeholder="Repite la contraseña" type="password" />
             </FieldGroup>
 
             {passError && (
@@ -476,7 +476,7 @@ function EditView({ user, onBack, onUpdated, onDeleted }: EditViewProps) {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <p style={{ fontSize: 14, color: 'var(--t-text-1)', margin: 0 }}>
-                ¿Confirmás que querés eliminar a <strong>{user.displayName ?? user.email}</strong>?
+                ¿Confirmas que quieres eliminar a <strong>{user.displayName ?? user.email}</strong>?
               </p>
               {deleteError && (
                 <p style={{ fontSize: 13, color: '#ef4444', margin: 0, padding: '10px 14px', background: '#fef2f2', borderRadius: 8 }}>
@@ -523,7 +523,7 @@ function ListView({ users, isLoading, onAdd, onEdit }: ListViewProps) {
           Usuarios de acceso
         </h1>
         <p style={{ fontSize: 13, color: 'var(--t-text-3)', margin: '4px 0 0' }}>
-          Podés agregar hasta {MAX_VIEW_USERS} usuarios con acceso limitado (pedidos y contabilidad).
+          Puedes agregar hasta {MAX_VIEW_USERS} usuarios con acceso limitado (pedidos y contabilidad).
         </p>
       </div>
 
@@ -542,7 +542,7 @@ function ListView({ users, isLoading, onAdd, onEdit }: ListViewProps) {
             padding: '40px 24px', textAlign: 'center',
           }}>
             <p style={{ fontSize: 14, color: 'var(--t-text-3)', margin: 0 }}>
-              Todavía no hay usuarios de acceso. Agregá hasta {MAX_VIEW_USERS}.
+              Todavía no hay usuarios de acceso. Agrega hasta {MAX_VIEW_USERS}.
             </p>
           </div>
         ) : (

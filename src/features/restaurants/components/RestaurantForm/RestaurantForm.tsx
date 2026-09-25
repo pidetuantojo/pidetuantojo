@@ -327,7 +327,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
               value={data.category}
               onChange={(v) => handleChange('category', v)}
               options={categoryOptions}
-              placeholder="Seleccioná una categoría..."
+              placeholder="Selecciona una categoría..."
               error={errors.category}
               disabled={isPending}
             />
@@ -514,8 +514,8 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
               value={data.department}
               onChange={(v) => handleChange('department', v)}
               options={depOptions}
-              placeholder="Seleccioná un departamento..."
-              hint="Define en qué departamento aparecés"
+              placeholder="Selecciona un departamento..."
+              hint="Define en qué departamento apareces"
               error={errors.department}
               disabled={isPending}
             />
@@ -524,7 +524,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
               value={data.city}
               onChange={(v) => handleChange('city', v)}
               options={cityOptions}
-              placeholder={data.department ? 'Seleccioná una ciudad...' : 'Primero elegí el departamento'}
+              placeholder={data.department ? 'Selecciona una ciudad...' : 'Primero elige el departamento'}
               hint="Se filtra según el departamento"
               error={errors.city}
               disabled={isPending || !data.department}
@@ -555,7 +555,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
               handleChange('mapEmbed', srcMatch ? srcMatch[1] : val);
             }}
             placeholder="https://www.google.com/maps/embed?pb=..."
-            hint="Google Maps → Compartir → Insertar mapa → podés pegar el iframe completo o solo la URL del src"
+            hint="Google Maps → Compartir → Insertar mapa → puedes pegar el iframe completo o solo la URL del src"
             disabled={isPending}
           />
         </AccordionSection>
@@ -593,7 +593,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
           summary={statusNow.text}
         >
           <p style={{ fontFamily: sg, fontSize: 12.5, color: 'var(--t-text-3)', margin: 0 }}>
-            Activá los días que abrís y definí la hora de apertura y cierre. El menú y el home muestran automáticamente si estás abierto o cerrado.
+            Activa los días que abres y define la hora de apertura y cierre. El menú y el home muestran automáticamente si estás abierto o cerrado.
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

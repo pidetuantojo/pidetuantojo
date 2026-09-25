@@ -128,9 +128,9 @@ export function ManualOrderModal({
   async function handleSubmit() {
     if (!customerName.trim()) { setError('El nombre del cliente es requerido'); return; }
     if (!customerPhone.trim()) { setError('El teléfono es requerido'); return; }
-    if (cart.length === 0) { setError('Agregá al menos un producto'); return; }
+    if (cart.length === 0) { setError('Agrega al menos un producto'); return; }
     if (deliveryType === 'domicilio' && !address.trim()) { setError('La dirección es requerida para domicilio'); return; }
-    if (!selectedPayment) { setError('Elegí un método de pago'); return; }
+    if (!selectedPayment) { setError('Elige un método de pago'); return; }
 
     setError('');
     setIsSaving(true);
@@ -186,7 +186,7 @@ export function ManualOrderModal({
           </div>
           <div>
             <div style={{ fontWeight: 700, fontSize: 17, color: 'var(--t-text-1)' }}>Pedido manual</div>
-            <div style={{ fontFamily: sg, fontSize: 11, color: 'var(--t-text-3)', marginTop: 1 }}>Registrá un pedido directo</div>
+            <div style={{ fontFamily: sg, fontSize: 11, color: 'var(--t-text-3)', marginTop: 1 }}>Registra un pedido directo</div>
           </div>
           <button
             onClick={onClose}

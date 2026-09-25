@@ -65,7 +65,7 @@ export function DeliveryZonesManager() {
     const name = form.name.trim();
     const price = parseFloat(form.price);
     if (!name) { setFormError('El nombre es requerido'); return; }
-    if (isNaN(price) || price < 0) { setFormError('Ingresá un precio válido'); return; }
+    if (isNaN(price) || price < 0) { setFormError('Ingresa un precio válido'); return; }
 
     setFormError('');
     if (editing) {
@@ -137,7 +137,7 @@ export function DeliveryZonesManager() {
             Zonas de domicilio
           </h2>
           <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--t-text-3)' }}>
-            Definí los barrios o sectores con su precio de envío
+            Define los barrios o sectores con su precio de envío
           </p>
         </div>
         <button
@@ -236,7 +236,7 @@ export function DeliveryZonesManager() {
               Todavía no hay zonas configuradas
             </p>
             <p style={{ fontFamily: sg, fontSize: 13, color: 'var(--t-text-3)', margin: '0 0 16px' }}>
-              Agregá barrios o sectores con su precio de envío correspondiente
+              Agrega barrios o sectores con su precio de envío correspondiente
             </p>
             <button
               onClick={openAdd}

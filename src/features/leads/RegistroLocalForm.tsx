@@ -102,7 +102,7 @@ export function RegistroLocalForm() {
     if (!form.nombre.trim()) e.nombre = 'Campo requerido';
     if (!form.whatsapp.trim()) e.whatsapp = 'Campo requerido';
     if (!form.nombreNegocio.trim()) e.nombreNegocio = 'Campo requerido';
-    if (!form.tipoNegocio) e.tipoNegocio = 'Seleccioná un tipo';
+    if (!form.tipoNegocio) e.tipoNegocio = 'Selecciona un tipo';
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -116,7 +116,7 @@ export function RegistroLocalForm() {
       await leadsService.create({ ...form });
       setStep('success');
     } catch {
-      setSubmitError('Hubo un error al enviar. Intentá de nuevo.');
+      setSubmitError('Hubo un error al enviar. Intenta de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -254,7 +254,7 @@ export function RegistroLocalForm() {
               Nos ponemos en contacto por WhatsApp en las próximas <strong style={{ color: 'var(--t-text-1)' }}>24 horas</strong> para mostrarte todo lo que Pide Tu Antojo puede hacer por <strong style={{ color: 'var(--t-text-1)' }}>{form.nombreNegocio}</strong>.
             </p>
             <p style={{ fontFamily: sg, fontSize: 13, color: 'var(--t-text-3)', margin: '0 0 36px' }}>
-              Revisá tu WhatsApp: <strong style={{ color: 'var(--t-text-2)' }}>{form.whatsapp}</strong>
+              Revisa tu WhatsApp: <strong style={{ color: 'var(--t-text-2)' }}>{form.whatsapp}</strong>
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -332,10 +332,10 @@ export function RegistroLocalForm() {
                 fontFamily: sg, fontSize: 30, fontWeight: 700,
                 color: 'var(--t-text-1)', letterSpacing: '-0.03em', margin: '0 0 6px',
               }}>
-                Registrá tu local
+                Registra tu local
               </h1>
               <p style={{ fontFamily: sg, fontSize: 14, color: 'var(--t-text-3)', margin: '0 0 32px', lineHeight: 1.6 }}>
-                Completá el formulario y te contactamos en menos de 24 horas.
+                Completa el formulario y te contactamos en menos de 24 horas.
               </p>
 
               <form onSubmit={handleSubmit} noValidate>
@@ -391,7 +391,7 @@ export function RegistroLocalForm() {
                     <Select
                       value={form.tipoNegocio}
                       onChange={(v) => set('tipoNegocio', v)}
-                      placeholder="Seleccioná una opción"
+                      placeholder="Selecciona una opción"
                       error={errors.tipoNegocio}
                       options={RESTAURANT_CATEGORIES.map((c) => ({ value: c, label: c }))}
                     />
@@ -403,7 +403,7 @@ export function RegistroLocalForm() {
                     <Select
                       value={form.departamento}
                       onChange={(v) => set('departamento', v)}
-                      placeholder="Seleccioná departamento"
+                      placeholder="Selecciona departamento"
                       options={Object.keys(COLOMBIA_LOCATIONS).sort().map((d) => ({ value: d, label: d }))}
                     />
                   </div>
@@ -414,7 +414,7 @@ export function RegistroLocalForm() {
                     <Select
                       value={form.ciudad}
                       onChange={(v) => set('ciudad', v)}
-                      placeholder="Seleccioná ciudad"
+                      placeholder="Selecciona ciudad"
                       disabled={ciudades.length === 0}
                       options={ciudades.map((c) => ({ value: c, label: c }))}
                     />
@@ -424,7 +424,7 @@ export function RegistroLocalForm() {
                   <div className="rl-full">
                     <label style={label}>¿Algo que quieras contarnos?</label>
                     <textarea className="rl-inp" style={{ ...input(), resize: 'none', height: 96 }}
-                      placeholder="Contanos sobre tu negocio, cuántos pedidos recibís, qué esperás de la plataforma..."
+                      placeholder="Cuéntanos sobre tu negocio, cuántos pedidos recibes, qué esperas de la plataforma..."
                       value={form.mensaje} onChange={(e) => set('mensaje', e.target.value)} />
                   </div>
 

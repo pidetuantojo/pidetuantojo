@@ -246,7 +246,7 @@ export function DomiciliariosManager() {
               Sin domiciliarios registrados
             </p>
             <p style={{ fontFamily: sg, fontSize: 13, color: 'var(--t-text-3)', margin: '0 0 16px' }}>
-              Agregá tu personal de entrega para asignarlos a los pedidos
+              Agrega tu personal de entrega para asignarlos a los pedidos
             </p>
             <button onClick={openAdd} style={{ fontFamily: sg, fontWeight: 700, fontSize: 13, color: '#FF6A1A', background: 'none', border: 'none', cursor: 'pointer', padding: 0, borderRadius: 999 }}>
               + Agregar domiciliario

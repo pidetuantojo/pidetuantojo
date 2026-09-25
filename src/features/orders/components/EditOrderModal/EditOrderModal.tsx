@@ -195,7 +195,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
       onSaved();
       onClose();
     } catch {
-      setError('No se pudo guardar. Intentá de nuevo.');
+      setError('No se pudo guardar. Intenta de nuevo.');
     } finally {
       setSaving(false);
     }
@@ -223,7 +223,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
             <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--t-text-1)' }}>
               Editar pedido <span style={{ fontSize: 12, color: 'var(--t-text-3)', fontWeight: 500 }}>{order.orderNumber}</span>
             </div>
-            <div style={{ fontSize: 11, color: 'var(--t-text-3)', marginTop: 1 }}>Corregí o ajustá cualquier dato</div>
+            <div style={{ fontSize: 11, color: 'var(--t-text-3)', marginTop: 1 }}>Corrige o ajusta cualquier dato</div>
           </div>
           <button
             onClick={onClose}
@@ -259,7 +259,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
 
             {showAddProduct && (
               <div style={{ marginBottom: 10, borderRadius: 14, border: '2px dashed #FF6A1A', padding: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <p style={{ fontSize: 11, color: 'var(--t-text-3)' }}>Elegí un producto:</p>
+                <p style={{ fontSize: 11, color: 'var(--t-text-3)' }}>Elige un producto:</p>
 
                 {/* Category chips */}
                 {categories.length > 0 && (
@@ -460,7 +460,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
                         style={{ width: '100%', minWidth: 0, borderRadius: 12, border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', padding: '10px 13px', fontFamily: sg, fontSize: 13, color: 'var(--t-text-1)', outline: 'none', boxSizing: 'border-box' }} />
                     </div>
                     <p style={{ margin: 0, fontSize: 12, color: scheduledDate ? 'var(--t-text-3)' : '#e53e3e' }}>
-                      {scheduledDate ? `Para el ${formatScheduledDate(scheduledDate)}` : 'Elegí fecha y hora'}
+                      {scheduledDate ? `Para el ${formatScheduledDate(scheduledDate)}` : 'Elige fecha y hora'}
                     </p>
                   </>
                 )}

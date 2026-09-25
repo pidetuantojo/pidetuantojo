@@ -12,7 +12,7 @@ const MODULES = [
   {
     href: ROUTES.dashboard.pedidos,
     label: 'Pedidos',
-    desc: 'Gestioná órdenes en tiempo real',
+    desc: 'Gestiona órdenes en tiempo real',
     iconBg: 'linear-gradient(135deg, #FF8A2B, #EA3B2E)',
     iconShadow: 'rgba(234,59,46,.5)',
     icon: (
@@ -48,7 +48,7 @@ const MODULES = [
   {
     href: ROUTES.dashboard.estados,
     label: 'Estados de pedidos',
-    desc: 'Configurá el flujo de tus pedidos',
+    desc: 'Configura el flujo de tus pedidos',
     iconBg: 'linear-gradient(135deg, #8a7f76, #5a5048)',
     iconShadow: 'rgba(90,80,72,.5)',
     icon: (

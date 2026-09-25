@@ -77,7 +77,7 @@ export default function NuevoRestaurantePage() {
               Nuevo restaurante
             </h1>
             <p style={{ fontSize: 13, color: '#9a8f86', margin: '3px 0 0' }}>
-              Completá los datos para crear el restaurante y su usuario administrador.
+              Completa los datos para crear el restaurante y su usuario administrador.
             </p>
           </div>
         </div>

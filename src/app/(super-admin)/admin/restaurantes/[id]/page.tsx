@@ -180,7 +180,7 @@ export default function EditarRestaurantePage() {
         isOpen={showPasswordModal}
         onClose={() => setShowPasswordModal(false)}
         title="Cambiar contraseña"
-        description={`Establecé una nueva contraseña para el admin de ${restaurant?.name ?? 'este restaurante'}.`}
+        description={`Establece una nueva contraseña para el admin de ${restaurant?.name ?? 'este restaurante'}.`}
         size="sm"
       >
         <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -210,7 +210,7 @@ export default function EditarRestaurantePage() {
             </label>
             <input
               type="password"
-              placeholder="Repetí la contraseña"
+              placeholder="Repite la contraseña"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={passwordLoading}

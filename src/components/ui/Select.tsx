@@ -25,7 +25,7 @@ export function Select({
   value,
   onChange,
   options,
-  placeholder = 'Seleccioná...',
+  placeholder = 'Selecciona...',
   label,
   error,
   hint,

@@ -77,7 +77,7 @@ export function validateScheduledDate(
   openingHours: OpeningHours | undefined,
   now: Date = new Date()
 ): string | null {
-  if (!scheduled) return 'Elegí fecha y hora';
+  if (!scheduled) return 'Elige fecha y hora';
   const { min, max } = getScheduleBounds(now);
   if (scheduled.getTime() < min.getTime()) {
     return `Debe ser al menos ${SCHEDULE_MIN_MINUTES} minutos en el futuro`;

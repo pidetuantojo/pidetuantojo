@@ -64,7 +64,7 @@ export function ProductForm({
             onChange={(v) => handleChange('categoryId', v)}
             disabled={isPending}
             error={errors.categoryId}
-            placeholder="Seleccioná una categoría"
+            placeholder="Selecciona una categoría"
             options={categories.map((cat) => ({ value: cat.id, label: cat.name }))}
           />
 

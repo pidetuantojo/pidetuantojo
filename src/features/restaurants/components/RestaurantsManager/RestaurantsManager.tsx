@@ -78,7 +78,7 @@ export function RestaurantsManager() {
             Restaurantes
           </h2>
           <p style={{ fontFamily: sm, fontSize: 12, color: 'var(--t-text-3)', margin: 0 }}>
-            Gestioná todos los locales de la plataforma
+            Gestiona todos los locales de la plataforma
           </p>
         </div>
         <button
@@ -161,7 +161,7 @@ export function RestaurantsManager() {
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         title="Eliminar restaurante"
-        description={`¿Estás seguro que querés eliminar "${deleteTarget?.name}"? Esta acción no se puede deshacer.`}
+        description={`¿Estás seguro de que quieres eliminar "${deleteTarget?.name}"? Esta acción no se puede deshacer.`}
         size="sm"
       >
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '20px 24px' }}>
