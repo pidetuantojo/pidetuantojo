@@ -12,11 +12,17 @@ export const ROUTES = {
   dashboard: {
     root: '/dashboard',
     pedidos: '/dashboard/pedidos',
-    menu: '/dashboard/menu',
     estados: '/dashboard/estados',
+    productos: '/dashboard/productos',
+    categorias: '/dashboard/categorias',
+    adicionales: '/dashboard/adicionales',
     contabilidad: '/dashboard/contabilidad',
+    zonas: '/dashboard/domicilios/zonas',
+    domiciliarios: '/dashboard/domicilios/domiciliarios',
     configuracion: '/dashboard/configuracion',
     equipo: '/dashboard/equipo',
+    // legacy — keep for redirects only
+    menu: '/dashboard/menu',
     domicilios: '/dashboard/domicilios',
   },
   // Public menu

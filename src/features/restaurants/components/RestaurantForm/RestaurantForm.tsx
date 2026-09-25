@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
@@ -104,52 +104,92 @@ function PaletteSection({
     p.pri === data.primaryColor && p.sec === data.secondaryColor && p.acc === data.accentColor;
 
   return (
-    <section>
-      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[var(--t-text-4)]">Paleta de colores del menú</h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div>
-          <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', marginBottom: 10 }}>ELEGÍ UNA PALETA</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-            {PALETTES.map((p) => {
-              const active = isActive(p);
-              return (
-                <button
-                  key={p.name}
-                  type="button"
-                  onClick={() => applyPalette(p)}
-                  disabled={isPending}
-                  style={{
-                    background: active ? '#FFF7F0' : 'var(--t-surface)',
-                    border: `1.5px solid ${active ? p.pri : 'var(--t-border)'}`,
-                    borderRadius: 12, padding: '10px 12px',
-                    cursor: 'pointer', textAlign: 'left',
-                    transition: 'border-color .12s, background .12s',
-                  }}
-                >
-                  <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
-                    <span style={{ width: 18, height: 18, borderRadius: 6, background: p.pri, display: 'block' }} />
-                    <span style={{ width: 18, height: 18, borderRadius: 6, background: p.sec, display: 'block' }} />
-                    <span style={{ width: 18, height: 18, borderRadius: 6, background: p.acc, display: 'block' }} />
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontFamily: sg, fontWeight: 600, fontSize: 12, color: 'var(--t-text-1)' }}>{p.name}</span>
-                    {active && <span style={{ fontFamily: sm, fontSize: 11, color: p.pri }}>✓</span>}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-        <div>
-          <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', marginBottom: 10 }}>O PERSONALIZÁ</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <ColorPicker label="Primario" hint="Botones y precios" value={data.primaryColor} onChange={(v) => handleChange('primaryColor', v)} disabled={isPending} />
-            <ColorPicker label="Secundario" hint="Títulos y barra inferior" value={data.secondaryColor} onChange={(v) => handleChange('secondaryColor', v)} disabled={isPending} />
-            <ColorPicker label="Acento" hint="Destacados suaves" value={data.accentColor} onChange={(v) => handleChange('accentColor', v)} disabled={isPending} />
-          </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div>
+        <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', marginBottom: 10 }}>PALETA DE COLORES — ELEGÍ UNA</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+          {PALETTES.map((p) => {
+            const active = isActive(p);
+            return (
+              <button
+                key={p.name}
+                type="button"
+                onClick={() => applyPalette(p)}
+                disabled={isPending}
+                style={{
+                  background: active ? '#FFF7F0' : 'var(--t-surface)',
+                  border: `1.5px solid ${active ? p.pri : 'var(--t-border)'}`,
+                  borderRadius: 12, padding: '10px 12px',
+                  cursor: 'pointer', textAlign: 'left',
+                  transition: 'border-color .12s, background .12s',
+                }}
+              >
+                <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
+                  <span style={{ width: 18, height: 18, borderRadius: 6, background: p.pri, display: 'block' }} />
+                  <span style={{ width: 18, height: 18, borderRadius: 6, background: p.sec, display: 'block' }} />
+                  <span style={{ width: 18, height: 18, borderRadius: 6, background: p.acc, display: 'block' }} />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontFamily: sg, fontWeight: 600, fontSize: 12, color: 'var(--t-text-1)' }}>{p.name}</span>
+                  {active && <span style={{ fontFamily: sm, fontSize: 11, color: p.pri }}>✓</span>}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
-    </section>
+      <div>
+        <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', marginBottom: 10 }}>O PERSONALIZÁ</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <ColorPicker label="Primario" hint="Botones y precios" value={data.primaryColor} onChange={(v) => handleChange('primaryColor', v)} disabled={isPending} />
+          <ColorPicker label="Secundario" hint="Títulos y barra inferior" value={data.secondaryColor} onChange={(v) => handleChange('secondaryColor', v)} disabled={isPending} />
+          <ColorPicker label="Acento" hint="Destacados suaves" value={data.accentColor} onChange={(v) => handleChange('accentColor', v)} disabled={isPending} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AccordionSection({
+  label, open, onToggle, children, summary,
+}: {
+  label: string; open: boolean; onToggle: () => void;
+  children: React.ReactNode; summary?: string;
+}) {
+  return (
+    <div style={{ border: '1.5px solid var(--t-border)', borderRadius: 14, overflow: 'hidden' }}>
+      <button
+        type="button"
+        onClick={onToggle}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between', gap: 12,
+          padding: '14px 18px', background: 'var(--t-surface)',
+          border: 'none', cursor: 'pointer',
+        }}
+      >
+        <span style={{ fontFamily: sg, fontWeight: 700, fontSize: 13.5, color: 'var(--t-text-1)', textAlign: 'left' }}>
+          {label}
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          {!open && summary && (
+            <span style={{ fontFamily: sm, fontSize: 11, color: 'var(--t-text-3)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {summary}
+            </span>
+          )}
+          <span style={{ display: 'flex', flexShrink: 0, color: 'var(--t-text-3)', transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .2s' }}>
+            <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <path d="M4 6l4 4 4-4"/>
+            </svg>
+          </span>
+        </span>
+      </button>
+      {open && (
+        <div style={{ padding: '18px 18px', display: 'flex', flexDirection: 'column', gap: 16, borderTop: '1px solid var(--t-border)' }}>
+          {children}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -164,6 +204,16 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
   const createMutation = useCreateRestaurant();
   const updateMutation = useUpdateRestaurant();
   const isPending = createMutation.isPending || updateMutation.isPending;
+
+  const [openSections, setOpenSections] = useState<Set<string>>(() => new Set(['info']));
+  function toggleSection(id: string) {
+    setOpenSections(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -182,7 +232,6 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
 
   const mutationError = createMutation.error?.message ?? updateMutation.error?.message;
 
-  // Opciones para los selectores de ubicación
   const depOptions = Object.keys(COLOMBIA_LOCATIONS).sort().map((d) => ({ value: d, label: d }));
   const cityOptions = data.department
     ? (COLOMBIA_LOCATIONS[data.department] ?? []).map((c) => ({ value: c, label: c }))
@@ -190,20 +239,16 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
 
   const categoryOptions = RESTAURANT_CATEGORIES.map((c) => ({ value: c, label: c }));
 
-  // Horario — estado y helpers
   const statusNow = getStatusNow(data.openingHours);
 
   function applyWeekdaysToAll() {
     const monHours = data.openingHours[1];
-    const next = data.openingHours.map((_, i) =>
-      i === 0
-        ? { on: monHours.on, open: monHours.open, close: monHours.close }
-        : { on: monHours.on, open: monHours.open, close: monHours.close }
+    const next = data.openingHours.map(() =>
+      ({ on: monHours.on, open: monHours.open, close: monHours.close })
     );
     handleChange('openingHours', next);
   }
 
-  // Resumen para mostrar al final del horario
   const DAY_SHORT = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
   const hoursSummary = DAY_ORDER
     .map((i) => {
@@ -213,16 +258,21 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
     .filter(Boolean)
     .join('\n') || 'Sin días activos';
 
+  const activePaletteName = PALETTES.find(p =>
+    p.pri === data.primaryColor && p.sec === data.secondaryColor && p.acc === data.accentColor
+  )?.name;
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col">
-      <div className="space-y-6 p-6">
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-        {/* Sección: Información básica */}
-        <section className="space-y-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--t-text-4)]">
-            Información básica
-          </h3>
-
+        {/* Información básica */}
+        <AccordionSection
+          label="Información básica"
+          open={openSections.has('info')}
+          onToggle={() => toggleSection('info')}
+          summary={data.name || undefined}
+        >
           <div className="grid gap-4 sm:grid-cols-2">
             <Input
               label="Nombre del restaurante"
@@ -244,7 +294,6 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
               disabled={isPending || isEditing}
             />
           </div>
-
           <Input
             label="Tagline"
             value={data.tagline}
@@ -253,7 +302,6 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             hint="Subtítulo que aparece en el panel del administrador"
             disabled={isPending}
           />
-
           <Textarea
             label="Descripción"
             value={data.description}
@@ -264,7 +312,6 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             required
             disabled={isPending}
           />
-
           <div className="grid gap-4 sm:grid-cols-2">
             <Input
               label="Teléfono / WhatsApp"
@@ -285,14 +332,14 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
               disabled={isPending}
             />
           </div>
-        </section>
+        </AccordionSection>
 
-        {/* Sección: Branding */}
-        <section className="space-y-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--t-text-4)]">
-            Branding
-          </h3>
-
+        {/* Branding */}
+        <AccordionSection
+          label="Branding"
+          open={openSections.has('branding')}
+          onToggle={() => toggleSection('branding')}
+        >
           <ImageUpload
             label="Logo del restaurante *"
             value={data.logo}
@@ -303,7 +350,6 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             hint="Usá una imagen cuadrada (800×800 px mínimo). PNG con fondo transparente es ideal — el logo se muestra en círculo en toda la app."
           />
           {errors.logo && <p className="text-xs text-red-600">{errors.logo}</p>}
-
           <ImageUpload
             label="Foto de portada del menú (opcional)"
             value={data.bannerImage}
@@ -313,141 +359,148 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             objectFit="contain"
             hint="Imagen horizontal (1500×500 px, ratio 3:1). Se recorta al centro, así que el contenido principal debe estar centrado. JPG para fotos."
           />
-        </section>
+        </AccordionSection>
 
-        {/* Sección: Formato del menú */}
-        <section>
-          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[var(--t-text-4)]">Formato del menú público</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            {([
-              {
-                id: 'cards' as const,
-                name: 'Tarjetas',
-                desc: 'Foto grande + botón añadir',
-                thumb: (
-                  <div style={{ position: 'absolute', inset: 9, background: '#fff', borderRadius: 6, boxShadow: '0 2px 6px rgba(0,0,0,.1)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                    <div style={{ height: 34, background: '#E7DED6' }} />
-                    <div style={{ height: 7, width: 52, margin: '6px 8px 0', background: '#cfc6bd', borderRadius: 3 }} />
-                    <div style={{ height: 9, margin: '6px 8px', background: data.primaryColor, borderRadius: 4 }} />
-                  </div>
-                ),
-              },
-              {
-                id: 'list' as const,
-                name: 'Lista por categorías',
-                desc: 'Acordeón compacto con +',
-                thumb: (
-                  <div style={{ position: 'absolute', inset: 9, display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    <div style={{ height: 15, background: data.secondaryColor, borderRadius: 4 }} />
-                    {[0, 1].map((i) => (
-                      <div key={i} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 5, background: '#fff', borderRadius: 5, padding: '0 6px', boxShadow: '0 1px 3px rgba(0,0,0,.1)' }}>
-                        <span style={{ width: 16, height: 16, borderRadius: 4, background: '#E7DED6', flexShrink: 0 }} />
-                        <span style={{ flex: 1, height: 5, background: '#d8cec4', borderRadius: 3 }} />
-                        <span style={{ width: 12, height: 12, borderRadius: 4, background: data.primaryColor, flexShrink: 0 }} />
+        {/* Diseño del menú */}
+        <AccordionSection
+          label="Diseño del menú"
+          open={openSections.has('design')}
+          onToggle={() => toggleSection('design')}
+          summary={activePaletteName}
+        >
+          <div>
+            <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', marginBottom: 10 }}>FORMATO DEL MENÚ PÚBLICO</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {([
+                {
+                  id: 'cards' as const,
+                  name: 'Tarjetas',
+                  desc: 'Foto grande + botón añadir',
+                  thumb: (
+                    <div style={{ position: 'absolute', inset: 9, background: '#fff', borderRadius: 6, boxShadow: '0 2px 6px rgba(0,0,0,.1)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                      <div style={{ height: 34, background: '#E7DED6' }} />
+                      <div style={{ height: 7, width: 52, margin: '6px 8px 0', background: '#cfc6bd', borderRadius: 3 }} />
+                      <div style={{ height: 9, margin: '6px 8px', background: data.primaryColor, borderRadius: 4 }} />
+                    </div>
+                  ),
+                },
+                {
+                  id: 'list' as const,
+                  name: 'Lista por categorías',
+                  desc: 'Acordeón compacto con +',
+                  thumb: (
+                    <div style={{ position: 'absolute', inset: 9, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      <div style={{ height: 15, background: data.secondaryColor, borderRadius: 4 }} />
+                      {[0, 1].map((i) => (
+                        <div key={i} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 5, background: '#fff', borderRadius: 5, padding: '0 6px', boxShadow: '0 1px 3px rgba(0,0,0,.1)' }}>
+                          <span style={{ width: 16, height: 16, borderRadius: 4, background: '#E7DED6', flexShrink: 0 }} />
+                          <span style={{ flex: 1, height: 5, background: '#d8cec4', borderRadius: 3 }} />
+                          <span style={{ width: 12, height: 12, borderRadius: 4, background: data.primaryColor, flexShrink: 0 }} />
+                        </div>
+                      ))}
+                    </div>
+                  ),
+                },
+              ]).map((f) => {
+                const sel = data.menuLayout === f.id;
+                return (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => handleChange('menuLayout', f.id)}
+                    disabled={isPending}
+                    style={{
+                      background: 'var(--t-surface)',
+                      border: sel ? '2px solid #FF6A1A' : '1.5px solid var(--t-border)',
+                      borderRadius: 14, padding: 14,
+                      cursor: 'pointer', textAlign: 'left',
+                      transition: 'border-color .12s',
+                    }}
+                  >
+                    <div style={{ position: 'relative', height: 74, borderRadius: 10, overflow: 'hidden', marginBottom: 10, background: sel ? '#FFF3EA' : '#F6F1EB' }}>
+                      {f.thumb}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                      <div>
+                        <div style={{ fontFamily: sg, fontWeight: 600, fontSize: 13, color: 'var(--t-text-1)', lineHeight: 1.2 }}>{f.name}</div>
+                        <div style={{ fontFamily: sg, fontSize: 11, color: 'var(--t-text-3)', marginTop: 2 }}>{f.desc}</div>
                       </div>
-                    ))}
-                  </div>
-                ),
-              },
-            ]).map((f) => {
-              const sel = data.menuLayout === f.id;
-              return (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => handleChange('menuLayout', f.id)}
-                  disabled={isPending}
-                  style={{
-                    background: 'var(--t-surface)',
-                    border: sel ? '2px solid #FF6A1A' : '1.5px solid var(--t-border)',
-                    borderRadius: 14, padding: 14,
-                    cursor: 'pointer', textAlign: 'left',
-                    transition: 'border-color .12s',
-                  }}
-                >
-                  <div style={{ position: 'relative', height: 74, borderRadius: 10, overflow: 'hidden', marginBottom: 10, background: sel ? '#FFF3EA' : '#F6F1EB' }}>
-                    {f.thumb}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-                    <div>
-                      <div style={{ fontFamily: sg, fontWeight: 600, fontSize: 13, color: 'var(--t-text-1)', lineHeight: 1.2 }}>{f.name}</div>
-                      <div style={{ fontFamily: sg, fontSize: 11, color: 'var(--t-text-3)', marginTop: 2 }}>{f.desc}</div>
+                      <span style={{ width: 18, height: 18, borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: 11, color: '#fff', background: '#FF6A1A', opacity: sel ? 1 : 0, flexShrink: 0 }}>✓</span>
                     </div>
-                    <span style={{ width: 18, height: 18, borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: 11, color: '#fff', background: '#FF6A1A', opacity: sel ? 1 : 0, flexShrink: 0 }}>✓</span>
-                  </div>
-                </button>
-              );
-            })}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </section>
 
-        {/* Sección: Modo de domicilios */}
-        <section>
-          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[var(--t-text-4)]">Modo de domicilios</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            {([
-              {
-                id: 'manual' as const,
-                name: 'Manual',
-                desc: 'El admin asigna el valor del domicilio desde gestión de pedidos',
-                icon: (
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                  </svg>
-                ),
-              },
-              {
-                id: 'zones' as const,
-                name: 'Por zonas',
-                desc: 'El cliente elige su barrio/sector y el precio se aplica automáticamente',
-                icon: (
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
-                    <line x1="9" y1="3" x2="9" y2="18"/>
-                    <line x1="15" y1="6" x2="15" y2="21"/>
-                  </svg>
-                ),
-              },
-            ]).map((mode) => {
-              const sel = data.deliveryMode === mode.id;
-              return (
-                <button
-                  key={mode.id}
-                  type="button"
-                  onClick={() => handleChange('deliveryMode', mode.id)}
-                  disabled={isPending}
-                  style={{
-                    background: 'var(--t-surface)',
-                    border: sel ? '2px solid #FF6A1A' : '1.5px solid var(--t-border)',
-                    borderRadius: 14, padding: 14,
-                    cursor: 'pointer', textAlign: 'left',
-                    transition: 'border-color .12s',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 56, borderRadius: 10, marginBottom: 10, background: sel ? '#FFF3EA' : 'var(--t-surface-2)', color: sel ? '#FF6A1A' : 'var(--t-text-3)' }}>
-                    {mode.icon}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-                    <div>
-                      <div style={{ fontFamily: sg, fontWeight: 600, fontSize: 13, color: 'var(--t-text-1)', lineHeight: 1.2 }}>{mode.name}</div>
-                      <div style={{ fontFamily: sg, fontSize: 11, color: 'var(--t-text-3)', marginTop: 3, lineHeight: 1.4 }}>{mode.desc}</div>
+          <div>
+            <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', marginBottom: 10 }}>MODO DE DOMICILIOS</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {([
+                {
+                  id: 'manual' as const,
+                  name: 'Manual',
+                  desc: 'El admin asigna el valor del domicilio desde gestión de pedidos',
+                  icon: (
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                    </svg>
+                  ),
+                },
+                {
+                  id: 'zones' as const,
+                  name: 'Por zonas',
+                  desc: 'El cliente elige su barrio/sector y el precio se aplica automáticamente',
+                  icon: (
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                      <line x1="9" y1="3" x2="9" y2="18"/>
+                      <line x1="15" y1="6" x2="15" y2="21"/>
+                    </svg>
+                  ),
+                },
+              ]).map((mode) => {
+                const sel = data.deliveryMode === mode.id;
+                return (
+                  <button
+                    key={mode.id}
+                    type="button"
+                    onClick={() => handleChange('deliveryMode', mode.id)}
+                    disabled={isPending}
+                    style={{
+                      background: 'var(--t-surface)',
+                      border: sel ? '2px solid #FF6A1A' : '1.5px solid var(--t-border)',
+                      borderRadius: 14, padding: 14,
+                      cursor: 'pointer', textAlign: 'left',
+                      transition: 'border-color .12s',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 56, borderRadius: 10, marginBottom: 10, background: sel ? '#FFF3EA' : 'var(--t-surface-2)', color: sel ? '#FF6A1A' : 'var(--t-text-3)' }}>
+                      {mode.icon}
                     </div>
-                    <span style={{ width: 18, height: 18, borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: 11, color: '#fff', background: '#FF6A1A', opacity: sel ? 1 : 0, flexShrink: 0 }}>✓</span>
-                  </div>
-                </button>
-              );
-            })}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                      <div>
+                        <div style={{ fontFamily: sg, fontWeight: 600, fontSize: 13, color: 'var(--t-text-1)', lineHeight: 1.2 }}>{mode.name}</div>
+                        <div style={{ fontFamily: sg, fontSize: 11, color: 'var(--t-text-3)', marginTop: 3, lineHeight: 1.4 }}>{mode.desc}</div>
+                      </div>
+                      <span style={{ width: 18, height: 18, borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: 11, color: '#fff', background: '#FF6A1A', opacity: sel ? 1 : 0, flexShrink: 0 }}>✓</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </section>
 
-        {/* Sección: Tema */}
-        <PaletteSection data={data} handleChange={handleChange} isPending={isPending} />
+          <PaletteSection data={data} handleChange={handleChange} isPending={isPending} />
+        </AccordionSection>
 
-        {/* Sección: Ubicación */}
-        <section className="space-y-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--t-text-4)]">
-            Ubicación
-          </h3>
+        {/* Ubicación */}
+        <AccordionSection
+          label="Ubicación"
+          open={openSections.has('location')}
+          onToggle={() => toggleSection('location')}
+          summary={data.city && data.department ? `${data.city}, ${data.department}` : undefined}
+        >
           <Input
             label="Dirección"
             value={data.address}
@@ -505,48 +558,40 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             hint="Google Maps → Compartir → Insertar mapa → podés pegar el iframe completo o solo la URL del src"
             disabled={isPending}
           />
-        </section>
+        </AccordionSection>
 
-        {/* Sección: Redes sociales */}
-        <section className="space-y-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--t-text-4)]">
-            Redes sociales
-          </h3>
-          <div className="flex flex-col gap-4">
-            <Input
-              label="Instagram"
-              value={data.instagram}
-              onChange={(e) => handleChange('instagram', e.target.value)}
-              placeholder="https://instagram.com/tu.restaurante"
-              hint="URL completa del perfil de Instagram"
-              disabled={isPending}
-            />
-            <Input
-              label="Facebook"
-              value={data.facebook}
-              onChange={(e) => handleChange('facebook', e.target.value)}
-              placeholder="https://facebook.com/tu.restaurante"
-              hint="URL completa de la página de Facebook"
-              disabled={isPending}
-            />
-          </div>
-        </section>
+        {/* Redes sociales */}
+        <AccordionSection
+          label="Redes sociales"
+          open={openSections.has('social')}
+          onToggle={() => toggleSection('social')}
+          summary={data.instagram || data.facebook ? 'Configuradas' : undefined}
+        >
+          <Input
+            label="Instagram"
+            value={data.instagram}
+            onChange={(e) => handleChange('instagram', e.target.value)}
+            placeholder="https://instagram.com/tu.restaurante"
+            hint="URL completa del perfil de Instagram"
+            disabled={isPending}
+          />
+          <Input
+            label="Facebook"
+            value={data.facebook}
+            onChange={(e) => handleChange('facebook', e.target.value)}
+            placeholder="https://facebook.com/tu.restaurante"
+            hint="URL completa de la página de Facebook"
+            disabled={isPending}
+          />
+        </AccordionSection>
 
-        {/* Sección: Horario de atención */}
-        <section className="space-y-4">
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--t-text-4)]">
-              Horario de atención
-            </h3>
-            <span style={{
-              fontFamily: sm, fontSize: 11, fontWeight: 700, letterSpacing: '.04em',
-              borderRadius: 999, padding: '5px 11px', flexShrink: 0,
-              color: statusNow.open ? '#14331F' : 'var(--t-text-2)',
-              background: statusNow.open ? '#7BD88F' : 'var(--t-surface-2)',
-            }}>
-              {statusNow.text}
-            </span>
-          </div>
+        {/* Horario de atención */}
+        <AccordionSection
+          label="Horario de atención"
+          open={openSections.has('hours')}
+          onToggle={() => toggleSection('hours')}
+          summary={statusNow.text}
+        >
           <p style={{ fontFamily: sg, fontSize: 12.5, color: 'var(--t-text-3)', margin: 0 }}>
             Activá los días que abrís y definí la hora de apertura y cierre. El menú y el home muestran automáticamente si estás abierto o cerrado.
           </p>
@@ -565,7 +610,6 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
                     transition: 'background .12s, border-color .12s',
                   }}
                 >
-                  {/* Toggle */}
                   <button
                     type="button"
                     onClick={() => setDayHours(dayIndex, { on: !day.on })}
@@ -576,11 +620,9 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
                       border: 'none', cursor: 'pointer', padding: 0,
                     }}
                   >
-                    {/* Switch pill */}
                     <span style={{
                       width: 38, height: 22, borderRadius: 999, flexShrink: 0,
-                      display: 'flex', alignItems: 'center',
-                      padding: 3,
+                      display: 'flex', alignItems: 'center', padding: 3,
                       background: day.on ? '#FF6A1A' : '#D8D0C8',
                       transition: 'background .2s',
                     }}>
@@ -588,8 +630,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
                         width: 16, height: 16, borderRadius: '50%', background: '#fff',
                         boxShadow: '0 1px 3px rgba(0,0,0,.22)',
                         transform: day.on ? 'translateX(16px)' : 'translateX(0)',
-                        transition: 'transform .2s',
-                        display: 'block',
+                        transition: 'transform .2s', display: 'block',
                       }} />
                     </span>
                     <span style={{
@@ -652,20 +693,20 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
           <div style={{
             fontFamily: sm, fontSize: 10.5, lineHeight: 1.9, color: 'var(--t-text-4)',
             background: 'var(--t-surface-2)', border: '1px solid var(--t-border)',
-            borderRadius: 11, padding: '12px 14px',
-            whiteSpace: 'pre-line',
+            borderRadius: 11, padding: '12px 14px', whiteSpace: 'pre-line',
           }}>
             <span style={{ color: 'var(--t-text-2)', fontWeight: 700 }}>openingHours</span> (schema.org){'\n'}
             {hoursSummary}
           </div>
-        </section>
+        </AccordionSection>
 
-        {/* Sección: Usuario administrador (solo en creación) */}
+        {/* Usuario administrador (solo en creación) */}
         {!isEditing && (
-          <section className="space-y-4">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--t-text-4)]">
-              Usuario administrador
-            </h3>
+          <AccordionSection
+            label="Usuario administrador"
+            open={openSections.has('admin')}
+            onToggle={() => toggleSection('admin')}
+          >
             <p className="text-xs text-[var(--t-text-3)]">
               Este usuario podrá acceder al dashboard del restaurante.
             </p>
@@ -700,11 +741,11 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
                 disabled={isPending}
               />
             </div>
-          </section>
+          </AccordionSection>
         )}
 
         {/* Estado */}
-        <label className="flex cursor-pointer items-center gap-3">
+        <label className="flex cursor-pointer items-center gap-3" style={{ padding: '4px 2px' }}>
           <input
             type="checkbox"
             checked={data.isActive}
@@ -720,12 +761,19 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
         )}
       </div>
 
-      {/* Footer con botones */}
-      <div className="flex flex-shrink-0 gap-3 border-t border-[var(--t-border)] px-6 py-4">
-        <Button type="button" variant="secondary" onClick={onCancel} disabled={isPending} className="flex-1">
+      {/* Footer sticky */}
+      <div style={{
+        position: 'sticky',
+        bottom: 0,
+        display: 'flex',
+        gap: 12,
+        padding: '14px 20px',
+        zIndex: 10,
+      }}>
+        <Button type="button" variant="secondary" onClick={onCancel} disabled={isPending} className="flex-1" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
           Cancelar
         </Button>
-        <Button type="submit" isLoading={isPending} className="flex-1">
+        <Button type="submit" isLoading={isPending} className="flex-1" style={{ boxShadow: '0 2px 8px rgba(251,114,26,0.35)' }}>
           {isEditing ? 'Guardar cambios' : 'Crear restaurante'}
         </Button>
       </div>

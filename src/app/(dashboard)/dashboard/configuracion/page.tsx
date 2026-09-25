@@ -231,7 +231,6 @@ export default function ConfiguracionPage() {
             {/* Form */}
             <div
               style={{
-                overflow: 'hidden',
                 borderRadius: 18,
                 border: '1px solid var(--t-border-2)',
                 background: 'var(--t-surface)',

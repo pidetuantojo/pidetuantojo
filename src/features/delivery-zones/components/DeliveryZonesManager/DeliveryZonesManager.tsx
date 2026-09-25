@@ -156,79 +156,62 @@ export function DeliveryZonesManager() {
         </button>
       </div>
 
-      {/* Formulario inline */}
+      {/* Modal */}
       {showForm && (
-        <section style={{ background: 'var(--t-surface)', border: '1.5px solid #FF6A1A', borderRadius: 16, padding: 20 }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 700, color: 'var(--t-text-1)' }}>
-            {editing ? `Editar zona: ${editing.name}` : 'Nueva zona'}
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div>
-              <label style={{ display: 'block', fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', textTransform: 'uppercase', marginBottom: 6 }}>
-                Nombre del sector / barrio
-              </label>
-              <input
-                type="text"
-                value={form.name}
-                onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-                placeholder="Ej: Centro, Laureles, Envigado..."
-                style={{
-                  width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 10,
-                  padding: '10px 12px', fontSize: 14, fontFamily: sg, color: 'var(--t-text-1)',
-                  outline: 'none', boxSizing: 'border-box',
-                }}
-              />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', textTransform: 'uppercase', marginBottom: 6 }}>
-                Precio del domicilio ($)
-              </label>
-              <input
-                type="number"
-                value={form.price}
-                onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))}
-                placeholder="Ej: 5000"
-                min="0"
-                style={{
-                  width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 10,
-                  padding: '10px 12px', fontSize: 14, fontFamily: sg, color: 'var(--t-text-1)',
-                  outline: 'none', boxSizing: 'border-box',
-                }}
-              />
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) cancelForm(); }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 16 }}
+        >
+          <div style={{ background: 'var(--t-surface)', borderRadius: 20, padding: '24px 28px', width: 440, maxWidth: '100%', display: 'flex', flexDirection: 'column', gap: 20, boxShadow: '0 24px 60px rgba(0,0,0,0.2)' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--t-text-1)' }}>
+                {editing ? `Editar: ${editing.name}` : 'Nueva zona'}
+              </h3>
+              <button onClick={cancelForm} style={{ width: 32, height: 32, borderRadius: 999, border: 'none', background: 'var(--t-surface-2)', cursor: 'pointer', display: 'grid', placeItems: 'center', color: 'var(--t-text-3)', fontSize: 16 }}>✕</button>
             </div>
 
-            {formError && (
-              <p style={{ fontSize: 12, color: '#ef4444', margin: 0 }}>{formError}</p>
-            )}
+            {/* Fields */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div>
+                <label style={{ display: 'block', fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', textTransform: 'uppercase', marginBottom: 6 }}>
+                  Nombre del sector / barrio
+                </label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                  placeholder="Ej: Centro, Laureles, Envigado..."
+                  style={{ width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 10, padding: '10px 12px', fontSize: 14, fontFamily: sg, color: 'var(--t-text-1)', outline: 'none', boxSizing: 'border-box' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', textTransform: 'uppercase', marginBottom: 6 }}>
+                  Precio del domicilio ($)
+                </label>
+                <input
+                  type="number"
+                  value={form.price}
+                  onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))}
+                  placeholder="Ej: 5000"
+                  min="0"
+                  style={{ width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 10, padding: '10px 12px', fontSize: 14, fontFamily: sg, color: 'var(--t-text-1)', outline: 'none', boxSizing: 'border-box' }}
+                />
+              </div>
+              {formError && <p style={{ fontSize: 12, color: '#ef4444', margin: 0 }}>{formError}</p>}
+            </div>
 
-            <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-              <button
-                onClick={cancelForm}
-                style={{
-                  flex: 1, padding: '10px', borderRadius: 999,
-                  border: '1.5px solid var(--t-border)', background: 'var(--t-surface)',
-                  fontFamily: sg, fontWeight: 600, fontSize: 14, color: 'var(--t-text-3)',
-                  cursor: 'pointer',
-                }}
-              >
+            {/* Footer */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={cancelForm} style={{ flex: 1, padding: '10px', borderRadius: 999, border: '1.5px solid var(--t-border)', background: 'var(--t-surface)', fontFamily: sg, fontWeight: 600, fontSize: 14, color: 'var(--t-text-3)', cursor: 'pointer' }}>
                 Cancelar
               </button>
-              <button
-                onClick={handleSave}
-                disabled={isPending}
-                style={{
-                  flex: 2, padding: '10px', borderRadius: 999, border: 'none',
-                  background: '#FF6A1A', color: '#fff',
-                  fontFamily: sg, fontWeight: 700, fontSize: 14,
-                  cursor: isPending ? 'default' : 'pointer',
-                  opacity: isPending ? 0.7 : 1,
-                }}
-              >
-                {isPending ? 'Guardando...' : (editing ? 'Guardar cambios' : 'Agregar zona')}
+              <button onClick={handleSave} disabled={isPending} style={{ flex: 2, padding: '10px', borderRadius: 999, border: 'none', background: '#FF6A1A', color: '#fff', fontFamily: sg, fontWeight: 700, fontSize: 14, cursor: isPending ? 'default' : 'pointer', opacity: isPending ? 0.7 : 1 }}>
+                {isPending ? 'Guardando...' : editing ? 'Guardar cambios' : 'Agregar zona'}
               </button>
             </div>
           </div>
-        </section>
+        </div>
       )}
 
       {/* Lista de zonas */}

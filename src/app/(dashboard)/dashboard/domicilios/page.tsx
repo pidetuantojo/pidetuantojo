@@ -1,5 +1,5 @@
-import { DomiciliosTabs } from '@/features/delivery-zones/components/DomiciliosTabs';
+import { redirect } from 'next/navigation';
 
 export default function DomiciliosPage() {
-  return <DomiciliosTabs />;
+  redirect('/dashboard/domicilios/zonas');
 }

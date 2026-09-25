@@ -35,8 +35,8 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
   },
 ];
 
-export function DomiciliosTabs() {
-  const [active, setActive] = useState<Tab>('zonas');
+export function DomiciliosTabs({ defaultTab = 'zonas' }: { defaultTab?: Tab }) {
+  const [active, setActive] = useState<Tab>(defaultTab);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 28, fontFamily: sg }}>

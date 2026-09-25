@@ -149,7 +149,7 @@ export function ProductForm({
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-[var(--t-text-2)]">Adicionales</h3>
             <Link
-              href={ROUTES.dashboard.menu}
+              href={ROUTES.dashboard.adicionales}
               className="text-xs font-medium text-orange-600 hover:text-orange-700"
               tabIndex={-1}
             >
@@ -160,7 +160,7 @@ export function ProductForm({
           {adicionales.length === 0 ? (
             <p className="text-xs text-[var(--t-text-4)]">
               No hay adicionales creados.{' '}
-              <Link href={ROUTES.dashboard.menu} className="font-medium text-orange-600 hover:underline">
+              <Link href={ROUTES.dashboard.adicionales} className="font-medium text-orange-600 hover:underline">
                 Crear adicionales →
               </Link>
             </p>

@@ -22,8 +22,8 @@ const MODULES = [
     ),
   },
   {
-    href: ROUTES.dashboard.menu,
-    label: 'Menú',
+    href: ROUTES.dashboard.productos,
+    label: 'Productos',
     desc: 'Productos, categorías y adicionales',
     iconBg: 'linear-gradient(135deg, #FBB03B, #F59211)',
     iconShadow: 'rgba(245,146,17,.5)',

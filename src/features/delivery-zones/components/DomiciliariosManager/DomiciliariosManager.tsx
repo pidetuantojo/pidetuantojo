@@ -147,39 +147,46 @@ export function DomiciliariosManager() {
         </button>
       </div>
 
-      {/* Formulario inline */}
+      {/* Modal */}
       {showForm && (
-        <section style={{ background: 'var(--t-surface)', border: '1.5px solid #FF6A1A', borderRadius: 16, padding: 20 }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 700, color: 'var(--t-text-1)' }}>
-            {editing ? `Editar: ${editing.name}` : 'Nuevo domiciliario'}
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {[
-              { key: 'name', label: 'Nombre completo', placeholder: 'Ej: Juan Pérez' },
-              { key: 'code', label: 'Código', placeholder: 'Ej: D-01' },
-              { key: 'phone', label: 'Número de celular', placeholder: 'Ej: 3001234567' },
-            ].map(({ key, label, placeholder }) => (
-              <div key={key}>
-                <label style={{ display: 'block', fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', textTransform: 'uppercase', marginBottom: 6 }}>
-                  {label}
-                </label>
-                <input
-                  type={key === 'phone' ? 'tel' : 'text'}
-                  value={form[key as keyof FormState]}
-                  onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
-                  placeholder={placeholder}
-                  style={{
-                    width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 10,
-                    padding: '10px 12px', fontSize: 14, fontFamily: sg, color: 'var(--t-text-1)',
-                    outline: 'none', boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-            ))}
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) cancelForm(); }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 16 }}
+        >
+          <div style={{ background: 'var(--t-surface)', borderRadius: 20, padding: '24px 28px', width: 440, maxWidth: '100%', display: 'flex', flexDirection: 'column', gap: 20, boxShadow: '0 24px 60px rgba(0,0,0,0.2)' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--t-text-1)' }}>
+                {editing ? `Editar: ${editing.name}` : 'Nuevo domiciliario'}
+              </h3>
+              <button onClick={cancelForm} style={{ width: 32, height: 32, borderRadius: 999, border: 'none', background: 'var(--t-surface-2)', cursor: 'pointer', display: 'grid', placeItems: 'center', color: 'var(--t-text-3)', fontSize: 16 }}>✕</button>
+            </div>
 
-            {formError && <p style={{ fontSize: 12, color: '#ef4444', margin: 0 }}>{formError}</p>}
+            {/* Fields */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {[
+                { key: 'name', label: 'Nombre completo', placeholder: 'Ej: Juan Pérez' },
+                { key: 'code', label: 'Código', placeholder: 'Ej: D-01' },
+                { key: 'phone', label: 'Número de celular', placeholder: 'Ej: 3001234567' },
+              ].map(({ key, label, placeholder }) => (
+                <div key={key}>
+                  <label style={{ display: 'block', fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', textTransform: 'uppercase', marginBottom: 6 }}>
+                    {label}
+                  </label>
+                  <input
+                    type={key === 'phone' ? 'tel' : 'text'}
+                    value={form[key as keyof FormState]}
+                    onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
+                    placeholder={placeholder}
+                    style={{ width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 10, padding: '10px 12px', fontSize: 14, fontFamily: sg, color: 'var(--t-text-1)', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+              ))}
+              {formError && <p style={{ fontSize: 12, color: '#ef4444', margin: 0 }}>{formError}</p>}
+            </div>
 
-            <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+            {/* Footer */}
+            <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={cancelForm} style={{ flex: 1, padding: '10px', borderRadius: 999, border: '1.5px solid var(--t-border)', background: 'var(--t-surface)', fontFamily: sg, fontWeight: 600, fontSize: 14, color: 'var(--t-text-3)', cursor: 'pointer' }}>
                 Cancelar
               </button>
@@ -188,7 +195,7 @@ export function DomiciliariosManager() {
               </button>
             </div>
           </div>
-        </section>
+        </div>
       )}
 
       {/* Lista */}
