@@ -1,8 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { CheckCircle2, Loader2, Printer, RefreshCw, XCircle } from 'lucide-react';
 
+import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/features/auth';
 import { useRestaurant } from '@/features/restaurants/hooks/useRestaurants';
 import { describePrintError, getQzVersion, listPrinters, printRaw } from '@/lib/printer/qzClient';
@@ -116,6 +118,20 @@ export function PrinterSettings() {
         <p style={{ margin: '4px 0 0', fontSize: 14, color: C.muted }}>
           Imprime las comandas directo en tu impresora térmica, sin ventanas de impresión. Necesita QZ Tray abierto en este computador.
         </p>
+      </div>
+
+      {/* Estación: imprimir lo que se envía desde tablets y otros equipos */}
+      <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: 220, fontSize: 13, color: C.muted, lineHeight: 1.5 }}>
+          <div style={{ fontWeight: 700, fontSize: 15, color: C.dark, marginBottom: 2 }}>¿Imprimes desde una tablet o celular?</div>
+          Deja abierta la <strong>Estación de impresión</strong> en este PC: recibe los pedidos que se mandan a imprimir desde cualquier dispositivo.
+        </div>
+        <Link
+          href={ROUTES.dashboard.estacionImpresion}
+          style={{ padding: '8px 16px', borderRadius: 999, background: C.primary, color: '#fff', fontFamily: sg, fontWeight: 700, fontSize: 13, textDecoration: 'none' }}
+        >
+          Abrir estación de impresión
+        </Link>
       </div>
 
       {/* Estado QZ Tray */}

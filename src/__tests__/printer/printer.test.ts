@@ -5,7 +5,9 @@ import { buildOrderTicket, buildTestTicket, formatMoney } from '@/lib/printer/ti
 import type { Order } from '@/types';
 
 // La regla del candado vive en un módulo puro (printOrder.ts inicializa Firebase)
-import { isPrintLocked, PRINT_LOCK_MS } from '@/lib/printer/printLock';
+import {
+  isPrintLocked, isStationOnline, PRINT_LOCK_MS, QUEUE_LOCK_MS, resolveJobAction, STALE_CLAIM_MS, STATION_TIMEOUT_MS,
+} from '@/lib/printer/printLock';
 
 const ORDER: Order = {
   id: 'o1', restaurantId: 'r1', orderNumber: '#588416',
@@ -158,5 +160,44 @@ describe('isPrintLocked', () => {
   it('permite reimprimir un pedido ya impreso o con error', () => {
     expect(isPrintLocked({ printStatus: 'printed' }, now)).toBe(false);
     expect(isPrintLocked({ printStatus: 'error' }, now)).toBe(false);
+  });
+});
+
+describe('cola de impresión', () => {
+  const now = Date.parse('2026-09-26T12:00:00.000Z');
+  const ago = (ms: number) => new Date(now - ms).toISOString();
+
+  it('un pedido en cola bloquea nuevos envíos (doble toque en la tablet)', () => {
+    expect(isPrintLocked({ printStatus: 'queued', printQueuedAt: ago(5_000) }, now)).toBe(true);
+  });
+
+  it('pasado el tiempo de cola se puede reintentar', () => {
+    expect(isPrintLocked({ printStatus: 'queued', printQueuedAt: ago(QUEUE_LOCK_MS + 1) }, now)).toBe(false);
+  });
+
+  it('la estación toma un trabajo pendiente que es el último del pedido', () => {
+    expect(resolveJobAction({ id: 'j2', status: 'pending' }, { printJobId: 'j2' }, now)).toBe('claim');
+  });
+
+  it('descarta un trabajo viejo si el pedido ya tiene uno más nuevo (evita duplicados)', () => {
+    expect(resolveJobAction({ id: 'j1', status: 'pending' }, { printJobId: 'j2' }, now)).toBe('supersede');
+  });
+
+  it('marca como huérfano el trabajo de un pedido borrado', () => {
+    expect(resolveJobAction({ id: 'j1', status: 'pending' }, null, now)).toBe('orphan');
+  });
+
+  it('no toca un trabajo que otra estación está imprimiendo ahora', () => {
+    expect(resolveJobAction({ id: 'j1', status: 'printing', claimedAt: ago(5_000) }, { printJobId: 'j1' }, now)).toBe('skip');
+  });
+
+  it('retoma un trabajo de una estación que se cayó a mitad de impresión', () => {
+    expect(resolveJobAction({ id: 'j1', status: 'printing', claimedAt: ago(STALE_CLAIM_MS + 1) }, { printJobId: 'j1' }, now)).toBe('claim');
+  });
+
+  it('estación activa solo con latido reciente', () => {
+    expect(isStationOnline({ lastSeenAt: ago(30_000) }, now)).toBe(true);
+    expect(isStationOnline({ lastSeenAt: ago(STATION_TIMEOUT_MS + 1) }, now)).toBe(false);
+    expect(isStationOnline(null, now)).toBe(false);
   });
 });

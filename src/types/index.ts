@@ -244,6 +244,9 @@ export interface Order {
   assignedDriver?: AssignedDriver;
   // Impresión de comanda (QZ Tray). 'printing' actúa como candado contra doble click.
   printStatus?: OrderPrintStatus;
+  // Último trabajo de impresión encolado: los anteriores se descartan (evita duplicados al reintentar)
+  printJobId?: string;
+  printQueuedAt?: string;
   printingStartedAt?: string;
   printedAt?: string;
   printCount?: number;
@@ -252,7 +255,41 @@ export interface Order {
   updatedAt: string;
 }
 
-export type OrderPrintStatus = 'printing' | 'printed' | 'error';
+// queued: en la cola esperando a la estación de impresión · printing: la estación lo está imprimiendo
+export type OrderPrintStatus = 'queued' | 'printing' | 'printed' | 'error';
+
+// ===== COLA DE IMPRESIÓN =====
+// Cualquier dispositivo (tablet, celular, PC) encola; la "estación" (PC con QZ Tray) imprime.
+
+export type PrintJobStatus = 'pending' | 'printing' | 'done' | 'failed' | 'superseded';
+
+/** restaurants/{restaurantId}/printJobs/{jobId} */
+export interface PrintJob {
+  id: string;
+  restaurantId: string;
+  orderId: string;
+  orderNumber: string;
+  // Por ahora 'main'; preparado para cocina/bar/caja
+  station: string;
+  status: PrintJobStatus;
+  requestedBy: string;
+  requestedByName?: string;
+  requestedAt: string;
+  claimedBy?: string;
+  claimedAt?: string;
+  completedAt?: string;
+  error?: string;
+}
+
+/** restaurants/{restaurantId}/printStations/{stationId} — "latido" de la PC que imprime. */
+export interface PrintStation {
+  id: string;
+  restaurantId: string;
+  lastSeenAt: string;
+  qzConnected: boolean;
+  printerName?: string;
+  userEmail?: string;
+}
 
 // ===== IMPRESORAS (QZ Tray) =====
 

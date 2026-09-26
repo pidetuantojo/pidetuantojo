@@ -23,6 +23,7 @@ export const ROUTES = {
     entrega: '/dashboard/entrega',
     configuracion: '/dashboard/configuracion',
     impresoras: '/dashboard/configuracion/impresoras',
+    estacionImpresion: '/dashboard/estacion-impresion',
     equipo: '/dashboard/equipo',
     // legacy — keep for redirects only
     menu: '/dashboard/menu',

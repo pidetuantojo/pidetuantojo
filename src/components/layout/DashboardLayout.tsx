@@ -7,7 +7,8 @@ import { Sidebar } from './Sidebar';
 import { AppLoader } from '@/components/ui/AppLoader';
 import { ROUTES } from '@/constants/routes';
 
-const VIEW_ALLOWED_ROUTES: string[] = [ROUTES.dashboard.pedidos, ROUTES.dashboard.contabilidad];
+// La estación de impresión puede correr con la cuenta del cajero en el PC de la impresora
+const VIEW_ALLOWED_ROUTES: string[] = [ROUTES.dashboard.pedidos, ROUTES.dashboard.contabilidad, ROUTES.dashboard.estacionImpresion];
 // Contabilidad: /dashboard/contabilidad
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
