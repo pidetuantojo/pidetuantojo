@@ -19,9 +19,10 @@ const MAX_REQUEST_LENGTH = 10_000;
  * certificado sin preguntar, un endpoint abierto dejaría usar QZ Tray a cualquier sitio.
  */
 export async function POST(request: NextRequest) {
-  const key = getQzPrivateKey();
+  const { pem: key, variable } = getQzPrivateKey();
   if (!key) {
-    return NextResponse.json({ error: 'QZ_PRIVATE_KEY_BASE64 no está configurada' }, { status: 500 });
+    const reason = variable ? `${variable} no es una clave válida` : 'QZ_PRIVATE_KEY_BASE64 no está configurada';
+    return NextResponse.json({ error: reason }, { status: 500 });
   }
 
   const token = request.headers.get('authorization')?.match(/^Bearer (.+)$/)?.[1];
