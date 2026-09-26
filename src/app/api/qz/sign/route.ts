@@ -1,7 +1,8 @@
-import { createSign } from 'crypto';
+import { createSign } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { adminAuth, adminDb } from '@/lib/firebase/admin';
+import { getQzPrivateKey } from '@/lib/printer/qzServerKey';
 import type { UserRole } from '@/types';
 
 export const runtime = 'nodejs';
@@ -11,9 +12,6 @@ const ALLOWED_ROLES: UserRole[] = ['super_admin', 'restaurant_admin', 'restauran
 // Los mensajes que firma QZ Tray son cortos (un hash + timestamp); se rechaza cualquier cosa grande
 const MAX_REQUEST_LENGTH = 10_000;
 
-function privateKey(): string | null {
-  return process.env.QZ_PRIVATE_KEY?.replace(/\\n/g, '\n') ?? null;
-}
 
 /**
  * Firma (SHA512) las solicitudes de QZ Tray con la clave privada del servidor.
@@ -21,9 +19,9 @@ function privateKey(): string | null {
  * certificado sin preguntar, un endpoint abierto dejaría usar QZ Tray a cualquier sitio.
  */
 export async function POST(request: NextRequest) {
-  const key = privateKey();
+  const key = getQzPrivateKey();
   if (!key) {
-    return NextResponse.json({ error: 'QZ_PRIVATE_KEY no está configurada' }, { status: 500 });
+    return NextResponse.json({ error: 'QZ_PRIVATE_KEY_BASE64 no está configurada' }, { status: 500 });
   }
 
   const token = request.headers.get('authorization')?.match(/^Bearer (.+)$/)?.[1];
