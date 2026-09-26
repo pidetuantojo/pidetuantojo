@@ -11,6 +11,7 @@ import { formatCurrency } from '@/lib/utils';
 import { formatScheduledDate } from '@/features/menu/helpers/schedule.helpers';
 import { PaymentMethodIcon } from '@/features/payment-methods/components/PaymentMethodIcon';
 import { isTransferMethod } from '@/features/payment-methods/helpers/payment-methods.helpers';
+import { PrintOrderButton } from '@/features/printers/components/PrintOrderButton';
 import type { AssignedDriver, Domiciliario } from '@/types';
 import { buildDriverMessage, toAssignedDriver, validateCourierName } from '../../helpers/driver.helpers';
 import { getOrderTotals } from '../../helpers/totals.helpers';
@@ -537,6 +538,9 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
           {nextStatus.name}
         </button>
       )}
+
+      {/* Imprimir comanda (QZ Tray) */}
+      <PrintOrderButton order={order} restaurantId={restaurantId} />
 
       {/* WhatsApp cliente */}
       <a

@@ -22,6 +22,7 @@ export const ROUTES = {
     domiciliarios: '/dashboard/domicilios/domiciliarios',
     entrega: '/dashboard/entrega',
     configuracion: '/dashboard/configuracion',
+    impresoras: '/dashboard/configuracion/impresoras',
     equipo: '/dashboard/equipo',
     // legacy — keep for redirects only
     menu: '/dashboard/menu',

@@ -136,6 +136,14 @@ service cloud.firestore {
         allow write: if isOwnerOrSuperAdmin(restaurantId);
       }
 
+      // ─── Impresoras (QZ Tray) ────────────────────────────────────────────────
+
+      match /printers/{printerId} {
+        // Cajeros (view users) necesitan leerla para imprimir comandas
+        allow read: if canAccessRestaurant(restaurantId);
+        allow write: if isOwnerOrSuperAdmin(restaurantId);
+      }
+
       // ─── Orders ──────────────────────────────────────────────────────────────
 
       match /orders/{orderId} {

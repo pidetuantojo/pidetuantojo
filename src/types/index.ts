@@ -242,9 +242,38 @@ export interface Order {
   internalNote?: string;
   location?: { lat: number; lng: number };
   assignedDriver?: AssignedDriver;
+  // Impresión de comanda (QZ Tray). 'printing' actúa como candado contra doble click.
+  printStatus?: OrderPrintStatus;
+  printingStartedAt?: string;
+  printedAt?: string;
+  printCount?: number;
+  printError?: string;
   createdAt: string;
   updatedAt: string;
 }
+
+export type OrderPrintStatus = 'printing' | 'printed' | 'error';
+
+// ===== IMPRESORAS (QZ Tray) =====
+
+export type PaperWidth = 58 | 80;
+// cp850: soporta tildes y ñ · ascii: sin tildes (para impresoras que muestran caracteres raros)
+export type PrinterEncoding = 'cp850' | 'ascii';
+
+/** restaurants/{restaurantId}/printers/{id} — por ahora una sola ("main") para todo el pedido. */
+export interface PrinterConfig {
+  id: string;
+  restaurantId: string;
+  // Nombre exacto reportado por QZ Tray (qz.printers.find())
+  name: string;
+  paperWidth: PaperWidth;
+  encoding: PrinterEncoding;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SavePrinterConfigData = Pick<PrinterConfig, 'name' | 'paperWidth' | 'encoding'>;
 
 // ===== ZONAS DE DOMICILIO =====
 
