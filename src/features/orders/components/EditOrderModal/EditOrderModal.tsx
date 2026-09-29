@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+
+import { Checkbox } from '@/components/ui/Checkbox';
 import { X, Plus, Minus, Save, Loader2, ShoppingBag, Truck, CreditCard, User, CalendarClock } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
@@ -439,14 +441,12 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
             {canSchedule && (
               <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: 'var(--t-text-2)' }}>
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={isScheduled}
                     onChange={(e) => {
                       setIsScheduled(e.target.checked);
                       if (e.target.checked && !scheduleDate) setScheduleDate(toDateInputValue(new Date()));
                     }}
-                    style={{ width: 16, height: 16, accentColor: '#FF6A1A', cursor: 'pointer' }}
                   />
                   <CalendarClock style={{ width: 14, height: 14, color: '#FF6A1A' }} />
                   Pedido programado

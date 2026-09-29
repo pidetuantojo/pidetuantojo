@@ -198,7 +198,7 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
           )}
           {canEdit && (
           <button
-            onClick={(e) => { e.stopPropagation(); onEdit(order); }}
+            onClick={(e) => { e.stopPropagation(); onEdit?.(order); }}
             className="p-1 rounded-lg text-[var(--t-text-4)] hover:text-[#FF6A1A] hover:bg-orange-50 transition-colors"
             aria-label="Editar pedido"
           >
@@ -571,7 +571,7 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
       {/* Avanzar estado */}
       {nextStatus && canChangeStatus && (
         <button
-          onClick={(e) => { e.stopPropagation(); onAdvance(order.id, nextStatus.id); }}
+          onClick={(e) => { e.stopPropagation(); onAdvance?.(order.id, nextStatus.id); }}
           className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
           style={{ backgroundColor: nextStatus.color }}
         >

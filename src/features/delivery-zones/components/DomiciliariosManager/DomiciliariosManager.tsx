@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { Checkbox } from '@/components/ui/Checkbox';
 import { useAuth } from '@/features/auth';
 import { useToastStore } from '@/store/toast.store';
 import { useConfirmStore } from '@/store/confirm.store';
@@ -190,11 +191,10 @@ export function DomiciliariosManager() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {(companiesEnabled || form.isCompany) && (
               <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', background: form.isCompany ? '#FFF3EA' : 'var(--t-surface-2)', border: `1.5px solid ${form.isCompany ? '#FF6A1A44' : 'var(--t-border-2)'}`, borderRadius: 12, padding: '10px 12px' }}>
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={form.isCompany}
                   onChange={(e) => { setForm((p) => ({ ...p, isCompany: e.target.checked })); setFormError(''); }}
-                  style={{ width: 16, height: 16, marginTop: 2, accentColor: '#FF6A1A', cursor: 'pointer', flexShrink: 0 }}
+                  style={{ marginTop: 2 }}
                 />
                 <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--t-text-1)' }}>¿Es empresa de domicilios?</span>

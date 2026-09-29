@@ -3,6 +3,8 @@
 import { useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
+import { Checkbox } from '@/components/ui/Checkbox';
+
 import { PERMISSION_MODULES, type Permission } from '@/constants/permissions';
 import {
   ALL_PERMISSIONS, expandRequires, getPermissionDefinition, isSelectable, sortPermissions, togglePermission,
@@ -17,8 +19,6 @@ interface PermissionsEditorProps {
   onChange: (next: Permission[]) => void;
   // Permisos que se pueden marcar (ej. los del plan). Por defecto, todos.
   available?: readonly Permission[];
-  // Mostrar el módulo de funcionalidades del plan (features.*): solo en planes
-  showFeatures?: boolean;
   disabled?: boolean;
   // Texto para permisos no disponibles
   unavailableLabel?: string;
@@ -32,14 +32,14 @@ type Module = (typeof PERMISSION_MODULES)[number];
  * Se usa en Planes (super admin) y en Equipo (empleados).
  */
 export function PermissionsEditor({
-  value, onChange, available = ALL_PERMISSIONS, showFeatures = false, disabled = false,
+  value, onChange, available = ALL_PERMISSIONS, disabled = false,
   unavailableLabel = 'No incluido en el plan',
 }: PermissionsEditorProps) {
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const selected = useMemo(() => new Set(value), [value]);
   const availableSet = useMemo(() => new Set(available), [available]);
 
-  const modules = PERMISSION_MODULES.filter((m) => (showFeatures ? true : m.kind === 'user'))
+  const modules = PERMISSION_MODULES.filter((m) => m.kind === 'user')
     // Módulos sin nada disponible no se muestran (ej. en Equipo, lo que el plan no incluye)
     .filter((m) => m.permissions.some((p) => availableSet.has(p.key as Permission)));
 
@@ -87,14 +87,11 @@ export function PermissionsEditor({
         return (
           <div key={m.id} style={{ border: `1.5px solid ${count ? `${ORANGE}55` : 'var(--t-border-2)'}`, borderRadius: 14, background: 'var(--t-surface)', overflow: 'hidden' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px' }}>
-              <input
-                type="checkbox"
-                aria-label={`Todos los permisos de ${m.label}`}
+              <Checkbox
                 checked={all}
-                ref={(el) => { if (el) el.indeterminate = some; }}
+                indeterminate={some}
                 disabled={disabled || keys.length === 0}
                 onChange={(e) => toggleModule(m, e.target.checked)}
-                style={checkbox}
               />
               <button
                 type="button"
@@ -120,12 +117,11 @@ export function PermissionsEditor({
                   const missing = (def?.requires ?? []).filter((r) => !availableSet.has(r as Permission));
                   return (
                     <label key={key} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '6px 0', cursor: disabled || !selectable ? 'default' : 'pointer', opacity: selectable ? 1 : 0.5 }}>
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={selected.has(key)}
                         disabled={disabled || !selectable}
                         onChange={(e) => onChange(togglePermission(value, key, e.target.checked, available))}
-                        style={{ ...checkbox, marginTop: 2 }}
+                        style={{ marginTop: 2 }}
                       />
                       <span style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--t-text-1)' }}>{p.label}</span>
@@ -153,7 +149,6 @@ export function PermissionsEditor({
   );
 }
 
-const checkbox: React.CSSProperties = { width: 16, height: 16, accentColor: ORANGE, cursor: 'inherit', flexShrink: 0 };
 const linkButton: React.CSSProperties = {
   background: 'none', border: '1.5px solid var(--t-border)', borderRadius: 999, padding: '4px 12px',
   fontFamily: sg, fontSize: 12, fontWeight: 600, color: 'var(--t-text-2)', cursor: 'pointer',

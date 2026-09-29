@@ -1,5 +1,6 @@
 'use client';
 
+import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 
@@ -97,11 +98,9 @@ export function OrderStatusForm({
         />
 
         <label className="flex cursor-pointer items-center gap-3">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={data.isActive}
             onChange={(e) => handleChange('isActive', e.target.checked)}
-            className="h-4 w-4 rounded accent-orange-500"
             disabled={isPending}
           />
           <span className="text-sm font-medium" style={{ color: 'var(--t-text-2)' }}>Estado activo</span>

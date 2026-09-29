@@ -128,12 +128,14 @@ export function PrinterSettings() {
           <div style={{ fontWeight: 700, fontSize: 15, color: C.dark, marginBottom: 2 }}>¿Imprimes desde una tablet o celular?</div>
           Deja abierta la <strong>Estación de impresión</strong> en este PC: recibe los pedidos que se mandan a imprimir desde cualquier dispositivo.
         </div>
-        <Link
-          href={ROUTES.dashboard.estacionImpresion}
-          style={{ padding: '8px 16px', borderRadius: 999, background: C.primary, color: '#fff', fontFamily: sg, fontWeight: 700, fontSize: 13, textDecoration: 'none' }}
-        >
-          Abrir estación de impresión
-        </Link>
+        {can('print_station.run') && (
+          <Link
+            href={ROUTES.dashboard.estacionImpresion}
+            style={{ padding: '8px 16px', borderRadius: 999, background: C.primary, color: '#fff', fontFamily: sg, fontWeight: 700, fontSize: 13, textDecoration: 'none' }}
+          >
+            Abrir estación de impresión
+          </Link>
+        )}
       </div>
 
       {/* Estado QZ Tray */}

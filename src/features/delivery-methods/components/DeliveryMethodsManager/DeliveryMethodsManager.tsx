@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { Checkbox } from '@/components/ui/Checkbox';
 import { useAuth } from '@/features/auth';
 import { useRestaurant } from '@/features/restaurants/hooks/useRestaurants';
 import { useUpdateRestaurant } from '@/features/restaurants/hooks/useRestaurantMutations';
@@ -374,12 +375,10 @@ export function DeliveryMethodsManager() {
                             {savingId === `pay-${method.key}-${pm.id}` ? (
                               <Spinner size={16} />
                             ) : (
-                              <input
-                                type="checkbox"
+                              <Checkbox
                                 checked={checked}
-                                disabled={!!savingId}
+                                disabled={!canManage || !!savingId}
                                 onChange={(e) => togglePaymentForMethod(method.key, pm.id, e.target.checked)}
-                                style={{ width: 16, height: 16, accentColor: '#FF6A1A', cursor: 'pointer', flexShrink: 0 }}
                               />
                             )}
                             <div style={{ width: 28, height: 28, borderRadius: 8, background: checked ? '#FFF3EA' : 'var(--t-surface-2)', display: 'grid', placeItems: 'center', color: checked ? '#FF6A1A' : 'var(--t-text-3)', flexShrink: 0, transition: 'background .15s, color .15s' }}>

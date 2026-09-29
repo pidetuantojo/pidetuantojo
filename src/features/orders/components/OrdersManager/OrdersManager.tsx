@@ -2,7 +2,17 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { ShoppingBag, Wifi, RefreshCw, Plus, X, GripVertical, Volume2, VolumeX, CalendarDays } from 'lucide-react';
+import {
+  ShoppingBag,
+  Wifi,
+  RefreshCw,
+  Plus,
+  X,
+  GripVertical,
+  Volume2,
+  VolumeX,
+  CalendarDays,
+} from 'lucide-react';
 import { DateRangePicker } from '@/components/ui/DateRangePicker/DateRangePicker';
 import {
   DndContext,
@@ -165,8 +175,14 @@ function DroppableColumn({
 
 // ── Draggable card ────────────────────────────────────────────────────────────
 
-function DraggableCard({ canDrag, ...props }: React.ComponentProps<typeof OrderCard> & { canDrag: boolean }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: props.order.id, disabled: !canDrag });
+function DraggableCard({
+  canDrag,
+  ...props
+}: React.ComponentProps<typeof OrderCard> & { canDrag: boolean }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: props.order.id,
+    disabled: !canDrag,
+  });
   // Sin permiso para cambiar estados la tarjeta no se arrastra
   if (!canDrag) return <OrderCard {...props} />;
   return (
@@ -383,7 +399,10 @@ export function OrdersManager() {
   useEffect(() => {
     const id = setTimeout(syncScroll, 0);
     window.addEventListener('resize', syncScroll);
-    return () => { clearTimeout(id); window.removeEventListener('resize', syncScroll); };
+    return () => {
+      clearTimeout(id);
+      window.removeEventListener('resize', syncScroll);
+    };
   }, [orders, activeRange, statuses, syncScroll]);
 
   // rAF loop — detecta cambios en scrollLeft sin depender del evento scroll
@@ -417,7 +436,8 @@ export function OrdersManager() {
     const thumbRange = scroll.client - thumbWpx;
     const onMove = (ev: MouseEvent) => {
       if (!boardScrollRef.current) return;
-      boardScrollRef.current.scrollLeft = startLeft + ((ev.clientX - startX) / thumbRange) * scrollRange;
+      boardScrollRef.current.scrollLeft =
+        startLeft + ((ev.clientX - startX) / thumbRange) * scrollRange;
     };
     const onUp = () => {
       window.removeEventListener('mousemove', onMove);
@@ -524,13 +544,13 @@ export function OrdersManager() {
 
         <div className="flex flex-wrap gap-2">
           {can('orders.create') && (
-          <button
-            onClick={() => setIsManualModalOpen(true)}
-            className="flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-orange-600"
-          >
-            <Plus className="h-4 w-4" />
-            Pedido manual
-          </button>
+            <button
+              onClick={() => setIsManualModalOpen(true)}
+              className="flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-orange-600"
+            >
+              <Plus className="h-4 w-4" />
+              Pedido manual
+            </button>
           )}
           <button
             onClick={playNotificationSound}
@@ -570,16 +590,16 @@ export function OrdersManager() {
         <div className="join">
           {(
             [
-              { key: 'today',     label: 'Hoy' },
+              { key: 'today', label: 'Hoy' },
               { key: 'yesterday', label: 'Ayer' },
-              { key: 'last7',     label: 'Últ. 7 días' },
+              { key: 'last7', label: 'Últ. 7 días' },
               { key: 'thisMonth', label: 'Este mes' },
             ] as { key: Exclude<PresetKey, 'custom'>; label: string }[]
           ).map(({ key, label }) => (
             <button
               key={key}
               onClick={() => selectPreset(key)}
-              className={`join-item btn btn-sm border-base-300 ${activeRange.preset === key ? 'text-white border-0' : 'btn-ghost'}`}
+              className={`btn join-item btn-sm border-base-300 ${activeRange.preset === key ? 'border-0 text-white' : 'btn-ghost'}`}
               style={activeRange.preset === key ? { background: '#FF6A1A' } : {}}
             >
               {label}
@@ -596,7 +616,7 @@ export function OrdersManager() {
         />
 
         {/* Badge rango activo */}
-        <div className="badge badge-lg gap-1.5 border-orange-200 bg-orange-50 text-orange-600 font-semibold py-3">
+        <div className="badge badge-lg gap-1.5 border-orange-200 bg-orange-50 py-3 font-semibold text-orange-600">
           <CalendarDays className="h-3 w-3" />
           {formatRangeLabel(activeRange)}
         </div>
@@ -619,20 +639,34 @@ export function OrdersManager() {
         {/* Scrollbar custom arriba — solo se muestra cuando hay overflow */}
         {hasOverflow && (
           <div
-            style={{ position: 'sticky', top: 0, zIndex: 10, height: 8, background: 'var(--t-border-2)', borderRadius: 999, margin: '12px 0 4px', cursor: 'pointer' }}
+            style={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 10,
+              height: 8,
+              background: 'var(--t-border-2)',
+              borderRadius: 999,
+              margin: '12px 0 4px',
+              cursor: 'pointer',
+            }}
             onClick={(e) => {
               const el = boardScrollRef.current;
               if (!el) return;
               const rect = e.currentTarget.getBoundingClientRect();
-              el.scrollLeft = ((e.clientX - rect.left) / rect.width) * (el.scrollWidth - el.clientWidth);
+              el.scrollLeft =
+                ((e.clientX - rect.left) / rect.width) * (el.scrollWidth - el.clientWidth);
             }}
           >
             <div
               onMouseDown={handleThumbMouseDown}
               style={{
-                position: 'absolute', top: 0, height: '100%',
-                background: 'var(--t-text-3)', borderRadius: 999,
-                width: thumbWpx, left: thumbLpx,
+                position: 'absolute',
+                top: 0,
+                height: '100%',
+                background: 'var(--t-text-3)',
+                borderRadius: 999,
+                width: thumbWpx,
+                left: thumbLpx,
                 cursor: 'grab',
               }}
             />
@@ -646,64 +680,64 @@ export function OrdersManager() {
           className="relative flex gap-4 overflow-x-auto pb-2"
           style={{ scrollbarWidth: 'none' }}
         >
-            {activeStatuses.map((status) => {
-              const columnOrders = ordersByStatus(status.id);
-              return (
-                <div key={status.id} className="w-72 flex-shrink-0">
-                  {/* Column header */}
-                  <div className="mb-3 flex items-center gap-2">
-                    <span
-                      className="h-2.5 w-2.5 rounded-full"
-                      style={{ backgroundColor: status.color }}
-                    />
-                    <span className="font-semibold text-[var(--t-text-1)]">{status.name}</span>
-                    {columnOrders.length > 0 && (
-                      <span className="ml-auto rounded-full bg-[var(--t-surface-2)] px-2 py-0.5 text-xs font-bold text-[var(--t-text-2)]">
-                        {columnOrders.length}
-                      </span>
-                    )}
-                  </div>
+          {activeStatuses.map((status) => {
+            const columnOrders = ordersByStatus(status.id);
+            return (
+              <div key={status.id} className="w-72 flex-shrink-0">
+                {/* Column header */}
+                <div className="mb-3 flex items-center gap-2">
+                  <span
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{ backgroundColor: status.color }}
+                  />
+                  <span className="font-semibold text-[var(--t-text-1)]">{status.name}</span>
+                  {columnOrders.length > 0 && (
+                    <span className="ml-auto rounded-full bg-[var(--t-surface-2)] px-2 py-0.5 text-xs font-bold text-[var(--t-text-2)]">
+                      {columnOrders.length}
+                    </span>
+                  )}
+                </div>
 
-                  {/* Column body — droppable */}
-                  <DroppableColumn statusId={status.id} color={status.color}>
-                    {columnOrders.length === 0 ? (
-                      <div className="flex items-center justify-center py-8 text-sm text-[var(--t-text-4)]">
-                        <div className="text-center">
-                          <ShoppingBag className="mx-auto mb-2 h-6 w-6 opacity-30" />
-                          <span>Sin pedidos</span>
-                        </div>
+                {/* Column body — droppable */}
+                <DroppableColumn statusId={status.id} color={status.color}>
+                  {columnOrders.length === 0 ? (
+                    <div className="flex items-center justify-center py-8 text-sm text-[var(--t-text-4)]">
+                      <div className="text-center">
+                        <ShoppingBag className="mx-auto mb-2 h-6 w-6 opacity-30" />
+                        <span>Sin pedidos</span>
                       </div>
-                    ) : (
-                      columnOrders.map((order) => (
-                        <DraggableCard
-                          key={order.id}
-                          canDrag={canChangeStatus}
-                          order={order}
-                          status={status}
-                          statuses={activeStatuses}
-                          restaurantId={restaurantId}
-                          domiciliarios={domiciliarios}
-                          onOpen={setSelectedOrder}
-                          onAdvance={handleAdvance}
-                          onEdit={setEditingOrder}
-                          onDelete={setDeletingOrder}
-                          canDelete={canDelete}
-                        />
-                      ))
-                    )}
-                  </DroppableColumn>
-                </div>
-              );
-            })}
-
-            {activeStatuses.length === 0 && (
-              <div className="flex flex-1 items-center justify-center py-16 text-center">
-                <div>
-                  <ShoppingBag className="mx-auto mb-3 h-10 w-10 text-[var(--t-text-4)]" />
-                  <p className="text-[var(--t-text-3)]">No hay estados configurados.</p>
-                </div>
+                    </div>
+                  ) : (
+                    columnOrders.map((order) => (
+                      <DraggableCard
+                        key={order.id}
+                        canDrag={canChangeStatus}
+                        order={order}
+                        status={status}
+                        statuses={activeStatuses}
+                        restaurantId={restaurantId}
+                        domiciliarios={domiciliarios}
+                        onOpen={setSelectedOrder}
+                        onAdvance={canChangeStatus ? handleAdvance : undefined}
+                        onEdit={can('orders.edit') ? setEditingOrder : undefined}
+                        onDelete={setDeletingOrder}
+                        canDelete={canDelete}
+                      />
+                    ))
+                  )}
+                </DroppableColumn>
               </div>
-            )}
+            );
+          })}
+
+          {activeStatuses.length === 0 && (
+            <div className="flex flex-1 items-center justify-center py-16 text-center">
+              <div>
+                <ShoppingBag className="mx-auto mb-3 h-10 w-10 text-[var(--t-text-4)]" />
+                <p className="text-[var(--t-text-3)]">No hay estados configurados.</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Ghost card mientras se arrastra */}

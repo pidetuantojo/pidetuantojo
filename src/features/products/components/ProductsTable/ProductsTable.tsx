@@ -18,11 +18,11 @@ const sm = "var(--font-mono, monospace)";
 interface Props {
   products: Product[];
   categoryMap: Map<string, Category>;
-  onEdit: (p: Product) => void;
-  onToggleAvailable: (id: string, val: boolean) => Promise<void>;
-  onDelete: (id: string, name: string) => Promise<void>;
-  onMoveUp: (index: number) => void;
-  onMoveDown: (index: number) => void;
+  onEdit?: (p: Product) => void;
+  onToggleAvailable?: (id: string, val: boolean) => Promise<void>;
+  onDelete?: (id: string, name: string) => Promise<void>;
+  onMoveUp?: (index: number) => void;
+  onMoveDown?: (index: number) => void;
   togglingId: string | null;
   deletingId: string | null;
   movingId: string | null;
@@ -262,8 +262,8 @@ export function ProductsTable({ products, categoryMap, onEdit, onToggleAvailable
                     {/* Acciones */}
                     <td style={{ ...tdStyle, textAlign: 'right' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 2 }}>
-                        {/* Botones de orden — solo visibles cuando no hay sort de columna activo */}
-                        {!sortCol && (
+                        {/* Botones de orden — solo visibles cuando no hay sort de columna activo y el usuario puede editar */}
+                        {!sortCol && onMoveUp && onMoveDown && (
                           <>
                             <Tooltip content="Mover arriba" side="left">
                               <button
@@ -296,46 +296,52 @@ export function ProductsTable({ products, categoryMap, onEdit, onToggleAvailable
                             <div style={{ width: 1, height: 18, background: 'var(--t-border-2)', margin: '0 2px' }} />
                           </>
                         )}
-                        <Tooltip content={product.isAvailable ? 'Marcar no disponible' : 'Marcar disponible'}>
-                          <button
-                            onClick={() => onToggleAvailable(product.id, !product.isAvailable)}
-                            disabled={isToggling}
-                            style={{ ...iconBtn, opacity: isToggling ? 0.6 : 1 }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--t-surface-2)'; }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-                          >
-                            {isToggling
-                              ? <Loader2 style={{ width: 15, height: 15, color: '#FF6A1A', animation: 'spin 0.7s linear infinite' }} />
-                              : product.isAvailable
-                                ? <Eye style={{ width: 15, height: 15, color: '#3F9E6A' }} />
-                                : <EyeOff style={{ width: 15, height: 15, color: 'var(--t-text-4)' }} />
-                            }
-                          </button>
-                        </Tooltip>
-                        <Tooltip content="Editar">
-                          <button
-                            onClick={() => onEdit(product)}
-                            style={iconBtn}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--t-surface-2)'; }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-                          >
-                            <Edit2 style={{ width: 14, height: 14, color: 'var(--t-text-3)' }} />
-                          </button>
-                        </Tooltip>
-                        <Tooltip content="Eliminar">
-                          <button
-                            onClick={() => onDelete(product.id, product.name)}
-                            disabled={isDeleting}
-                            style={{ ...iconBtn, opacity: isDeleting ? 0.6 : 1 }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FDF1EF'; }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-                          >
-                            {isDeleting
-                              ? <Loader2 style={{ width: 14, height: 14, color: '#D8412F', animation: 'spin 0.7s linear infinite' }} />
-                              : <Trash2 style={{ width: 14, height: 14, color: '#D8412F' }} />
-                            }
-                          </button>
-                        </Tooltip>
+                        {onToggleAvailable && (
+                          <Tooltip content={product.isAvailable ? 'Marcar no disponible' : 'Marcar disponible'}>
+                            <button
+                              onClick={() => onToggleAvailable(product.id, !product.isAvailable)}
+                              disabled={isToggling}
+                              style={{ ...iconBtn, opacity: isToggling ? 0.6 : 1 }}
+                              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--t-surface-2)'; }}
+                              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                            >
+                              {isToggling
+                                ? <Loader2 style={{ width: 15, height: 15, color: '#FF6A1A', animation: 'spin 0.7s linear infinite' }} />
+                                : product.isAvailable
+                                  ? <Eye style={{ width: 15, height: 15, color: '#3F9E6A' }} />
+                                  : <EyeOff style={{ width: 15, height: 15, color: 'var(--t-text-4)' }} />
+                              }
+                            </button>
+                          </Tooltip>
+                        )}
+                        {onEdit && (
+                          <Tooltip content="Editar">
+                            <button
+                              onClick={() => onEdit(product)}
+                              style={iconBtn}
+                              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--t-surface-2)'; }}
+                              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                            >
+                              <Edit2 style={{ width: 14, height: 14, color: 'var(--t-text-3)' }} />
+                            </button>
+                          </Tooltip>
+                        )}
+                        {onDelete && (
+                          <Tooltip content="Eliminar">
+                            <button
+                              onClick={() => onDelete(product.id, product.name)}
+                              disabled={isDeleting}
+                              style={{ ...iconBtn, opacity: isDeleting ? 0.6 : 1 }}
+                              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FDF1EF'; }}
+                              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                            >
+                              {isDeleting
+                                ? <Loader2 style={{ width: 14, height: 14, color: '#D8412F', animation: 'spin 0.7s linear infinite' }} />
+                                : <Trash2 style={{ width: 14, height: 14, color: '#D8412F' }} />
+                              }
+                            </button>
+                          </Tooltip>
+                        )}
                       </div>
                     </td>
                   </tr>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
+import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
@@ -336,20 +337,17 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
                 No hay planes activos. Créalos en <a href={ROUTES.admin.plans} style={{ color: '#FF6A1A', fontWeight: 600 }}>Planes</a>.
               </p>
             ) : (
-              <select
-                id="restaurant-plan"
-                value={data.planId}
-                onChange={(e) => { handleChange('planId', e.target.value); setPlanError(''); }}
+              <Select
+                value={data.planId ?? ''}
+                onChange={(v) => { handleChange('planId', v); setPlanError(''); }}
                 disabled={isPending}
-                style={{ width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 10, padding: '10px 12px', fontSize: 14, fontFamily: sg, color: 'var(--t-text-1)' }}
-              >
-                <option value="">{isEditing && !restaurant?.planId ? 'Sin plan (acceso completo)' : 'Elige un plan'}</option>
-                {planOptions.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} · {formatCurrency(p.price)}/{p.billingPeriod === 'yearly' ? 'año' : 'mes'}{p.isActive ? '' : ' (inactivo)'}
-                  </option>
-                ))}
-              </select>
+                placeholder={isEditing && !restaurant?.planId ? 'Sin plan (acceso completo)' : 'Elige un plan'}
+                options={planOptions.map((p) => ({
+                  value: p.id,
+                  label: `${p.name}${p.isActive ? '' : ' (inactivo)'}`,
+                }))}
+                error={planError}
+              />
             )}
             {selectedPlan?.description && <p style={{ margin: 0, fontFamily: sg, fontSize: 12, color: 'var(--t-text-3)' }}>{selectedPlan.description}</p>}
             {isEditing && planChanged && (
@@ -357,7 +355,6 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
                 Al guardar, el administrador y los empleados de este restaurante tendrán los permisos del nuevo plan.
               </p>
             )}
-            {planError && <p role="alert" style={{ margin: 0, fontFamily: sg, fontSize: 12, color: '#ef4444' }}>{planError}</p>}
           </div>
         )}
 
@@ -810,12 +807,11 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
               cursor: isPending ? 'not-allowed' : 'pointer',
             }}
           >
-            <input
-              type="checkbox"
+            <Checkbox
               checked={data.allowScheduledWhenClosed}
               onChange={(e) => handleChange('allowScheduledWhenClosed', e.target.checked)}
               disabled={isPending}
-              style={{ width: 16, height: 16, marginTop: 2, accentColor: '#FF6A1A', cursor: 'inherit', flexShrink: 0 }}
+              style={{ marginTop: 2 }}
             />
             <span style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <span style={{ fontFamily: sg, fontWeight: 600, fontSize: 13, color: 'var(--t-text-1)' }}>
@@ -887,11 +883,9 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
         {/* Estado: activar/desactivar un restaurante es solo del super admin */}
         {showPlanSelector && (
         <label className="flex cursor-pointer items-center gap-3" style={{ padding: '4px 2px' }}>
-          <input
-            type="checkbox"
+          <Checkbox
             checked={data.isActive}
             onChange={(e) => handleChange('isActive', e.target.checked)}
-            className="h-4 w-4 rounded accent-orange-500"
             disabled={isPending}
           />
           <span className="text-sm font-medium text-[var(--t-text-2)]">Restaurante activo</span>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Plus, Edit2, Trash2, Check, X } from 'lucide-react';
 
+import { Checkbox } from '@/components/ui/Checkbox';
 import { formatCurrency } from '@/lib/utils';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -245,11 +246,9 @@ export function AdicionalesManager({ restaurantId }: Props) {
           </div>
 
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-            <input
-              type="checkbox"
+            <Checkbox
               checked={form.isActive}
               onChange={(e) => setForm((p) => ({ ...p, isActive: e.target.checked }))}
-              style={{ accentColor: '#FF6A1A', width: 16, height: 16 }}
             />
             <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--t-text-2)', fontFamily: sg }}>Activo</span>
           </label>

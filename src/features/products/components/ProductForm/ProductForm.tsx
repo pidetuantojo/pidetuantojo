@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 
+import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
@@ -181,13 +182,10 @@ export function ProductForm({
                       : { borderColor: 'var(--t-border)', backgroundColor: 'transparent' }
                     }
                   >
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={checked}
                       onChange={() => toggleAdicionalId(a.id)}
                       disabled={isPending || !a.isActive}
-                      className="h-4 w-4 rounded flex-shrink-0"
-                      style={{ accentColor: '#f97316' }}
                     />
                     <span className="flex-1 text-sm font-medium text-[var(--t-text-1)]">{a.name}</span>
                     <span className="text-xs font-bold text-orange-500 flex-shrink-0">
@@ -203,21 +201,17 @@ export function ProductForm({
         {/* Switches de estado */}
         <div className="flex gap-6">
           <label className="flex cursor-pointer items-center gap-2">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={data.isActive}
               onChange={(e) => handleChange('isActive', e.target.checked)}
-              className="h-4 w-4 rounded accent-orange-500"
               disabled={isPending}
             />
             <span className="text-sm font-medium text-[var(--t-text-2)]">Activo en el menú</span>
           </label>
           <label className="flex cursor-pointer items-center gap-2">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={data.isAvailable}
               onChange={(e) => handleChange('isAvailable', e.target.checked)}
-              className="h-4 w-4 rounded accent-orange-500"
               disabled={isPending}
             />
             <span className="text-sm font-medium text-[var(--t-text-2)]">Disponible hoy</span>

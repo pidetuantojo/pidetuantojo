@@ -18,7 +18,8 @@
       "Bash(cd \"C:\\\\Users\\\\LENOVO\\\\Desktop\\\\projects\\\\antojo-app\" && npm install @dnd-kit/core)",
       "Bash(cd \"C:\\\\Users\\\\LENOVO\\\\Desktop\\\\projects\\\\antojo-app\" && firebase deploy --only firestore:indexes,firestore:rules 2>&1)",
       "Bash(cd \"C:\\\\Users\\\\LENOVO\\\\Desktop\\\\projects\\\\antojo-app\" && npx firebase-tools@13 deploy --only firestore:rules 2>&1)",
-      "Bash(cd \"C:/Users/LENOVO/Desktop/projects/antojo-app\" && npm install -D vitest jsdom)"
+      "Bash(cd \"C:/Users/LENOVO/Desktop/projects/antojo-app\" && npm install -D vitest jsdom)",
+      "mcp__claude_ai_Trello__trelloWriteChecklist"
     ]
   }
 }

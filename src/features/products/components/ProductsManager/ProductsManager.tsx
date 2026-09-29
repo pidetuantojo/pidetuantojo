@@ -216,11 +216,11 @@ export function ProductsManager() {
         <ProductsTable
           products={filtered}
           categoryMap={categoryMap}
-          onEdit={handleEdit}
-          onToggleAvailable={handleToggleAvailable}
-          onDelete={handleDelete}
-          onMoveUp={(i) => handleMove(i, 'up')}
-          onMoveDown={(i) => handleMove(i, 'down')}
+          onEdit={canUpdate ? handleEdit : undefined}
+          onToggleAvailable={can('products.toggle_availability') ? handleToggleAvailable : undefined}
+          onDelete={can('products.delete') ? handleDelete : undefined}
+          onMoveUp={canUpdate ? (i) => handleMove(i, 'up') : undefined}
+          onMoveDown={canUpdate ? (i) => handleMove(i, 'down') : undefined}
           togglingId={togglingId}
           deletingId={deletingId}
           movingId={movingId}
