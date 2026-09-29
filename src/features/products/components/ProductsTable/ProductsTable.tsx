@@ -28,7 +28,7 @@ interface Props {
   movingId: string | null;
 }
 
-function SortIcon({ col, active, dir }: { col: SortCol; active: boolean; dir: SortDir }) {
+function SortIcon({ active, dir }: { col?: SortCol; active: boolean; dir: SortDir }) {
   if (!active) return <ChevronsUpDown style={{ width: 13, height: 13, opacity: 0.35, flexShrink: 0 }} />;
   return dir === 'asc'
     ? <ChevronUp style={{ width: 13, height: 13, color: '#FF6A1A', flexShrink: 0 }} />

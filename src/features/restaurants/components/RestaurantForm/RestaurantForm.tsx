@@ -15,7 +15,6 @@ import { useAuth } from '@/features/auth';
 import { pickEditableRestaurantFields } from '@/lib/permissions/restaurantFields';
 import { usePlans } from '@/features/plans/hooks/usePlans';
 import { plansService } from '@/features/plans/services/plans.service';
-import { formatCurrency } from '@/lib/utils';
 
 import { useRestaurantForm } from '../../hooks/useRestaurantForm';
 import { useCreateRestaurant } from '../../hooks/useRestaurantMutations';
