@@ -101,7 +101,6 @@ export function PermissionsEditor({
               >
                 <span style={{ flex: 1, fontWeight: 700, fontSize: 14, color: 'var(--t-text-1)' }}>
                   {m.label}
-                  {m.kind === 'feature' && <span style={{ marginLeft: 8, fontFamily: sm, fontSize: 10, color: ORANGE }}>PLAN</span>}
                 </span>
                 <span style={{ fontFamily: sm, fontSize: 11, color: 'var(--t-text-3)' }}>{count}/{keys.length}</span>
                 {isOpen ? <ChevronDown size={16} color="var(--t-text-3)" /> : <ChevronRight size={16} color="var(--t-text-3)" />}
