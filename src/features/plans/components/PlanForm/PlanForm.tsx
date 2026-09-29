@@ -51,7 +51,7 @@ export function PlanForm({ planId }: { planId?: string }) {
     if (form.price < 0) { showToast('El precio no puede ser negativo', 'error'); return; }
     if (normalizePermissions(form.permissions).length === 0) { showToast('Selecciona al menos un permiso', 'error'); return; }
     try {
-      const finalPermissions = sortPermissions([...new Set([...normalizePermissions(form.permissions), ...FEATURE_PERMISSIONS])]);
+      const finalPermissions = sortPermissions(Array.from(new Set([...normalizePermissions(form.permissions), ...FEATURE_PERMISSIONS])));
       const { synced } = await save.mutateAsync({ id: planId, data: { ...form, permissions: finalPermissions } });
       if (!planId) {
         showToast(`Plan "${form.name.trim()}" creado`);

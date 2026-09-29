@@ -10,7 +10,7 @@ import { getConfiguredPaymentMethods, getPaymentLabel } from '@/features/payment
 import { PaymentMethodIcon } from '@/features/payment-methods/components/PaymentMethodIcon';
 import { useToastStore } from '@/store/toast.store';
 import { useConfirmStore } from '@/store/confirm.store';
-import type { DeliveryMethods, Mesa, PaymentMethodConfig } from '@/types';
+import type { DeliveryMethodConfig, DeliveryMethods, Mesa, PaymentMethodConfig } from '@/types';
 
 import { useMesas } from '../../hooks/useMesas';
 import { useCreateMesa, useUpdateMesa, useDeleteMesa } from '../../hooks/useMesaMutations';
@@ -179,11 +179,11 @@ export function DeliveryMethodsManager() {
   async function togglePaymentForMethod(key: keyof DeliveryMethods, paymentId: string, checked: boolean) {
     setSavingId(`pay-${key}-${paymentId}`);
     const allPayments = getConfiguredPaymentMethods(restaurant?.paymentMethods);
-    const current = methods[key] ?? {};
+    const current: DeliveryMethodConfig = methods[key] ?? { isActive: true };
     // Si no estaba configurado, partimos de todos los IDs activos
     const existing = current.allowedPaymentMethodIds ?? allPayments.filter((m) => m.isActive).map((m) => m.id);
     const next = checked
-      ? [...new Set([...existing, paymentId])]
+      ? Array.from(new Set([...existing, paymentId]))
       : existing.filter((id) => id !== paymentId);
     // Si quedan seleccionados todos los activos → omitir el campo (comportamiento por defecto)
     const activeIds = allPayments.filter((m) => m.isActive).map((m) => m.id);
