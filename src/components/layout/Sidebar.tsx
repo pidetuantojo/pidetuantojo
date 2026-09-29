@@ -9,6 +9,7 @@ import { Logo, LogoMark } from '@/components/ui/Logo';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { useRestaurant } from '@/features/restaurants/hooks/useRestaurants';
 import { ROUTES } from '@/constants/routes';
+import { canAccessPath, isEmployeeRole } from '@/lib/permissions/permissions';
 
 const sg = "var(--font-sans, sans-serif)";
 const sm = "var(--font-mono, monospace)";
@@ -25,7 +26,6 @@ const IcoHome = <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stro
 const IcoPedidos = <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0" /></svg>;
 const IcoProductos = <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 12h6M9 16h4" /></svg>;
 const IcoContabilidad = <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18M18 17V9M13 17V5M8 17v-3" /></svg>;
-const IcoImpresora = <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>;
 const IcoEntrega = <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" /><path d="M16 8h4l3 3v5h-7V8zM5.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM18.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z" /></svg>;
 const IcoRestaurante = <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>;
 
@@ -34,13 +34,9 @@ const IcoRestaurante = <svg viewBox="0 0 24 24" width="19" height="19" fill="non
 const SUPER_ADMIN_LINKS: NavItem[] = [
   { type: 'link', href: ROUTES.admin.restaurants, label: 'Restaurantes', icon: <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M9 13h.01M15 13h.01" /></svg> },
   { type: 'link', href: ROUTES.admin.leads, label: 'Inscripciones', icon: <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.56a16 16 0 0 0 5.55 5.55l.98-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" /></svg> },
+  { type: 'link', href: ROUTES.admin.plans, label: 'Planes', icon: <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg> },
 ];
 
-const RESTAURANT_VIEW_LINKS: NavItem[] = [
-  { type: 'link', href: ROUTES.dashboard.pedidos, label: 'Pedidos', icon: IcoPedidos },
-  { type: 'link', href: ROUTES.dashboard.contabilidad, label: 'Contabilidad', icon: IcoContabilidad },
-  { type: 'link', href: ROUTES.dashboard.estacionImpresion, label: 'Estación de impresión', icon: IcoImpresora },
-];
 
 const RESTAURANT_NAV: NavItem[] = [
   { type: 'link', href: ROUTES.dashboard.root, label: 'Inicio', icon: IcoHome },
@@ -89,6 +85,18 @@ const ALL_NAV_HREFS = RESTAURANT_NAV.flatMap((item) =>
   item.type === 'link' ? [item.href] : item.children.map((c) => c.href)
 );
 
+/**
+ * Deja solo los links cuya ruta el usuario puede abrir (según ROUTE_PERMISSIONS);
+ * los grupos que quedan sin hijos no se muestran.
+ */
+function filterNavByPermissions(items: NavItem[], permissions: readonly string[]): NavItem[] {
+  return items.flatMap((item): NavItem[] => {
+    if (item.type === 'link') return canAccessPath(permissions, item.href) ? [item] : [];
+    const children = item.children.filter((c) => canAccessPath(permissions, c.href));
+    return children.length ? [{ ...item, children }] : [];
+  });
+}
+
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
 interface SidebarProps {
@@ -99,12 +107,13 @@ interface SidebarProps {
 }
 
 export function Sidebar({ open = false, onClose, collapsed = false, onToggleCollapse }: SidebarProps) {
-  const { user, signOut } = useAuth();
+  const { user, signOut, permissions } = useAuth();
   const { theme, toggle: toggleTheme } = useTheme();
   const pathname = usePathname();
   const isSuperAdmin = user?.role === 'super_admin';
-  const isViewOnly = user?.role === 'restaurant_view';
-  const navItems: NavItem[] = isSuperAdmin ? SUPER_ADMIN_LINKS : isViewOnly ? RESTAURANT_VIEW_LINKS : RESTAURANT_NAV;
+  const isEmployee = isEmployeeRole(user?.role);
+  // Un solo menú para admin y empleados: se muestra solo lo que sus permisos permiten
+  const navItems: NavItem[] = isSuperAdmin ? SUPER_ADMIN_LINKS : filterNavByPermissions(RESTAURANT_NAV, permissions);
 
   const { data: restaurant } = useRestaurant(!isSuperAdmin ? user?.restaurantId : undefined);
   const initial = (user?.displayName ?? user?.email ?? '?')[0].toUpperCase();
@@ -215,7 +224,7 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
             <div>
               <Logo variant="dark" size={15} />
               {isSuperAdmin && <div style={{ fontFamily: sm, fontSize: 9, letterSpacing: '.12em', color: '#FF8A3D', marginTop: 4 }}>SUPER ADMIN</div>}
-              {isViewOnly && <div style={{ fontFamily: sm, fontSize: 9, letterSpacing: '.12em', color: '#9a8f86', marginTop: 4 }}>SOLO LECTURA</div>}
+              {isEmployee && <div style={{ fontFamily: sm, fontSize: 9, letterSpacing: '.12em', color: '#9a8f86', marginTop: 4 }}>EMPLEADO</div>}
             </div>
           )}
         </div>

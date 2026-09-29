@@ -16,4 +16,6 @@ export interface RestaurantFormProps {
   onSuccess: () => void;
   onCancel: () => void;
   onColorsChange?: (colors: RestaurantColorsPayload) => void;
+  // Solo en las páginas del super admin: elegir el plan del restaurante (obligatorio al crear)
+  showPlanSelector?: boolean;
 }

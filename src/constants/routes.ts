@@ -7,6 +7,9 @@ export const ROUTES = {
     root: '/admin',
     restaurants: '/admin/restaurantes',
     leads: '/admin/inscripciones',
+    plans: '/admin/planes',
+    planNew: '/admin/planes/nuevo',
+    plan: (id: string) => `/admin/planes/${id}`,
   },
   // Restaurant dashboard
   dashboard: {

@@ -3,5 +3,6 @@ import type { Order, OrderStatus } from '@/types';
 export interface OrdersTableProps {
   orders: Order[];
   statuses: OrderStatus[];
-  onExport: () => void;
+  // Sin permiso de exportar no se muestra el botón
+  onExport?: () => void;
 }

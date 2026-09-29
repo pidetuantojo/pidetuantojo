@@ -14,11 +14,17 @@ const mockProduct: Product = {
   sortOrder: 0,
   categoryId: 'cat-1',
   adicionalIds: ['add-1', 'add-2'],
+  restaurantId: 'rest-1',
+  isActive: true,
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
 };
 
+const TIMESTAMPS = { isActive: true, createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z' };
+
 const mockAdicionales: Adicional[] = [
-  { id: 'add-1', name: 'Extra queso', price: 2000, restaurantId: 'rest-1' },
-  { id: 'add-2', name: 'Tocineta', price: 3000, restaurantId: 'rest-1' },
+  { id: 'add-1', name: 'Extra queso', price: 2000, restaurantId: 'rest-1', ...TIMESTAMPS },
+  { id: 'add-2', name: 'Tocineta', price: 3000, restaurantId: 'rest-1', ...TIMESTAMPS },
 ];
 
 const defaultProps = {
@@ -67,6 +73,7 @@ describe('ProductModal', () => {
       name: 'Papas fritas',
       price: 1000,
       restaurantId: 'rest-1',
+      ...TIMESTAMPS,
     };
     render(
       <ProductModal {...defaultProps} adicionales={[...mockAdicionales, unlinkedAdicional]} />

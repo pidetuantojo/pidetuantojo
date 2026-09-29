@@ -9,6 +9,7 @@ import { restaurantsService } from '@/features/restaurants/services/restaurants.
 import { orderStatusesService } from '@/features/order-statuses/services/order-statuses.service';
 import { deliveryZonesService } from '@/features/delivery-zones/services/delivery-zones.service';
 import { mesasService } from '@/features/delivery-methods/services/mesas.service';
+import { applyPlanFeatures } from '@/lib/permissions/planFeatures';
 
 interface Props {
   params: { slug: string };
@@ -24,11 +25,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function RestaurantMenuPage({ params }: Props) {
-  const restaurant = await restaurantsService.getBySlug(params.slug);
+  const stored = await restaurantsService.getBySlug(params.slug);
 
-  if (!restaurant || !restaurant.isActive) {
+  if (!stored || !stored.isActive) {
     notFound();
   }
+
+  // Lo que el plan no incluye no se ofrece en el menú (mesa, programados, zonas, cuentas de pago)
+  const restaurant = applyPlanFeatures(stored);
 
   const mesaMethodActive = restaurant.deliveryMethods?.mesa?.isActive ?? false;
 

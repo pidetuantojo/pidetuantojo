@@ -6,17 +6,28 @@ import { useEffect, useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { AppLoader } from '@/components/ui/AppLoader';
 import { ROUTES } from '@/constants/routes';
+import { canAccessPath, firstAllowedRoute } from '@/lib/permissions/permissions';
 
-// La estación de impresión puede correr con la cuenta del cajero en el PC de la impresora
-const VIEW_ALLOWED_ROUTES: string[] = [ROUTES.dashboard.pedidos, ROUTES.dashboard.contabilidad, ROUTES.dashboard.estacionImpresion];
-// Contabilidad: /dashboard/contabilidad
+/**
+ * Destino al que hay que mandar al usuario si no puede estar en `pathname` (null = puede quedarse).
+ * - super_admin: solo /admin/* (no tiene restaurante).
+ * - usuarios de restaurante: nunca /admin/*; en /dashboard/* necesitan el permiso de la ruta.
+ */
+function redirectTarget(role: string, permissions: readonly string[], pathname: string): string | null {
+  const inAdmin = pathname === '/admin' || pathname.startsWith('/admin/');
+  if (role === 'super_admin') return inAdmin ? null : ROUTES.admin.restaurants;
+  if (!inAdmin && canAccessPath(permissions, pathname)) return null;
+  return firstAllowedRoute(permissions) ?? 'none';
+}
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, permissions, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const target = user ? redirectTarget(user.role, permissions, pathname) : null;
 
   useEffect(() => {
     if (loading) return;
@@ -24,10 +35,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       router.replace(ROUTES.login);
       return;
     }
-    if (user.role === 'restaurant_view' && !VIEW_ALLOWED_ROUTES.includes(pathname)) {
-      router.replace(ROUTES.dashboard.pedidos);
-    }
-  }, [user, loading, pathname, router]);
+    if (target && target !== 'none' && target !== pathname) router.replace(target);
+  }, [user, loading, target, pathname, router]);
 
   // Cerrar sidebar al navegar en mobile
   useEffect(() => {
@@ -36,6 +45,23 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   if (loading) return <AppLoader theme="dark" message="Cargando" />;
   if (!user) return null;
+
+  // Sin ningún permiso: mensaje en vez de un bucle de redirecciones
+  if (target === 'none') {
+    return (
+      <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'var(--t-bg)', fontFamily: 'var(--font-sans, sans-serif)', padding: 24 }}>
+        <div style={{ maxWidth: 420, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <h1 style={{ margin: 0, fontSize: 20, color: 'var(--t-text-1)' }}>Tu usuario no tiene permisos asignados</h1>
+          <p style={{ margin: 0, fontSize: 14, color: 'var(--t-text-3)' }}>Pídele al administrador del restaurante que te asigne permisos en Equipo.</p>
+          <button type="button" onClick={() => void signOut()} style={{ alignSelf: 'center', padding: '10px 20px', borderRadius: 999, border: '1.5px solid var(--t-border)', background: 'var(--t-surface)', color: 'var(--t-text-2)', cursor: 'pointer' }}>
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    );
+  }
+  // Mientras redirige, no mostrar una pantalla sin permiso
+  if (target) return <AppLoader theme="dark" message="Cargando" />;
 
   return (
     <div className="flex h-screen" style={{ background: 'var(--t-bg)', fontFamily: "var(--font-sans, sans-serif)" }}>

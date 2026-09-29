@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { ROUTES } from '@/constants/routes';
+import { firstAllowedRoute } from '@/lib/permissions/permissions';
 import { AppLoader } from '@/components/ui/AppLoader';
 import { Logo } from '@/components/ui/Logo';
 
@@ -12,7 +13,7 @@ const sm = "var(--font-mono, monospace)";
 
 
 export function LoginForm() {
-  const { signIn, user } = useAuth();
+  const { signIn, user, permissions } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,7 +37,10 @@ export function LoginForm() {
 
   if (showLoader || user) {
     if (user) {
-      const dest = user.role === 'super_admin' ? ROUTES.admin.restaurants : ROUTES.dashboard.root;
+      // Destino según permisos: un empleado sin "Inicio" entra directo a su primera sección (ej. Pedidos)
+      const dest = user.role === 'super_admin'
+        ? ROUTES.admin.restaurants
+        : firstAllowedRoute(permissions) ?? ROUTES.dashboard.root;
       router.replace(dest);
     }
     return <AppLoader theme="dark" message="Preparando tu panel" />;

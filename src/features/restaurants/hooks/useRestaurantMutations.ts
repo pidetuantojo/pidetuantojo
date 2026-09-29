@@ -4,6 +4,7 @@ import { collection, doc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { QUERY_KEYS } from '@/constants/query-keys';
 import type { AppUser, CreateRestaurantData, Restaurant, UpdateRestaurantData } from '@/types';
+import { authFetch } from '@/lib/auth/authFetch';
 import { BASE_ORDER_STATUSES } from '@/types';
 
 import { restaurantsService } from '../services/restaurants.service';
@@ -16,7 +17,7 @@ export function useCreateRestaurant() {
       const { adminEmail, adminPassword, adminName, ...restaurantData } = data;
 
       // 1. Crear usuario en Firebase Auth via API route (server-side, no desloguea al super admin)
-      const res = await fetch('/api/restaurants', {
+      const res = await authFetch('/api/restaurants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ adminEmail, adminPassword }),
@@ -71,7 +72,7 @@ export function useCreateRestaurant() {
         await batch.commit();
       } catch (firestoreError) {
         // Rollback: borrar el usuario de Auth para evitar estado huérfano
-        await fetch('/api/restaurants', {
+        await authFetch('/api/restaurants', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ uid: adminUid }),

@@ -6,6 +6,7 @@ import { Plus, Edit2, Trash2, Check, X } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
+import { useAuth } from '@/features/auth';
 import type { Adicional } from '@/types';
 
 import {
@@ -25,6 +26,7 @@ interface Props {
 const EMPTY_FORM = { name: '', price: '', isActive: true };
 
 export function AdicionalesManager({ restaurantId }: Props) {
+  const { can } = useAuth();
   const { data: adicionales = [], isLoading } = useAdicionales(restaurantId);
   const createMutation = useCreateAdicional(restaurantId);
   const updateMutation = useUpdateAdicional(restaurantId);
@@ -93,6 +95,7 @@ export function AdicionalesManager({ restaurantId }: Props) {
             Complementos que el cliente puede agregar a cualquier producto.
           </p>
         </div>
+        {can('addons.create') && (
         <button
           onClick={openNew}
           style={{
@@ -105,6 +108,7 @@ export function AdicionalesManager({ restaurantId }: Props) {
           <Plus size={16} />
           Nuevo adicional
         </button>
+        )}
       </div>
 
       {/* List */}
@@ -155,6 +159,7 @@ export function AdicionalesManager({ restaurantId }: Props) {
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                {can('addons.update') && (<>
                 <button
                   onClick={() => handleToggle(a)}
                   title={a.isActive ? 'Desactivar' : 'Activar'}
@@ -171,6 +176,8 @@ export function AdicionalesManager({ restaurantId }: Props) {
                 >
                   <Edit2 size={15} color="var(--t-text-3)" />
                 </button>
+                </>)}
+                {can('addons.delete') && (
                 <button
                   onClick={() => handleDelete(a)}
                   disabled={deleteMutation.isPending}
@@ -178,6 +185,7 @@ export function AdicionalesManager({ restaurantId }: Props) {
                 >
                   <Trash2 size={15} color="#f87171" />
                 </button>
+                )}
               </div>
             </div>
           ))}

@@ -73,7 +73,12 @@ function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export function DeliveryMethodsManager() {
-  const { user } = useAuth();
+  const { user, can } = useAuth();
+  const canManage = can('delivery_methods.manage');
+  const canManageTables = can('tables.manage');
+  // Features del plan: sin ellas el método/opción no se ofrece
+  const dineInEnabled = can('features.dine_in');
+  const scheduledEnabled = can('features.scheduled_orders');
   const restaurantId = user?.restaurantId ?? '';
 
   const { data: restaurant, isLoading } = useRestaurant(restaurantId || undefined);
@@ -104,7 +109,7 @@ export function DeliveryMethodsManager() {
   const activeCount = [
     methods.recoger?.isActive ?? true,
     methods.domicilio?.isActive ?? true,
-    methods.mesa?.isActive ?? false,
+    dineInEnabled && (methods.mesa?.isActive ?? false),
   ].filter(Boolean).length;
 
   async function toggleMethod(key: keyof DeliveryMethods, value: boolean) {
@@ -166,7 +171,7 @@ export function DeliveryMethodsManager() {
       icon: <IcoRecoger />,
       isActive: methods.recoger?.isActive ?? true,
       allowScheduled: methods.recoger?.allowScheduled ?? false,
-      showScheduled: true,
+      showScheduled: scheduledEnabled,
     },
     {
       key: 'domicilio' as const,
@@ -175,7 +180,7 @@ export function DeliveryMethodsManager() {
       icon: <IcoDomicilio />,
       isActive: methods.domicilio?.isActive ?? true,
       allowScheduled: methods.domicilio?.allowScheduled ?? false,
-      showScheduled: true,
+      showScheduled: scheduledEnabled,
     },
     {
       key: 'mesa' as const,
@@ -185,7 +190,7 @@ export function DeliveryMethodsManager() {
       isActive: methods.mesa?.isActive ?? false,
       showScheduled: false,
     },
-  ];
+  ].filter((m) => m.key !== 'mesa' || dineInEnabled);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, fontFamily: sg }}>
@@ -198,6 +203,11 @@ export function DeliveryMethodsManager() {
         <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--t-text-3)' }}>
           Activa o desactiva los métodos disponibles para tus clientes. Al menos uno debe quedar activo.
         </p>
+        {!canManage && (
+          <p style={{ margin: '8px 0 0', fontSize: 12, color: 'var(--t-text-3)' }}>
+            Solo lectura: no tienes permiso para cambiar los métodos de entrega.
+          </p>
+        )}
       </div>
 
       {/* Method cards */}
@@ -239,7 +249,7 @@ export function DeliveryMethodsManager() {
                 <Toggle
                   checked={method.isActive}
                   onChange={(v) => toggleMethod(method.key, v)}
-                  disabled={isSaving || isLastActive}
+                  disabled={!canManage || isSaving || isLastActive}
                 />
               </div>
             </div>
@@ -261,7 +271,7 @@ export function DeliveryMethodsManager() {
                     <Toggle
                       checked={(method as typeof METHOD_DEFS[0]).allowScheduled ?? false}
                       onChange={(v) => toggleScheduled(method.key as 'recoger' | 'domicilio', v)}
-                      disabled={isSaving}
+                      disabled={!canManage || isSaving}
                     />
                   </div>
                 )}
@@ -273,6 +283,7 @@ export function DeliveryMethodsManager() {
                       <span style={{ fontFamily: sm, fontSize: 10, fontWeight: 700, letterSpacing: '.08em', color: 'var(--t-text-3)', textTransform: 'uppercase' }}>
                         Mesas ({mesas.length})
                       </span>
+                      {canManageTables && (
                       <button
                         onClick={() => openMesaModal()}
                         style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 999, border: 'none', background: '#FF6A1A', color: '#fff', fontFamily: sg, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
@@ -280,6 +291,7 @@ export function DeliveryMethodsManager() {
                         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                         Agregar mesa
                       </button>
+                      )}
                     </div>
 
                     {mesasLoading ? (
@@ -299,12 +311,14 @@ export function DeliveryMethodsManager() {
                               <IcoMesa />
                             </div>
                             <span style={{ flex: 1, fontWeight: 600, fontSize: 14, color: 'var(--t-text-1)' }}>{mesa.name}</span>
+                            {canManageTables && (<>
                             <button onClick={() => openMesaModal(mesa)} style={{ width: 28, height: 28, borderRadius: 7, border: 'none', background: 'none', cursor: 'pointer', display: 'grid', placeItems: 'center', color: 'var(--t-text-3)' }}>
                               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                             </button>
                             <button onClick={() => handleDeleteMesa(mesa)} style={{ width: 28, height: 28, borderRadius: 7, border: 'none', background: 'none', cursor: 'pointer', display: 'grid', placeItems: 'center', color: 'var(--t-text-3)' }}>
                               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" /></svg>
                             </button>
+                            </>)}
                           </div>
                         ))}
                       </div>

@@ -19,7 +19,8 @@ import { ProductCard } from '../ProductCard';
 
 export function ProductsManager() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, can } = useAuth();
+  const canUpdate = can('products.update');
   const restaurantId = user?.restaurantId ?? '';
   const queryClient = useQueryClient();
 
@@ -114,10 +115,12 @@ export function ProductsManager() {
             {products.length} producto{products.length !== 1 ? 's' : ''} en el menú
           </p>
         </div>
-        <Button onClick={handleAdd}>
-          <Plus className="h-4 w-4" />
-          Nuevo producto
-        </Button>
+        {can('products.create') && (
+          <Button onClick={handleAdd}>
+            <Plus className="h-4 w-4" />
+            Nuevo producto
+          </Button>
+        )}
       </div>
 
       {/* Filtros */}
@@ -161,7 +164,7 @@ export function ProductsManager() {
               ? 'Prueba con otros filtros.'
               : 'Crea los productos de tu menú.'}
           </p>
-          {!search && !filterCategory && (
+          {!search && !filterCategory && can('products.create') && (
             <Button onClick={handleAdd} className="mt-4">
               <Plus className="h-4 w-4" />
               Crear primer producto
@@ -178,11 +181,11 @@ export function ProductsManager() {
               index={index}
               isFirst={index === 0}
               isLast={index === filtered.length - 1}
-              onEdit={handleEdit}
-              onToggleAvailable={handleToggleAvailable}
-              onDelete={handleDelete}
-              onMoveUp={(i) => handleMove(i, 'up')}
-              onMoveDown={(i) => handleMove(i, 'down')}
+              onEdit={canUpdate ? handleEdit : undefined}
+              onToggleAvailable={can('products.toggle_availability') ? handleToggleAvailable : undefined}
+              onDelete={can('products.delete') ? handleDelete : undefined}
+              onMoveUp={canUpdate ? (i) => handleMove(i, 'up') : undefined}
+              onMoveDown={canUpdate ? (i) => handleMove(i, 'down') : undefined}
               isToggling={togglingId === product.id}
               isDeleting={deletingId === product.id}
               isMoving={movingId === product.id}

@@ -1,6 +1,7 @@
 // ===== USUARIOS =====
 
-export type UserRole = 'super_admin' | 'restaurant_admin' | 'restaurant_view';
+// `restaurant_view` es el nombre anterior de `restaurant_employee`: se acepta hasta migrar (Fase 7).
+export type UserRole = 'super_admin' | 'restaurant_admin' | 'restaurant_employee' | 'restaurant_view';
 
 export interface AppUser {
   uid: string;
@@ -9,9 +10,36 @@ export interface AppUser {
   role: UserRole;
   restaurantId?: string;
   isActive: boolean;
+  // Solo empleados: permisos que le dio el admin (o fullAccess = todos los del plan)
+  grantedPermissions?: string[];
+  fullAccess?: boolean;
+  // Calculado SOLO en el servidor (src/lib/permissions/server.ts). Lo leen la UI y firestore.rules.
+  effectivePermissions?: string[];
   createdAt: string;
   updatedAt: string;
 }
+
+// ===== PLANES =====
+
+/** plans/{planId} — lo crea el super admin; cada restaurante tiene uno. */
+export interface Plan {
+  id: string;
+  name: string;
+  description: string;
+  // COP (informativo por ahora; sin cobro en la plataforma)
+  price: number;
+  billingPeriod: 'monthly' | 'yearly';
+  // Claves del catálogo src/constants/permissions.ts (incluye features.*)
+  permissions: string[];
+  limits?: { maxEmployees?: number };
+  // Los planes inactivos no se ofrecen a restaurantes nuevos
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SavePlanData = Pick<Plan, 'name' | 'description' | 'price' | 'billingPeriod' | 'permissions' | 'isActive' | 'sortOrder' | 'limits'>;
 
 // ===== RESTAURANTE =====
 
@@ -98,6 +126,12 @@ export interface Restaurant {
   deliveryMethods?: DeliveryMethods;
   // Métodos de pago (efectivo, datáfono y cuentas para transferir)
   paymentMethods?: PaymentMethodConfig[];
+  // Plan contratado (sin planId = restaurante anterior al sistema de planes: acceso completo)
+  planId?: string;
+  planName?: string;
+  planAssignedAt?: string;
+  // Funcionalidades del plan (features.*), copiadas por el servidor: el menú público las lee sin sesión
+  planFeatures?: string[];
   adminUserId: string;
   isActive: boolean;
   createdAt: string;
