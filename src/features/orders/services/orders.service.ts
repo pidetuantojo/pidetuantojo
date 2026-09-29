@@ -75,6 +75,17 @@ export const ordersService = {
     });
   },
 
+  async softDelete(restaurantId: string, id: string, userId: string, reason?: string): Promise<void> {
+    const now = new Date().toISOString();
+    await updateDoc(doc(ordersRef(restaurantId), id), {
+      isDeleted: true,
+      deletedAt: now,
+      deletedBy: userId,
+      ...(reason?.trim() ? { deletedReason: reason.trim() } : {}),
+      updatedAt: now,
+    });
+  },
+
   async updateDriver(
     restaurantId: string,
     orderId: string,

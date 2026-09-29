@@ -7,6 +7,8 @@ import { formatCurrency } from '@/lib/utils';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/features/auth';
+import { useToastStore } from '@/store/toast.store';
+import { useConfirmStore } from '@/store/confirm.store';
 import type { Adicional } from '@/types';
 
 import {
@@ -38,6 +40,8 @@ export function AdicionalesManager({ restaurantId }: Props) {
   const [formError, setFormError] = useState('');
 
   const isPending = createMutation.isPending || updateMutation.isPending;
+  const { showToast } = useToastStore();
+  const { showConfirm } = useConfirmStore();
 
   function openNew() {
     setEditingId(null);
@@ -68,19 +72,23 @@ export function AdicionalesManager({ restaurantId }: Props) {
 
     if (editingId) {
       await updateMutation.mutateAsync({ id: editingId, data: payload });
+      showToast(`"${form.name.trim()}" actualizado`);
     } else {
       await createMutation.mutateAsync(payload);
+      showToast(`"${form.name.trim()}" creado`);
     }
     cancel();
   }
 
   async function handleToggle(a: Adicional) {
     await updateMutation.mutateAsync({ id: a.id, data: { isActive: !a.isActive } });
+    showToast(a.isActive ? `"${a.name}" desactivado` : `"${a.name}" activado`);
   }
 
   async function handleDelete(a: Adicional) {
-    if (!confirm(`¿Eliminar "${a.name}"? Los productos que lo usan ya no lo mostrarán.`)) return;
+    if (!await showConfirm({ message: `¿Eliminar "${a.name}"? Los productos que lo usan ya no lo mostrarán.` })) return;
     await deleteMutation.mutateAsync(a.id);
+    showToast(`"${a.name}" eliminado`);
   }
 
   return (

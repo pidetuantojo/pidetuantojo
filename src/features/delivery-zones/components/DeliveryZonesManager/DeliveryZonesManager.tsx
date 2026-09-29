@@ -4,6 +4,8 @@ import { useState } from 'react';
 
 import { formatCurrency } from '@/lib/utils';
 import { useAuth } from '@/features/auth';
+import { useToastStore } from '@/store/toast.store';
+import { useConfirmStore } from '@/store/confirm.store';
 import type { DeliveryZone } from '@/types';
 
 import { useDeliveryZones } from '../../hooks/useDeliveryZones';
@@ -41,6 +43,8 @@ export function DeliveryZonesManager() {
   const [formError, setFormError] = useState('');
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { showToast } = useToastStore();
+  const { showConfirm } = useConfirmStore();
 
   function openAdd() {
     setEditing(undefined);
@@ -72,6 +76,7 @@ export function DeliveryZonesManager() {
     setFormError('');
     if (editing) {
       await updateZone.mutateAsync({ id: editing.id, data: { name, price } });
+      showToast(`Zona "${name}" actualizada`);
     } else {
       await createZone.mutateAsync({
         restaurantId,
@@ -80,6 +85,7 @@ export function DeliveryZonesManager() {
         isActive: true,
         sortOrder: zones.length + 1,
       });
+      showToast(`Zona "${name}" creada`);
     }
     cancelForm();
   }
@@ -88,16 +94,18 @@ export function DeliveryZonesManager() {
     setTogglingId(zone.id);
     try {
       await updateZone.mutateAsync({ id: zone.id, data: { isActive: !zone.isActive } });
+      showToast(zone.isActive ? `"${zone.name}" desactivada` : `"${zone.name}" activada`);
     } finally {
       setTogglingId(null);
     }
   }
 
   async function handleDelete(zone: DeliveryZone) {
-    if (!confirm(`¿Eliminar la zona "${zone.name}"?`)) return;
+    if (!await showConfirm({ message: `¿Eliminar la zona "${zone.name}"? Esta acción no se puede deshacer.` })) return;
     setDeletingId(zone.id);
     try {
       await deleteZone.mutateAsync(zone.id);
+      showToast(`"${zone.name}" eliminada`);
     } finally {
       setDeletingId(null);
     }

@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { useAuth } from '@/features/auth';
 import { useRestaurant } from '@/features/restaurants/hooks/useRestaurants';
+import { useConfirmStore } from '@/store/confirm.store';
 import { useUpdateRestaurant } from '@/features/restaurants/hooks/useRestaurantMutations';
 import type { PaymentMethodConfig, PaymentMethodType } from '@/types';
 
@@ -98,6 +99,7 @@ export function PaymentMethodsManager() {
 
   const [form, setForm] = useState<AccountForm | null>(null);
   const [formError, setFormError] = useState('');
+  const { showConfirm } = useConfirmStore();
 
   if (!restaurantId) return null;
   if (isLoading) {
@@ -138,7 +140,7 @@ export function PaymentMethodsManager() {
   async function deleteAccount(method: PaymentMethodConfig) {
     if (isLastActive(method)) return;
     const label = `${getPaymentLabel(method)} ${method.account ?? ''}`.trim();
-    if (!confirm(`¿Eliminar la cuenta "${label}"?`)) return;
+    if (!await showConfirm({ message: `¿Eliminar la cuenta "${label}"? Esta acción no se puede deshacer.` })) return;
     await save(methods.filter((m) => m.id !== method.id));
   }
 

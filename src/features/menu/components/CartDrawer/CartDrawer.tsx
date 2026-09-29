@@ -22,7 +22,7 @@ import {
 } from '../../helpers/schedule.helpers';
 import { ordersService } from '@/features/orders/services/orders.service';
 import { PaymentMethodIcon } from '@/features/payment-methods/components/PaymentMethodIcon';
-import { getActivePaymentMethods, getPaymentLabel, toOrderPayment } from '@/features/payment-methods/helpers/payment-methods.helpers';
+import { getPaymentMethodsForDelivery, getPaymentLabel, toOrderPayment } from '@/features/payment-methods/helpers/payment-methods.helpers';
 import type { DeliveryMethods, DeliveryZone, Mesa, OpeningHours, PaymentMethodConfig } from '@/types';
 
 const sg = "var(--font-sans, sans-serif)";
@@ -241,7 +241,7 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
   const mesaActive = (deliveryMethods?.mesa?.isActive ?? false) && !restaurantClosed;
   const selectedMesa = mesas.find((m) => m.id === selectedMesaId) ?? null;
 
-  const activePaymentMethods = getActivePaymentMethods(paymentMethods);
+  const activePaymentMethods = getPaymentMethodsForDelivery(paymentMethods, deliveryMethods, deliveryType as 'recoger' | 'domicilio' | 'mesa' | '');
   const selectedPayment = activePaymentMethods.find((m) => m.id === paymentMethod) ?? null;
 
   // Programar pedido: solo Domicilio / Recoger y si el restaurante lo habilitó para ese método
@@ -281,6 +281,11 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
     setDeliveryType(val);
     if (val !== 'mesa') setSelectedMesaId('');
     if (restaurantClosed && !scheduleDate) setScheduleDate(toDateInputValue(new Date()));
+    // Si el pago seleccionado no está disponible para el nuevo método de entrega, lo reseteamos
+    if (paymentMethod) {
+      const available = getPaymentMethodsForDelivery(paymentMethods, deliveryMethods, val as 'recoger' | 'domicilio' | 'mesa' | '');
+      if (!available.find((m) => m.id === paymentMethod)) setPaymentMethod('');
+    }
   }
 
   function selectPayment(method: PaymentMethodConfig) {

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 
 import { useCategoryForm } from '../../hooks/useCategoryForm';
 import { useCreateCategory, useUpdateCategory } from '../../hooks/useCategoryMutations';
+import { useToastStore } from '@/store/toast.store';
 import type { CategoryFormProps } from './CategoryForm.types';
 
 export function CategoryForm({
@@ -21,6 +22,7 @@ export function CategoryForm({
   const createMutation = useCreateCategory(restaurantId);
   const updateMutation = useUpdateCategory(restaurantId);
   const isPending = createMutation.isPending || updateMutation.isPending;
+  const { showToast } = useToastStore();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,8 +30,10 @@ export function CategoryForm({
 
     if (isEditing && category) {
       await updateMutation.mutateAsync({ id: category.id, data: toUpdateData() });
+      showToast('Categoría actualizada');
     } else {
       await createMutation.mutateAsync(toCreateData());
+      showToast('Categoría creada');
     }
     onSuccess();
   }

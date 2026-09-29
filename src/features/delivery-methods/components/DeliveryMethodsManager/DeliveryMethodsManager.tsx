@@ -5,7 +5,11 @@ import { useState } from 'react';
 import { useAuth } from '@/features/auth';
 import { useRestaurant } from '@/features/restaurants/hooks/useRestaurants';
 import { useUpdateRestaurant } from '@/features/restaurants/hooks/useRestaurantMutations';
-import type { DeliveryMethods, Mesa } from '@/types';
+import { getConfiguredPaymentMethods, getPaymentLabel } from '@/features/payment-methods/helpers/payment-methods.helpers';
+import { PaymentMethodIcon } from '@/features/payment-methods/components/PaymentMethodIcon';
+import { useToastStore } from '@/store/toast.store';
+import { useConfirmStore } from '@/store/confirm.store';
+import type { DeliveryMethods, Mesa, PaymentMethodConfig } from '@/types';
 
 import { useMesas } from '../../hooks/useMesas';
 import { useCreateMesa, useUpdateMesa, useDeleteMesa } from '../../hooks/useMesaMutations';
@@ -46,7 +50,24 @@ function IcoClock() {
 
 // ─── Toggle ───────────────────────────────────────────────────────────────────
 
-function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
+function Spinner({ size = 16 }: { size?: number }) {
+  return (
+    <span style={{
+      width: size, height: size, borderRadius: '50%',
+      border: `2px solid #FF6A1A`, borderTopColor: 'transparent',
+      display: 'block', animation: 'spin 0.6s linear infinite', flexShrink: 0,
+    }} />
+  );
+}
+
+function Toggle({ checked, onChange, disabled, isLoading }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean; isLoading?: boolean }) {
+  if (isLoading) {
+    return (
+      <div style={{ width: 44, height: 24, borderRadius: 999, background: 'var(--t-surface-2)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+        <Spinner size={14} />
+      </div>
+    );
+  }
   return (
     <button
       type="button"
@@ -69,6 +90,7 @@ function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (
     </button>
   );
 }
+
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
@@ -93,6 +115,9 @@ export function DeliveryMethodsManager() {
   const [mesaModal, setMesaModal] = useState<{ open: boolean; editing?: Mesa }>({ open: false });
   const [mesaName, setMesaName] = useState('');
   const [mesaError, setMesaError] = useState('');
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const showToast = useToastStore((s) => s.showToast);
+  const { showConfirm } = useConfirmStore();
 
   if (!restaurantId) return null;
   if (isLoading) {
@@ -112,24 +137,69 @@ export function DeliveryMethodsManager() {
     dineInEnabled && (methods.mesa?.isActive ?? false),
   ].filter(Boolean).length;
 
-  async function toggleMethod(key: keyof DeliveryMethods, value: boolean) {
-    if (!value && activeCount <= 1) return; // block if last active
+  const METHOD_LABELS: Record<keyof DeliveryMethods, string> = {
+    recoger: 'Recoger en Local',
+    domicilio: 'Domicilio',
+    mesa: 'Comer en el Local',
+  };
 
+  async function toggleMethod(key: keyof DeliveryMethods, value: boolean) {
+    if (!value && activeCount <= 1) return;
+
+    setSavingId(`toggle-${key}`);
     const current = methods[key] ?? {};
     const updated: DeliveryMethods = {
       ...methods,
       [key]: { ...current, isActive: value },
     };
-    await updateRestaurant.mutateAsync({ id: restaurantId, data: { deliveryMethods: updated } });
+    try {
+      await updateRestaurant.mutateAsync({ id: restaurantId, data: { deliveryMethods: updated } });
+      showToast(`${METHOD_LABELS[key]} ${value ? 'activado' : 'desactivado'}`);
+    } finally {
+      setSavingId(null);
+    }
   }
 
   async function toggleScheduled(key: 'recoger' | 'domicilio', value: boolean) {
+    setSavingId(`scheduled-${key}`);
     const current = methods[key] ?? {};
     const updated: DeliveryMethods = {
       ...methods,
       [key]: { ...current, allowScheduled: value },
     };
-    await updateRestaurant.mutateAsync({ id: restaurantId, data: { deliveryMethods: updated } });
+    try {
+      await updateRestaurant.mutateAsync({ id: restaurantId, data: { deliveryMethods: updated } });
+      showToast(`Pedidos programados ${value ? 'activados' : 'desactivados'} para ${METHOD_LABELS[key]}`);
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  async function togglePaymentForMethod(key: keyof DeliveryMethods, paymentId: string, checked: boolean) {
+    setSavingId(`pay-${key}-${paymentId}`);
+    const allPayments = getConfiguredPaymentMethods(restaurant?.paymentMethods);
+    const current = methods[key] ?? {};
+    // Si no estaba configurado, partimos de todos los IDs activos
+    const existing = current.allowedPaymentMethodIds ?? allPayments.filter((m) => m.isActive).map((m) => m.id);
+    const next = checked
+      ? [...new Set([...existing, paymentId])]
+      : existing.filter((id) => id !== paymentId);
+    // Si quedan seleccionados todos los activos → omitir el campo (comportamiento por defecto)
+    const activeIds = allPayments.filter((m) => m.isActive).map((m) => m.id);
+    const allSelected = activeIds.every((id) => next.includes(id)) && next.length === activeIds.length;
+    // Firestore rechaza undefined — si son todos, se omite el campo en lugar de pasar undefined
+    const { allowedPaymentMethodIds: _prev, ...rest } = current as DeliveryMethodConfig;
+    const updated: DeliveryMethods = {
+      ...methods,
+      [key]: allSelected ? rest : { ...rest, allowedPaymentMethodIds: next },
+    };
+    const paymentLabel = getPaymentLabel(allPayments.find((m) => m.id === paymentId)!);
+    try {
+      await updateRestaurant.mutateAsync({ id: restaurantId, data: { deliveryMethods: updated } });
+      showToast(`${paymentLabel} ${checked ? 'habilitado' : 'deshabilitado'} para ${METHOD_LABELS[key]}`);
+    } finally {
+      setSavingId(null);
+    }
   }
 
   function openMesaModal(mesa?: Mesa) {
@@ -150,18 +220,23 @@ export function DeliveryMethodsManager() {
     setMesaError('');
     if (mesaModal.editing) {
       await updateMesa.mutateAsync({ id: mesaModal.editing.id, data: { name } });
+      showToast(`Mesa "${name}" actualizada`);
     } else {
       await createMesa.mutateAsync({ restaurantId, name, isActive: true, sortOrder: mesas.length + 1 });
+      showToast(`Mesa "${name}" agregada`);
     }
     closeMesaModal();
   }
 
   async function handleDeleteMesa(mesa: Mesa) {
-    if (!confirm(`¿Eliminar "${mesa.name}"?`)) return;
+    if (!await showConfirm({ message: `¿Eliminar "${mesa.name}"? Esta acción no se puede deshacer.` })) return;
     await deleteMesa.mutateAsync(mesa.id);
+    showToast(`Mesa "${mesa.name}" eliminada`);
   }
 
   const isSaving = updateRestaurant.isPending;
+  const configuredPayments: PaymentMethodConfig[] = getConfiguredPaymentMethods(restaurant?.paymentMethods);
+  const activePayments = configuredPayments.filter((m) => m.isActive);
 
   const METHOD_DEFS = [
     {
@@ -249,7 +324,8 @@ export function DeliveryMethodsManager() {
                 <Toggle
                   checked={method.isActive}
                   onChange={(v) => toggleMethod(method.key, v)}
-                  disabled={!canManage || isSaving || isLastActive}
+                  disabled={!canManage || !!savingId || isLastActive}
+                  isLoading={savingId === `toggle-${method.key}`}
                 />
               </div>
             </div>
@@ -271,8 +347,59 @@ export function DeliveryMethodsManager() {
                     <Toggle
                       checked={(method as typeof METHOD_DEFS[0]).allowScheduled ?? false}
                       onChange={(v) => toggleScheduled(method.key as 'recoger' | 'domicilio', v)}
-                      disabled={!canManage || isSaving}
+                      disabled={!canManage || !!savingId}
+                      isLoading={savingId === `scheduled-${method.key}`}
                     />
+                  </div>
+                )}
+
+                {/* Métodos de pago permitidos */}
+                {activePayments.length > 0 && (
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                      <span style={{ fontFamily: sm, fontSize: 10, fontWeight: 700, letterSpacing: '.08em', color: 'var(--t-text-3)', textTransform: 'uppercase' }}>
+                        Métodos de pago disponibles
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {activePayments.map((pm) => {
+                        const allowed = methods[method.key]?.allowedPaymentMethodIds;
+                        const checked = !allowed || allowed.includes(pm.id);
+                        return (
+                          <label
+                            key={pm.id}
+                            style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: savingId ? 'not-allowed' : 'pointer', opacity: savingId && savingId !== `pay-${method.key}-${pm.id}` ? 0.5 : 1 }}
+                          >
+                            {savingId === `pay-${method.key}-${pm.id}` ? (
+                              <Spinner size={16} />
+                            ) : (
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                disabled={!!savingId}
+                                onChange={(e) => togglePaymentForMethod(method.key, pm.id, e.target.checked)}
+                                style={{ width: 16, height: 16, accentColor: '#FF6A1A', cursor: 'pointer', flexShrink: 0 }}
+                              />
+                            )}
+                            <div style={{ width: 28, height: 28, borderRadius: 8, background: checked ? '#FFF3EA' : 'var(--t-surface-2)', display: 'grid', placeItems: 'center', color: checked ? '#FF6A1A' : 'var(--t-text-3)', flexShrink: 0, transition: 'background .15s, color .15s' }}>
+                              <PaymentMethodIcon type={pm.type} size={15} />
+                            </div>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: checked ? 'var(--t-text-1)' : 'var(--t-text-3)', transition: 'color .15s' }}>
+                              {getPaymentLabel(pm)}
+                              {pm.account && <span style={{ fontFamily: sm, fontWeight: 400, color: 'var(--t-text-3)', marginLeft: 6, fontSize: 12 }}>{pm.account}</span>}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    {(() => {
+                      const allowed = methods[method.key]?.allowedPaymentMethodIds;
+                      return allowed && allowed.length === 0 ? (
+                        <p style={{ margin: '8px 0 0', fontSize: 12, color: '#ef4444' }}>
+                          Seleccioná al menos un método de pago.
+                        </p>
+                      ) : null;
+                    })()}
                   </div>
                 )}
 

@@ -3,6 +3,8 @@
 import { useState } from 'react';
 
 import { useAuth } from '@/features/auth';
+import { useToastStore } from '@/store/toast.store';
+import { useConfirmStore } from '@/store/confirm.store';
 import type { Domiciliario } from '@/types';
 
 import { useDomiciliarios } from '../../hooks/useDomiciliarios';
@@ -43,6 +45,8 @@ export function DomiciliariosManager() {
   const [formError, setFormError] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const { showToast } = useToastStore();
+  const { showConfirm } = useConfirmStore();
 
   function openAdd() {
     setEditing(undefined);
@@ -82,11 +86,13 @@ export function DomiciliariosManager() {
         id: editing.id,
         data: { name, phone, isCompany, code: isCompany ? undefined : code },
       });
+      showToast(`"${name}" actualizado`);
     } else {
       await create.mutateAsync({
         restaurantId, name, phone, isActive: true,
         ...(isCompany ? { isCompany: true } : { code }),
       });
+      showToast(`"${name}" agregado`);
     }
     cancelForm();
   }
@@ -95,16 +101,18 @@ export function DomiciliariosManager() {
     setTogglingId(d.id);
     try {
       await update.mutateAsync({ id: d.id, data: { isActive: !d.isActive } });
+      showToast(d.isActive ? `"${d.name}" desactivado` : `"${d.name}" activado`);
     } finally {
       setTogglingId(null);
     }
   }
 
   async function handleDelete(d: Domiciliario) {
-    if (!confirm(`¿Eliminar a "${d.name}"?`)) return;
+    if (!await showConfirm({ message: `¿Eliminar a "${d.name}"? Esta acción no se puede deshacer.` })) return;
     setDeletingId(d.id);
     try {
       await remove.mutateAsync(d.id);
+      showToast(`"${d.name}" eliminado`);
     } finally {
       setDeletingId(null);
     }

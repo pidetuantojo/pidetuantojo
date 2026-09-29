@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ArrowRight, Clock, MapPin, MessageCircle, Pencil, Bike,
-  StickyNote, Check, XCircle, Search, Building2,
+  StickyNote, Check, XCircle, Search, Building2, Trash2,
 } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
@@ -37,7 +37,7 @@ function formatShortDate(isoString: string): string {
     ' · ' + d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
 }
 
-export function OrderCard({ order, status, statuses, restaurantId, domiciliarios, onOpen, onAdvance, onEdit }: OrderCardProps) {
+export function OrderCard({ order, status, statuses, restaurantId, domiciliarios, onOpen, onAdvance, onEdit, onDelete, canDelete }: OrderCardProps) {
   const { can } = useAuth();
   const canEdit = can('orders.edit');
   const canChangeStatus = can('orders.change_status');
@@ -204,6 +204,15 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
           >
             <Pencil className="h-3.5 w-3.5" />
           </button>
+          )}
+          {canDelete && onDelete && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete(order); }}
+              className="p-1 rounded-lg text-[var(--t-text-4)] hover:text-red-600 hover:bg-red-50 transition-colors"
+              aria-label="Eliminar pedido"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
           )}
         </div>
       </div>

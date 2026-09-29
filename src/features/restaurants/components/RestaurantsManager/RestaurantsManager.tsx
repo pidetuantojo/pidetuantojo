@@ -72,7 +72,7 @@ export function RestaurantsManager() {
   return (
     <div style={{ fontFamily: sg }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 22 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12, marginBottom: 22 }}>
         <div>
           <h2 style={{ fontWeight: 700, fontSize: 28, letterSpacing: '-.02em', color: 'var(--t-text-1)', margin: '0 0 4px' }}>
             Restaurantes
@@ -99,7 +99,7 @@ export function RestaurantsManager() {
       </div>
 
       {/* Stats */}
-      <div style={{ display: 'flex', gap: 14, marginBottom: 20 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginBottom: 20 }}>
         {[
           { label: 'TOTAL', value: String(restaurants.length) },
           { label: 'ACTIVOS', value: String(activeCount), dot: true },

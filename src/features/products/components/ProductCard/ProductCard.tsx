@@ -1,7 +1,8 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Edit2, Trash2, Package, Eye, EyeOff, ChevronUp, ChevronDown } from 'lucide-react';
+import { Edit2, Trash2, Package, Eye, EyeOff, ChevronUp, ChevronDown, ZoomIn } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -26,6 +27,16 @@ export function ProductCard({
   isMoving,
 }: ProductCardProps) {
   const { id, name, price, image, adicionalIds, isActive, isAvailable } = product;
+
+  const [lightbox, setLightbox] = useState(false);
+  const [imgHover, setImgHover] = useState(false);
+
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightbox(false); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [lightbox]);
 
   const iconBtn: React.CSSProperties = {
     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -86,19 +97,58 @@ export function ProductCard({
 
       {/* Imagen */}
       <div
+        onClick={() => image && setLightbox(true)}
+        onMouseEnter={() => image && setImgHover(true)}
+        onMouseLeave={() => setImgHover(false)}
         style={{
           position: 'relative', width: 64, height: 64, flexShrink: 0,
           borderRadius: 12, overflow: 'hidden', background: '#FFF1E4',
+          cursor: image ? 'zoom-in' : 'default',
         }}
       >
         {image ? (
-          <Image src={image} alt={name} fill className="object-cover" />
+          <>
+            <Image src={image} alt={name} fill className="object-cover" style={{ transition: 'transform .2s', transform: imgHover ? 'scale(1.06)' : 'scale(1)' }} />
+            <div style={{
+              position: 'absolute', inset: 0, display: 'grid', placeItems: 'center',
+              background: imgHover ? 'rgba(0,0,0,0.32)' : 'rgba(0,0,0,0)',
+              transition: 'background .2s',
+            }}>
+              <ZoomIn style={{ width: 18, height: 18, color: '#fff', opacity: imgHover ? 1 : 0, transition: 'opacity .2s' }} />
+            </div>
+          </>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
             <Package style={{ width: 28, height: 28, color: '#FFB02E', opacity: 0.5 }} />
           </div>
         )}
       </div>
+
+      {/* Lightbox */}
+      {lightbox && image && (
+        <div
+          onClick={() => setLightbox(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.85)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            padding: 24, cursor: 'zoom-out',
+          }}
+        >
+          <div style={{ position: 'relative', maxWidth: '90vw', maxHeight: '80vh', width: '100%', height: '100%' }}>
+            <Image
+              src={image}
+              alt={name}
+              fill
+              style={{ objectFit: 'contain', borderRadius: 12 }}
+              sizes="90vw"
+            />
+          </div>
+          <p style={{ marginTop: 16, fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.7)', fontFamily: sg, textAlign: 'center' }}>
+            {name}
+          </p>
+        </div>
+      )}
 
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>

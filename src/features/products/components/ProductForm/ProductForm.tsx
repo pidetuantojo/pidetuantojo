@@ -12,6 +12,7 @@ import { ROUTES } from '@/constants/routes';
 
 import { useProductForm } from '../../hooks/useProductForm';
 import { useCreateProduct, useUpdateProduct } from '../../hooks/useProductMutations';
+import { useToastStore } from '@/store/toast.store';
 import type { ProductFormProps } from './ProductForm.types';
 
 export function ProductForm({
@@ -37,6 +38,7 @@ export function ProductForm({
   const createMutation = useCreateProduct(restaurantId);
   const updateMutation = useUpdateProduct(restaurantId);
   const isPending = createMutation.isPending || updateMutation.isPending;
+  const { showToast } = useToastStore();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -44,8 +46,10 @@ export function ProductForm({
 
     if (isEditing && product) {
       await updateMutation.mutateAsync({ id: product.id, data: toUpdateData() });
+      showToast('Producto actualizado');
     } else {
       await createMutation.mutateAsync(toCreateData());
+      showToast('Producto creado');
     }
     onSuccess();
   }

@@ -175,7 +175,7 @@ export function LeadsManager() {
   }
 
   return (
-    <div style={{ padding: '28px 32px', fontFamily: sg }}>
+    <div style={{ fontFamily: sg }}>
       <style dangerouslySetInnerHTML={{ __html: `@keyframes spin { to { transform: rotate(360deg) } }` }} />
 
       {/* header */}

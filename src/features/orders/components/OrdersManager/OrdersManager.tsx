@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { ShoppingBag, Wifi, RefreshCw, Plus, X, GripVertical } from 'lucide-react';
+import { ShoppingBag, Wifi, RefreshCw, Plus, X, GripVertical, Volume2, VolumeX, CalendarDays } from 'lucide-react';
+import { DateRangePicker } from '@/components/ui/DateRangePicker/DateRangePicker';
 import {
   DndContext,
   DragEndEvent,
@@ -28,12 +29,22 @@ import type { Order } from '@/types';
 
 import { useOrders } from '../../hooks/useOrders';
 import { useUpdateOrderStatus } from '../../hooks/useUpdateOrderStatus';
+import { useVoiceNotifications } from '../../hooks/useVoiceNotifications';
+import { ordersService } from '../../services/orders.service';
+import { useToastStore } from '@/store/toast.store';
 import { OrderCard } from '../OrderCard';
 import { OrderDetailModal } from '../OrderDetailModal';
 import { ManualOrderModal } from '../ManualOrderModal';
 import { EditOrderModal } from '../EditOrderModal';
+import { DeleteOrderModal } from '../DeleteOrderModal/DeleteOrderModal';
 
-type DateFilter = 'today' | 'month' | 'all';
+import type { DateRange } from '../../hooks/useOrders';
+
+type PresetKey = 'today' | 'yesterday' | 'last7' | 'thisMonth' | 'custom';
+
+interface ActiveRange extends DateRange {
+  preset: PresetKey;
+}
 
 // ── Toast ────────────────────────────────────────────────────────────────────
 
@@ -217,20 +228,48 @@ function playNotificationSound() {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function isToday(isoString: string): boolean {
-  const d = new Date(isoString);
-  const now = new Date();
-  return (
-    d.getFullYear() === now.getFullYear() &&
-    d.getMonth() === now.getMonth() &&
-    d.getDate() === now.getDate()
-  );
+function startOfDayISO(date: Date): string {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
 }
 
-function isThisMonth(isoString: string): boolean {
-  const d = new Date(isoString);
+function endOfDayISO(date: Date): string {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return d.toISOString();
+}
+
+function getPresetRange(preset: Exclude<PresetKey, 'custom'>): DateRange {
   const now = new Date();
-  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  if (preset === 'today') return { start: startOfDayISO(now), end: endOfDayISO(now) };
+  if (preset === 'yesterday') {
+    const y = new Date(now);
+    y.setDate(y.getDate() - 1);
+    return { start: startOfDayISO(y), end: endOfDayISO(y) };
+  }
+  if (preset === 'last7') {
+    const s = new Date(now);
+    s.setDate(s.getDate() - 6);
+    return { start: startOfDayISO(s), end: endOfDayISO(now) };
+  }
+  // thisMonth
+  const m = new Date(now.getFullYear(), now.getMonth(), 1);
+  return { start: startOfDayISO(m), end: endOfDayISO(now) };
+}
+
+function isoToDateInput(iso: string): string {
+  return iso.slice(0, 10);
+}
+
+function formatRangeLabel(range: ActiveRange): string {
+  const fmt = (iso: string) =>
+    new Date(iso).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
+  if (range.preset === 'today') return 'Hoy';
+  if (range.preset === 'yesterday') return 'Ayer';
+  if (range.preset === 'last7') return 'Últ. 7 días';
+  if (range.preset === 'thisMonth') return 'Este mes';
+  return `${fmt(range.start)} – ${fmt(range.end)}`;
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -241,7 +280,14 @@ export function OrdersManager() {
   const restaurantId = user?.restaurantId ?? '';
 
   const [refreshKey, setRefreshKey] = useState(0);
-  const { orders, isLoading } = useOrders(restaurantId, refreshKey);
+  const [activeRange, setActiveRange] = useState<ActiveRange>(() => ({
+    preset: 'today',
+    ...getPresetRange('today'),
+  }));
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
+
+  const { orders, isLoading } = useOrders(restaurantId, activeRange, refreshKey);
   const { data: statuses = [] } = useOrderStatuses(restaurantId);
   const { data: products = [] } = useProducts(restaurantId);
   const { data: adicionales = [] } = useAdicionales(restaurantId);
@@ -250,9 +296,12 @@ export function OrdersManager() {
   const { data: restaurant } = useRestaurant(restaurantId || undefined);
   const { updateStatus } = useUpdateOrderStatus(restaurantId);
 
-  const [dateFilter, setDateFilter] = useState<DateFilter>('today');
+  const canDelete = user?.role === 'restaurant_admin' || user?.role === 'super_admin';
+
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [deletingOrder, setDeletingOrder] = useState<Order | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [dragError, setDragError] = useState<string | null>(null);
@@ -260,6 +309,10 @@ export function OrdersManager() {
 
   const knownIdsRef = useRef<Set<string> | null>(null);
   const toastCounterRef = useRef(0);
+  const prevStatusRef = useRef<Map<string, string>>(new Map());
+
+  const { announce, enabled: voiceEnabled, toggle: toggleVoice } = useVoiceNotifications();
+  const { showToast } = useToastStore();
 
   const boardScrollRef = useRef<HTMLDivElement>(null);
   const [scroll, setScroll] = useState({ left: 0, width: 0, client: 0 });
@@ -275,24 +328,46 @@ export function OrdersManager() {
     .filter((s) => s.isActive)
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
-  // Detect new orders
+  // Detect new orders and status changes
   useEffect(() => {
     if (isLoading) return;
     const currentIds = new Set(orders.map((o) => o.id));
 
     if (knownIdsRef.current === null) {
+      // Primera carga: registrar IDs y estados sin notificar
       knownIdsRef.current = currentIds;
+      prevStatusRef.current = new Map(orders.map((o) => [o.id, o.statusId]));
       return;
     }
 
+    // Pedidos nuevos
     const newOrders = orders.filter((o) => !knownIdsRef.current!.has(o.id));
-    if (newOrders.length > 0) playNotificationSound();
-    newOrders.forEach((o) => {
-      const id = ++toastCounterRef.current;
-      setToasts((prev) => [...prev, { id, orderNumber: o.orderNumber }]);
+    if (newOrders.length > 0) {
+      playNotificationSound();
+      newOrders.forEach((o) => {
+        const id = ++toastCounterRef.current;
+        setToasts((prev) => [...prev, { id, orderNumber: o.orderNumber }]);
+      });
+      if (newOrders.length === 1) {
+        announce(`Nuevo pedido de ${newOrders[0].customerName}`);
+      } else {
+        announce(`${newOrders.length} pedidos nuevos`);
+      }
+    }
+
+    // Cambios de estado en pedidos ya conocidos
+    orders.forEach((order) => {
+      if (!knownIdsRef.current!.has(order.id)) return; // skip nuevos
+      const prev = prevStatusRef.current.get(order.id);
+      if (prev !== undefined && prev !== order.statusId) {
+        const statusName = statuses.find((s) => s.id === order.statusId)?.name;
+        if (statusName) announce(`Pedido de ${order.customerName}: ${statusName}`);
+      }
     });
+
     knownIdsRef.current = currentIds;
-  }, [orders, isLoading]);
+    prevStatusRef.current = new Map(orders.map((o) => [o.id, o.statusId]));
+  }, [orders, isLoading, statuses, announce]);
 
   const removeToast = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -309,7 +384,7 @@ export function OrdersManager() {
     const id = setTimeout(syncScroll, 0);
     window.addEventListener('resize', syncScroll);
     return () => { clearTimeout(id); window.removeEventListener('resize', syncScroll); };
-  }, [orders, dateFilter, statuses, syncScroll]);
+  }, [orders, activeRange, statuses, syncScroll]);
 
   // rAF loop — detecta cambios en scrollLeft sin depender del evento scroll
   useEffect(() => {
@@ -352,17 +427,40 @@ export function OrdersManager() {
     window.addEventListener('mouseup', onUp);
   }
 
-  const filteredOrders = orders.filter((o) => {
-    if (dateFilter === 'today') return isToday(o.createdAt);
-    if (dateFilter === 'month') return isThisMonth(o.createdAt);
-    return true;
-  });
+  // El rango ya viene filtrado desde Firestore; no hace falta filtrar de nuevo
+  const filteredOrders = orders;
 
   const ordersByStatus = (statusId: string) =>
     filteredOrders.filter((o) => o.statusId === statusId);
 
+  function selectPreset(preset: Exclude<PresetKey, 'custom'>) {
+    const range = getPresetRange(preset);
+    setActiveRange({ preset, ...range });
+  }
+
+  function applyCustomRange(from: string, to: string) {
+    setCustomFrom(from);
+    setCustomTo(to);
+    const start = startOfDayISO(new Date(from + 'T00:00:00'));
+    const end = endOfDayISO(new Date(to + 'T00:00:00'));
+    setActiveRange({ preset: 'custom', start, end });
+  }
+
   async function handleAdvance(orderId: string, nextStatusId: string) {
     await updateStatus(orderId, nextStatusId);
+  }
+
+  async function handleDeleteConfirm(orderId: string, reason: string) {
+    if (!user) return;
+    setIsDeleting(true);
+    try {
+      const orderNumber = deletingOrder?.orderNumber ?? '';
+      await ordersService.softDelete(restaurantId, orderId, user.uid, reason);
+      setDeletingOrder(null);
+      showToast(`Pedido ${orderNumber} eliminado`);
+    } finally {
+      setIsDeleting(false);
+    }
   }
 
   // Drag handlers
@@ -424,7 +522,7 @@ export function OrdersManager() {
           </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {can('orders.create') && (
           <button
             onClick={() => setIsManualModalOpen(true)}
@@ -442,6 +540,18 @@ export function OrdersManager() {
             🔔
           </button>
           <button
+            onClick={toggleVoice}
+            title={voiceEnabled ? 'Desactivar voz' : 'Activar voz'}
+            className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-colors ${
+              voiceEnabled
+                ? 'border-orange-300 bg-orange-50 text-orange-600 hover:bg-orange-100'
+                : 'border-[var(--t-border)] bg-[var(--t-surface)] text-[var(--t-text-4)] hover:bg-[var(--t-surface-2)]'
+            }`}
+          >
+            {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            <span className="hidden sm:inline">{voiceEnabled ? 'Voz activa' : 'Voz off'}</span>
+          </button>
+          <button
             onClick={() => {
               knownIdsRef.current = null;
               setRefreshKey((k) => k + 1);
@@ -455,26 +565,41 @@ export function OrdersManager() {
       </div>
 
       {/* Filtros de fecha */}
-      <div className="flex gap-2">
-        {(
-          [
-            { key: 'today', label: 'Hoy' },
-            { key: 'month', label: 'Este mes' },
-            { key: 'all', label: 'Todos' },
-          ] as { key: DateFilter; label: string }[]
-        ).map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setDateFilter(key)}
-            className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
-              dateFilter === key
-                ? 'bg-[var(--t-text-1)] text-[var(--t-bg)]'
-                : 'border border-[var(--t-border)] bg-[var(--t-surface)] text-[var(--t-text-2)] hover:bg-[var(--t-surface-2)]'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Presets */}
+        <div className="join">
+          {(
+            [
+              { key: 'today',     label: 'Hoy' },
+              { key: 'yesterday', label: 'Ayer' },
+              { key: 'last7',     label: 'Últ. 7 días' },
+              { key: 'thisMonth', label: 'Este mes' },
+            ] as { key: Exclude<PresetKey, 'custom'>; label: string }[]
+          ).map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => selectPreset(key)}
+              className={`join-item btn btn-sm border-base-300 ${activeRange.preset === key ? 'text-white border-0' : 'btn-ghost'}`}
+              style={activeRange.preset === key ? { background: '#FF6A1A' } : {}}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Custom date range picker */}
+        <DateRangePicker
+          from={customFrom}
+          to={customTo}
+          isActive={activeRange.preset === 'custom'}
+          onApply={applyCustomRange}
+        />
+
+        {/* Badge rango activo */}
+        <div className="badge badge-lg gap-1.5 border-orange-200 bg-orange-50 text-orange-600 font-semibold py-3">
+          <CalendarDays className="h-3 w-3" />
+          {formatRangeLabel(activeRange)}
+        </div>
       </div>
 
       {/* Error de drag */}
@@ -561,6 +686,8 @@ export function OrdersManager() {
                           onOpen={setSelectedOrder}
                           onAdvance={handleAdvance}
                           onEdit={setEditingOrder}
+                          onDelete={setDeletingOrder}
+                          canDelete={canDelete}
                         />
                       ))
                     )}
@@ -632,6 +759,14 @@ export function OrdersManager() {
         adicionales={adicionales}
         categories={categories}
         paymentMethods={restaurant?.paymentMethods}
+      />
+
+      {/* Modal eliminar pedido */}
+      <DeleteOrderModal
+        order={deletingOrder}
+        isDeleting={isDeleting}
+        onConfirm={handleDeleteConfirm}
+        onClose={() => setDeletingOrder(null)}
       />
 
       {/* Toasts nuevos pedidos */}

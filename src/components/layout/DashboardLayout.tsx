@@ -1,10 +1,13 @@
 ﻿'use client';
 
 import { useAuth } from '@/features/auth';
+import { useRestaurant } from '@/features/restaurants/hooks/useRestaurants';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { AppLoader } from '@/components/ui/AppLoader';
+import { Toaster } from '@/components/ui/Toast';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ROUTES } from '@/constants/routes';
 import { canAccessPath, firstAllowedRoute } from '@/lib/permissions/permissions';
 
@@ -22,6 +25,7 @@ function redirectTarget(role: string, permissions: readonly string[], pathname: 
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, permissions, signOut } = useAuth();
+  const { data: restaurant } = useRestaurant(user?.restaurantId ?? undefined);
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -81,13 +85,26 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <path d="M4 7h16M4 12h16M4 17h16" />
             </svg>
           </button>
-          <span style={{ fontWeight: 700, fontSize: 17, color: '#FBF6F1', letterSpacing: '-.01em' }}>
-            Antojo<span style={{ color: '#FF6A1A' }}>.</span>
-          </span>
+          {restaurant?.name ? (
+            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.25, overflow: 'hidden' }}>
+              <span style={{ fontWeight: 700, fontSize: 16, color: '#FBF6F1', letterSpacing: '-.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {restaurant.name}
+              </span>
+              <span style={{ fontSize: 10, color: '#FF6A1A', letterSpacing: '.04em', fontWeight: 500 }}>
+                Pide Tu Antojo
+              </span>
+            </div>
+          ) : (
+            <span style={{ fontWeight: 700, fontSize: 17, color: '#FBF6F1', letterSpacing: '-.01em' }}>
+              Antojo<span style={{ color: '#FF6A1A' }}>.</span>
+            </span>
+          )}
         </header>
 
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8">{children}</main>
       </div>
+      <Toaster />
+      <ConfirmDialog />
     </div>
   );
 }

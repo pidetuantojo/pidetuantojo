@@ -64,12 +64,14 @@ export type OpeningHours = {
 export interface DeliveryMethodConfig {
   isActive: boolean;
   allowScheduled?: boolean;
+  // IDs de PaymentMethodConfig permitidos. undefined = todos los activos.
+  allowedPaymentMethodIds?: string[];
 }
 
 export interface DeliveryMethods {
   recoger?: DeliveryMethodConfig;
   domicilio?: DeliveryMethodConfig;
-  mesa?: Pick<DeliveryMethodConfig, 'isActive'>;
+  mesa?: Pick<DeliveryMethodConfig, 'isActive' | 'allowedPaymentMethodIds'>;
 }
 
 // ===== MÉTODOS DE PAGO =====
@@ -285,6 +287,11 @@ export interface Order {
   printedAt?: string;
   printCount?: number;
   printError?: string;
+  // Soft delete — auditoría
+  isDeleted?: boolean;
+  deletedAt?: string;
+  deletedBy?: string;
+  deletedReason?: string;
   createdAt: string;
   updatedAt: string;
 }

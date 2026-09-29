@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Search, Package } from 'lucide-react';
+import { Plus, Search, Package, LayoutGrid, List } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -10,12 +10,17 @@ import { Select } from '@/components/ui/Select';
 import { useAuth } from '@/features/auth';
 import { useCategories } from '@/features/categories/hooks/useCategories';
 import { QUERY_KEYS } from '@/constants/query-keys';
+import { useToastStore } from '@/store/toast.store';
+import { useConfirmStore } from '@/store/confirm.store';
 import type { Category, Product } from '@/types';
 
 import { useProducts } from '../../hooks/useProducts';
 import { useToggleProductAvailable, useDeleteProduct } from '../../hooks/useProductMutations';
 import { productsService } from '../../services/products.service';
 import { ProductCard } from '../ProductCard';
+import { ProductsTable } from '../ProductsTable';
+
+type View = 'cards' | 'table';
 
 export function ProductsManager() {
   const router = useRouter();
@@ -29,12 +34,23 @@ export function ProductsManager() {
 
   const toggleAvailable = useToggleProductAvailable(restaurantId);
   const deleteProduct = useDeleteProduct(restaurantId);
+  const { showToast } = useToastStore();
+  const { showConfirm } = useConfirmStore();
 
+  const [view, setView] = useState<View>(() => {
+    if (typeof window === 'undefined') return 'table';
+    return (localStorage.getItem('products-view') as View) ?? 'table';
+  });
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [movingId, setMovingId] = useState<string | null>(null);
+
+  function switchView(v: View) {
+    setView(v);
+    localStorage.setItem('products-view', v);
+  }
 
   const categoryMap = new Map<string, Category>(categories.map((c) => [c.id, c]));
 
@@ -58,16 +74,18 @@ export function ProductsManager() {
     setTogglingId(id);
     try {
       await toggleAvailable.mutateAsync({ id, isAvailable });
+      showToast(isAvailable ? 'Producto marcado como disponible' : 'Producto marcado como no disponible');
     } finally {
       setTogglingId(null);
     }
   }
 
   async function handleDelete(id: string, name: string) {
-    if (!confirm(`¿Eliminar el producto "${name}"?`)) return;
+    if (!await showConfirm({ message: `¿Eliminar el producto "${name}"? Esta acción no se puede deshacer.` })) return;
     setDeletingId(id);
     try {
       await deleteProduct.mutateAsync(id);
+      showToast(`"${name}" eliminado`);
     } finally {
       setDeletingId(null);
     }
@@ -86,6 +104,7 @@ export function ProductsManager() {
         productsService.update(restaurantId, target.id, { sortOrder: current.sortOrder }),
       ]);
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.products(restaurantId) });
+      showToast('Orden actualizado');
     } finally {
       setMovingId(null);
     }
@@ -123,8 +142,8 @@ export function ProductsManager() {
         )}
       </div>
 
-      {/* Filtros */}
-      <div className="flex items-center gap-3">
+      {/* Filtros + toggle de vista */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'var(--t-text-4)' }} />
           <input
@@ -150,9 +169,31 @@ export function ProductsManager() {
             ...categories.map((cat) => ({ value: cat.id, label: cat.name })),
           ]}
         />
+        {/* View toggle */}
+        <div style={{ display: 'flex', border: '1px solid var(--t-border-2)', borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
+          {([
+            { key: 'table', icon: <List className="h-4 w-4" />, title: 'Vista de tabla' },
+            { key: 'cards', icon: <LayoutGrid className="h-4 w-4" />, title: 'Vista de tarjetas' },
+          ] as const).map(({ key, icon, title }) => (
+            <button
+              key={key}
+              onClick={() => switchView(key)}
+              title={title}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 38, height: 38, border: 'none', cursor: 'pointer',
+                background: view === key ? '#FF6A1A' : 'var(--t-surface)',
+                color: view === key ? '#fff' : 'var(--t-text-3)',
+                transition: 'background .15s, color .15s',
+              }}
+            >
+              {icon}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Lista */}
+      {/* Contenido */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Package className="h-12 w-12" style={{ color: 'var(--t-text-4)' }} />
@@ -171,6 +212,19 @@ export function ProductsManager() {
             </Button>
           )}
         </div>
+      ) : view === 'table' ? (
+        <ProductsTable
+          products={filtered}
+          categoryMap={categoryMap}
+          onEdit={handleEdit}
+          onToggleAvailable={handleToggleAvailable}
+          onDelete={handleDelete}
+          onMoveUp={(i) => handleMove(i, 'up')}
+          onMoveDown={(i) => handleMove(i, 'down')}
+          togglingId={togglingId}
+          deletingId={deletingId}
+          movingId={movingId}
+        />
       ) : (
         <div className="space-y-2">
           {filtered.map((product, index) => (

@@ -1,4 +1,4 @@
-import type { PaymentMethodConfig, PaymentMethodType } from '@/types';
+import type { DeliveryMethods, PaymentMethodConfig, PaymentMethodType } from '@/types';
 
 import { PAYMENT_METHOD_DEFINITIONS } from '../constants/payment-methods.constants';
 
@@ -81,4 +81,24 @@ export function isTransferMethod(type: PaymentMethodType): boolean {
 
 export function createPaymentMethodId(): string {
   return `pm_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+}
+
+/**
+ * Retorna los métodos de pago activos disponibles para un método de entrega específico.
+ * Si el método de entrega no tiene `allowedPaymentMethodIds` configurado (undefined),
+ * retorna todos los activos. Si está configurado, filtra solo los permitidos.
+ */
+export function getPaymentMethodsForDelivery(
+  paymentMethods: PaymentMethodConfig[] | undefined,
+  deliveryMethods: DeliveryMethods | undefined,
+  deliveryType: 'recoger' | 'domicilio' | 'mesa' | ''
+): PaymentMethodConfig[] {
+  const active = getActivePaymentMethods(paymentMethods);
+  if (!deliveryType) return active;
+
+  const methodConfig = deliveryMethods?.[deliveryType];
+  const allowed = methodConfig?.allowedPaymentMethodIds;
+  if (!allowed || allowed.length === 0) return active;
+
+  return active.filter((m) => allowed.includes(m.id));
 }

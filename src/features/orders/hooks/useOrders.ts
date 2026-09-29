@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react';
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 
 import { db } from '@/lib/firebase/config';
 import type { Order } from '@/types';
 
-export function useOrders(restaurantId: string, refreshKey = 0) {
+export interface DateRange {
+  start: string; // ISO 8601
+  end: string;   // ISO 8601
+}
+
+export function useOrders(restaurantId: string, dateRange: DateRange | null, refreshKey = 0) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -17,15 +22,24 @@ export function useOrders(restaurantId: string, refreshKey = 0) {
 
     setIsLoading(true);
 
-    const q = query(
-      collection(db, 'restaurants', restaurantId, 'orders'),
-      orderBy('createdAt', 'desc')
-    );
+    const constraints = dateRange
+      ? [
+          where('createdAt', '>=', dateRange.start),
+          where('createdAt', '<=', dateRange.end),
+          orderBy('createdAt', 'desc'),
+        ]
+      : [orderBy('createdAt', 'desc')];
+
+    const q = query(collection(db, 'restaurants', restaurantId, 'orders'), ...constraints);
 
     const unsubscribe = onSnapshot(
       q,
       (snap) => {
-        setOrders(snap.docs.map((d) => ({ ...d.data(), id: d.id }) as Order));
+        setOrders(
+          snap.docs
+            .map((d) => ({ ...d.data(), id: d.id }) as Order)
+            .filter((o) => !o.isDeleted)
+        );
         setIsLoading(false);
       },
       (err) => {
@@ -35,7 +49,7 @@ export function useOrders(restaurantId: string, refreshKey = 0) {
     );
 
     return () => unsubscribe();
-  }, [restaurantId, refreshKey]);
+  }, [restaurantId, dateRange?.start, dateRange?.end, refreshKey]);
 
   return { orders, isLoading, error };
 }

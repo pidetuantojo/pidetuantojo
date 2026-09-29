@@ -7,6 +7,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useAuth } from '@/features/auth';
+import { useConfirmStore } from '@/store/confirm.store';
 import type { OrderStatus } from '@/types';
 
 import { useOrderStatuses } from '../../hooks/useOrderStatuses';
@@ -31,6 +32,7 @@ export function OrderStatusesManager() {
   const [editing, setEditing] = useState<OrderStatus | undefined>(undefined);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { showConfirm } = useConfirmStore();
 
   function handleEdit(status: OrderStatus) {
     setEditing(status);
@@ -57,7 +59,7 @@ export function OrderStatusesManager() {
   }
 
   async function handleDelete(id: string, name: string) {
-    if (!confirm(`¿Eliminar el estado "${name}"?`)) return;
+    if (!await showConfirm({ message: `¿Eliminar el estado "${name}"? Esta acción no se puede deshacer.` })) return;
     setDeletingId(id);
     try {
       await deleteStatus.mutateAsync(id);

@@ -213,7 +213,6 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
           overflow: 'visible',
           display: 'flex',
           flexDirection: 'column',
-          position: 'relative',
         }}
       >
         {/* Logo */}

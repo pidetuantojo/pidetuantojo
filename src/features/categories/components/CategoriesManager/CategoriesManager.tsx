@@ -7,6 +7,8 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useAuth } from '@/features/auth';
+import { useToastStore } from '@/store/toast.store';
+import { useConfirmStore } from '@/store/confirm.store';
 import type { Category } from '@/types';
 
 import { useCategories } from '../../hooks/useCategories';
@@ -24,6 +26,8 @@ export function CategoriesManager() {
 
   const toggleActive = useToggleCategoryActive(restaurantId);
   const deleteCategory = useDeleteCategory(restaurantId);
+  const { showToast } = useToastStore();
+  const { showConfirm } = useConfirmStore();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Category | undefined>(undefined);
@@ -49,16 +53,18 @@ export function CategoriesManager() {
     setTogglingId(id);
     try {
       await toggleActive.mutateAsync({ id, isActive });
+      showToast(isActive ? 'Categoría activada' : 'Categoría desactivada');
     } finally {
       setTogglingId(null);
     }
   }
 
   async function handleDelete(id: string, name: string) {
-    if (!confirm(`¿Eliminar la categoría "${name}"?`)) return;
+    if (!await showConfirm({ message: `¿Eliminar la categoría "${name}"? Esta acción no se puede deshacer.` })) return;
     setDeletingId(id);
     try {
       await deleteCategory.mutateAsync(id);
+      showToast(`"${name}" eliminada`);
     } finally {
       setDeletingId(null);
     }

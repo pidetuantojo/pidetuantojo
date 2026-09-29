@@ -113,7 +113,7 @@ export default function DashboardHomePage() {
 
       {/* Gestión */}
       <div style={{ fontWeight: 600, fontSize: 15, color: 'var(--t-text-1)', marginBottom: 14 }}>Gestión</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16 }}>
 
         {MODULES.map(({ href, label, desc, iconBg, iconShadow, icon }) => (
           <Link
