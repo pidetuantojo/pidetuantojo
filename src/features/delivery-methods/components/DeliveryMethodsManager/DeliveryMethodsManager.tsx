@@ -188,7 +188,8 @@ export function DeliveryMethodsManager() {
     const activeIds = allPayments.filter((m) => m.isActive).map((m) => m.id);
     const allSelected = activeIds.every((id) => next.includes(id)) && next.length === activeIds.length;
     // Firestore rechaza undefined — si son todos, se omite el campo en lugar de pasar undefined
-    const { allowedPaymentMethodIds: _prev, ...rest } = current as DeliveryMethodConfig;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { allowedPaymentMethodIds, ...rest } = current as DeliveryMethodConfig;
     const updated: DeliveryMethods = {
       ...methods,
       [key]: allSelected ? rest : { ...rest, allowedPaymentMethodIds: next },
