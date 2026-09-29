@@ -274,9 +274,6 @@ function getPresetRange(preset: Exclude<PresetKey, 'custom'>): DateRange {
   return { start: startOfDayISO(m), end: endOfDayISO(now) };
 }
 
-function isoToDateInput(iso: string): string {
-  return iso.slice(0, 10);
-}
 
 function formatRangeLabel(range: ActiveRange): string {
   const fmt = (iso: string) =>

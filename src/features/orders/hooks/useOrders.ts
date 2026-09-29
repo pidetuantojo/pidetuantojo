@@ -49,7 +49,7 @@ export function useOrders(restaurantId: string, dateRange: DateRange | null, ref
     );
 
     return () => unsubscribe();
-  }, [restaurantId, dateRange?.start, dateRange?.end, refreshKey]);
+  }, [restaurantId, dateRange, refreshKey]);
 
   return { orders, isLoading, error };
 }
