@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
+import { useAuth } from '@/features/auth';
 import { formatScheduledDate } from '@/features/menu/helpers/schedule.helpers';
 import { PaymentMethodIcon } from '@/features/payment-methods/components/PaymentMethodIcon';
 import { isTransferMethod } from '@/features/payment-methods/helpers/payment-methods.helpers';
@@ -37,6 +38,15 @@ function formatShortDate(isoString: string): string {
 }
 
 export function OrderCard({ order, status, statuses, restaurantId, domiciliarios, onOpen, onAdvance, onEdit }: OrderCardProps) {
+  const { can } = useAuth();
+  const canEdit = can('orders.edit');
+  const canChangeStatus = can('orders.change_status');
+  const canSetFee = can('orders.set_delivery_fee');
+  const canMarkPaid = can('orders.mark_paid');
+  const canManageNotes = can('orders.manage_notes');
+  const canAssignDriver = can('orders.assign_driver');
+  const companiesEnabled = can('features.delivery_companies');
+
   const isDomicilio = order.deliveryType === 'domicilio';
   const isMesa = order.deliveryType === 'mesa';
   const { productsTotal, deliveryFee, total: grandTotal } = getOrderTotals(order);
@@ -91,7 +101,7 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
 
   const driverQuery = driverSearch.trim().toLowerCase();
   const availableDrivers = domiciliarios.filter(
-    (d) => d.isActive && (
+    (d) => d.isActive && (companiesEnabled || !d.isCompany) && (
       d.name.toLowerCase().includes(driverQuery) ||
       (!!d.code && d.code.toLowerCase().includes(driverQuery))
     )
@@ -186,6 +196,7 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
               {status.name}
             </span>
           )}
+          {canEdit && (
           <button
             onClick={(e) => { e.stopPropagation(); onEdit(order); }}
             className="p-1 rounded-lg text-[var(--t-text-4)] hover:text-[#FF6A1A] hover:bg-orange-50 transition-colors"
@@ -193,6 +204,7 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
           >
             <Pencil className="h-3.5 w-3.5" />
           </button>
+          )}
         </div>
       </div>
 
@@ -258,6 +270,10 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
                   <XCircle className="h-3.5 w-3.5" />
                 </button>
               </div>
+            ) : !canSetFee ? (
+              <span className="text-sm font-bold tabular-nums text-[var(--t-text-3)]">
+                {deliveryFee > 0 ? formatCurrency(deliveryFee) : 'Sin valor'}
+              </span>
             ) : (
               <button
                 onClick={() => { setEditingFee(true); setFeeInput(deliveryFee > 0 ? String(deliveryFee) : ''); }}
@@ -289,7 +305,12 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
               {order.paymentAccount && <span className="text-[var(--t-text-4)]">· {order.paymentAccount}</span>}
             </span>
           </p>
-          {isTransfer && (
+          {isTransfer && !canMarkPaid && (
+            <span className="text-[10px] font-bold" style={{ color: localIsPaid ? '#059669' : '#FF6A1A' }}>
+              {localIsPaid ? 'Pagado' : 'Pendiente'}
+            </span>
+          )}
+          {isTransfer && canMarkPaid && (
             <button onClick={handleTogglePaid} disabled={togglingPaid} className="flex items-center gap-1.5 disabled:opacity-60">
               <span className="text-[10px] font-bold" style={{ color: localIsPaid ? '#059669' : '#FF6A1A' }}>
                 {localIsPaid ? 'Pagado' : 'Pendiente'}
@@ -333,9 +354,15 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
         )}
       </div>
 
-      {/* Nota interna */}
+      {/* Nota interna (sin permiso: solo lectura, y nada si está vacía) */}
+      {(canManageNotes || noteInput) && (
       <div className="mt-2 border-t border-[var(--t-border)] pt-2" onClick={(e) => e.stopPropagation()}>
-        {editingNote ? (
+        {!canManageNotes ? (
+          <p className="flex items-start gap-2">
+            <StickyNote className="h-3 w-3 text-amber-400 flex-shrink-0 mt-0.5" />
+            <span className="text-xs text-amber-700 leading-snug line-clamp-2">{noteInput}</span>
+          </p>
+        ) : editingNote ? (
           <div className="flex flex-col gap-2">
             <textarea
               value={noteInput}
@@ -368,9 +395,10 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
           </button>
         )}
       </div>
+      )}
 
-      {/* Domiciliario */}
-      {isDomicilio && (
+      {/* Domiciliario (sin permiso: solo se ve el asignado) */}
+      {isDomicilio && (canAssignDriver || order.assignedDriver) && (
         <div className="mt-2 border-t border-[var(--t-border)] pt-2" onClick={(e) => e.stopPropagation()}>
           {courierForm ? (
             /* Empresa elegida: quién de la empresa tomó el pedido */
@@ -427,6 +455,7 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
                 {order.assignedDriver.isCompany && (
                   <p className="flex items-center gap-1 text-[11px] text-indigo-700">
                     <span className="truncate">Domiciliario: <b>{order.assignedDriver.courierName ?? '—'}</b></span>
+                    {canAssignDriver && (
                     <button
                       onClick={() => setCourierForm({ base: order.assignedDriver!, value: order.assignedDriver!.courierName ?? '', error: '' })}
                       className="flex-shrink-0 text-indigo-300 hover:text-indigo-500"
@@ -434,12 +463,14 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
                     >
                       <Pencil className="h-3 w-3" />
                     </button>
+                    )}
                   </p>
                 )}
                 <p className="text-[10px] text-indigo-500">
                   {[order.assignedDriver.code, order.assignedDriver.phone].filter(Boolean).join(' · ')}
                 </p>
               </div>
+              {canAssignDriver && (
               <button
                 onClick={() => handleAssignDriver(null)}
                 disabled={assigningDriver}
@@ -448,6 +479,7 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
               >
                 <XCircle className="h-4 w-4" />
               </button>
+              )}
             </div>
           ) : (
             <>
@@ -528,7 +560,7 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
       )}
 
       {/* Avanzar estado */}
-      {nextStatus && (
+      {nextStatus && canChangeStatus && (
         <button
           onClick={(e) => { e.stopPropagation(); onAdvance(order.id, nextStatus.id); }}
           className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"

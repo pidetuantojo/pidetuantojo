@@ -34,7 +34,7 @@ function fromInputDate(dateStr: string, isEnd: boolean): string {
 }
 
 export function AccountingManager() {
-  const { user } = useAuth();
+  const { user, can } = useAuth();
   const restaurantId = user?.restaurantId ?? '';
 
   const { data: statuses = [] } = useOrderStatuses(restaurantId);
@@ -140,7 +140,7 @@ export function AccountingManager() {
           <OrdersTable
             orders={orders}
             statuses={statuses}
-            onExport={() => exportToExcel(orders)}
+            onExport={can('accounting.export') ? () => exportToExcel(orders) : undefined}
           />
         </div>
       )}

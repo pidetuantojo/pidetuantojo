@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+import { errorResponse, requireRole } from '@/lib/auth/serverAuth';
 import { adminAuth } from '@/lib/firebase/admin';
+
+// Todas las operaciones son del super admin (Authorization: Bearer <idToken>).
 
 interface FirebaseAuthError {
   error?: {
@@ -33,21 +37,11 @@ async function createFirebaseUser(email: string, password: string): Promise<stri
   return data.localId;
 }
 
-async function deleteFirebaseUser(uid: string): Promise<void> {
-  await fetch(
-    `https://identitytoolkit.googleapis.com/v1/accounts:delete?key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ localId: uid }),
-    }
-  );
-}
-
-// POST: crea el usuario en Firebase Auth y devuelve el uid
+// POST: crea el usuario admin del restaurante en Firebase Auth y devuelve el uid
 // El batch de Firestore lo hace el cliente (que sí tiene auth context)
 export async function POST(request: NextRequest) {
   try {
+    await requireRole(request, ['super_admin']);
     const { adminEmail, adminPassword } = (await request.json()) as {
       adminEmail: string;
       adminPassword: string;
@@ -56,34 +50,33 @@ export async function POST(request: NextRequest) {
     const adminUid = await createFirebaseUser(adminEmail, adminPassword);
     return NextResponse.json({ adminUid });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Error interno del servidor';
-    const isClientError = message === 'Ya existe un usuario con ese correo';
-    return NextResponse.json(
-      { error: message },
-      { status: isClientError ? 409 : 500 }
-    );
+    if (error instanceof Error && error.message === 'Ya existe un usuario con ese correo') {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
+    return errorResponse(error, 'Error interno del servidor');
   }
 }
 
 // DELETE: rollback — borra el usuario de Auth si el batch de Firestore falló
 export async function DELETE(request: NextRequest) {
   try {
+    await requireRole(request, ['super_admin']);
     const { uid } = (await request.json()) as { uid: string };
-    await deleteFirebaseUser(uid);
+    await adminAuth.deleteUser(uid);
     return NextResponse.json({ ok: true });
-  } catch {
-    return NextResponse.json({ error: 'Error al eliminar usuario' }, { status: 500 });
+  } catch (error) {
+    return errorResponse(error, 'Error al eliminar usuario');
   }
 }
 
 // PATCH: cambia la contraseña del admin del restaurante
 export async function PATCH(request: NextRequest) {
   try {
+    await requireRole(request, ['super_admin']);
     const { uid, newPassword } = (await request.json()) as { uid: string; newPassword: string };
     await adminAuth.updateUser(uid, { password: newPassword });
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Error interno del servidor';
-    return NextResponse.json({ error: message }, { status: 500 });
+    return errorResponse(error, 'Error interno del servidor');
   }
 }

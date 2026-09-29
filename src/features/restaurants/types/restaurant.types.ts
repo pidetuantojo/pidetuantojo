@@ -35,6 +35,8 @@ export interface RestaurantFormData {
   // Horario de atención — índice 0=domingo, 1=lunes, ..., 6=sábado
   openingHours: DayHoursForm[];
   allowScheduledWhenClosed: boolean;
+  // Plan asignado (solo lo edita el super admin)
+  planId: string;
   // Solo en creación
   adminName: string;
   adminEmail: string;

@@ -5,6 +5,7 @@ import { X, Phone, MapPin, MessageSquare, Package } from 'lucide-react';
 
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { formatScheduledDate } from '@/features/menu/helpers/schedule.helpers';
+import { useAuth } from '@/features/auth';
 
 import { useUpdateOrderStatus } from '../../hooks/useUpdateOrderStatus';
 import { getOrderTotals } from '../../helpers/totals.helpers';
@@ -49,6 +50,8 @@ export function OrderDetailModal({
   isOpen,
   onClose,
 }: OrderDetailModalProps) {
+  const { can } = useAuth();
+  const canChangeStatus = can('orders.change_status');
   const { updateStatus, isPending, error } = useUpdateOrderStatus(restaurantId);
   const [selectedStatusId, setSelectedStatusId] = useState<string>('');
 
@@ -56,7 +59,7 @@ export function OrderDetailModal({
   const currentStatus = statuses.find((s) => s.id === order?.statusId);
 
   async function handleStatusUpdate(statusId: string) {
-    if (!order || statusId === order.statusId) return;
+    if (!order || !canChangeStatus || statusId === order.statusId) return;
     setSelectedStatusId(statusId);
     await updateStatus(order.id, statusId);
   }
@@ -300,6 +303,7 @@ export function OrderDetailModal({
           )}
 
           {/* Cambiar estado */}
+          {canChangeStatus && (
           <div style={{ marginBottom: 4 }}>
             <SectionLabel>Cambiar estado</SectionLabel>
             <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 8 }}>
@@ -340,6 +344,7 @@ export function OrderDetailModal({
               <p style={{ fontSize: 12, color: '#e53e3e', marginTop: 8 }}>{error}</p>
             )}
           </div>
+          )}
         </div>
 
         {/* Footer */}

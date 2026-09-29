@@ -77,6 +77,19 @@ export function RestaurantCard({
         >
           ● {isActive ? 'ACTIVO' : 'INACTIVO'}
         </span>
+        {/* Plan contratado (sin plan = anterior al sistema de planes) */}
+        <span
+          title={restaurant.planId ? 'Plan del restaurante' : 'Sin plan asignado: acceso completo hasta asignarle uno'}
+          style={{
+            position: 'absolute', top: 12, left: 12,
+            fontFamily: sm, fontSize: 10, fontWeight: 700,
+            color: restaurant.planId ? '#FF6A1A' : '#92400e',
+            background: restaurant.planId ? '#FFF3EA' : '#fffbeb',
+            borderRadius: 999, padding: '5px 10px',
+          }}
+        >
+          {restaurant.planName ?? (restaurant.planId ? 'PLAN' : 'SIN PLAN')}
+        </span>
       </div>
 
       {/* Info */}

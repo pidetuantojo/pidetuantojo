@@ -14,7 +14,7 @@ export function OrdersTable({ orders, statuses, onExport }: OrdersTableProps) {
         <h3 className="text-sm font-semibold" style={{ color: 'var(--t-text-2)' }}>
           Detalle de pedidos ({orders.length})
         </h3>
-        {orders.length > 0 && (
+        {orders.length > 0 && onExport && (
           <Button variant="secondary" size="sm" onClick={onExport}>
             <Download className="h-3.5 w-3.5" />
             Exportar Excel

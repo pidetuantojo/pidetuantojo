@@ -92,7 +92,7 @@ export default function NuevoRestaurantePage() {
             flexShrink: 0,
           }}
         >
-          <RestaurantForm onSuccess={goBack} onCancel={goBack} onColorsChange={setColors} />
+          <RestaurantForm onSuccess={goBack} onCancel={goBack} onColorsChange={setColors} showPlanSelector />
         </div>
       </div>
 

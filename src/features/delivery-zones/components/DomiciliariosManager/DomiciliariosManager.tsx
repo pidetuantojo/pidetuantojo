@@ -25,7 +25,11 @@ interface FormState {
 const emptyForm: FormState = { isCompany: false, name: '', code: '', phone: '' };
 
 export function DomiciliariosManager() {
-  const { user } = useAuth();
+  const { user, can } = useAuth();
+  const canCreate = can('drivers.create');
+  const canUpdate = can('drivers.update');
+  // Las empresas de domicilio dependen de la feature del plan
+  const companiesEnabled = can('features.delivery_companies');
   const restaurantId = user?.restaurantId ?? '';
 
   const { data: drivers = [], isLoading, error } = useDomiciliarios(restaurantId || undefined);
@@ -141,6 +145,7 @@ export function DomiciliariosManager() {
             Personal de entrega y empresas de domicilios para asignar a pedidos
           </p>
         </div>
+        {canCreate && (
         <button
           onClick={openAdd}
           style={{
@@ -155,6 +160,7 @@ export function DomiciliariosManager() {
           </svg>
           Nuevo domiciliario
         </button>
+        )}
       </div>
 
       {/* Modal */}
@@ -174,6 +180,7 @@ export function DomiciliariosManager() {
 
             {/* Fields */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {(companiesEnabled || form.isCompany) && (
               <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', background: form.isCompany ? '#FFF3EA' : 'var(--t-surface-2)', border: `1.5px solid ${form.isCompany ? '#FF6A1A44' : 'var(--t-border-2)'}`, borderRadius: 12, padding: '10px 12px' }}>
                 <input
                   type="checkbox"
@@ -188,6 +195,7 @@ export function DomiciliariosManager() {
                   </span>
                 </span>
               </label>
+              )}
 
               {[
                 form.isCompany
@@ -248,9 +256,11 @@ export function DomiciliariosManager() {
             <p style={{ fontFamily: sg, fontSize: 13, color: 'var(--t-text-3)', margin: '0 0 16px' }}>
               Agrega tu personal de entrega para asignarlos a los pedidos
             </p>
-            <button onClick={openAdd} style={{ fontFamily: sg, fontWeight: 700, fontSize: 13, color: '#FF6A1A', background: 'none', border: 'none', cursor: 'pointer', padding: 0, borderRadius: 999 }}>
-              + Agregar domiciliario
-            </button>
+            {canCreate && (
+              <button onClick={openAdd} style={{ fontFamily: sg, fontWeight: 700, fontSize: 13, color: '#FF6A1A', background: 'none', border: 'none', cursor: 'pointer', padding: 0, borderRadius: 999 }}>
+                + Agregar domiciliario
+              </button>
+            )}
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -258,9 +268,9 @@ export function DomiciliariosManager() {
               <DriverRow
                 key={d.id}
                 driver={d}
-                onEdit={openEdit}
-                onToggleActive={handleToggleActive}
-                onDelete={handleDelete}
+                onEdit={canUpdate ? openEdit : undefined}
+                onToggleActive={canUpdate ? handleToggleActive : undefined}
+                onDelete={can('drivers.delete') ? handleDelete : undefined}
                 isToggling={togglingId === d.id}
                 isDeleting={deletingId === d.id}
               />
@@ -274,9 +284,9 @@ export function DomiciliariosManager() {
 
 interface DriverRowProps {
   driver: Domiciliario;
-  onEdit: (d: Domiciliario) => void;
-  onToggleActive: (d: Domiciliario) => void;
-  onDelete: (d: Domiciliario) => void;
+  onEdit?: (d: Domiciliario) => void;
+  onToggleActive?: (d: Domiciliario) => void;
+  onDelete?: (d: Domiciliario) => void;
   isToggling?: boolean;
   isDeleting?: boolean;
 }
@@ -320,6 +330,7 @@ function DriverRow({ driver, onEdit, onToggleActive, onDelete, isToggling, isDel
 
       {/* Acciones */}
       <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+        {onToggleActive && (
         <button onClick={() => onToggleActive(driver)} disabled={isToggling} title={driver.isActive ? 'Desactivar' : 'Activar'} style={{ width: 32, height: 32, borderRadius: 999, border: 'none', background: 'none', cursor: isToggling ? 'default' : 'pointer', display: 'grid', placeItems: 'center', color: 'var(--t-text-3)', opacity: isToggling ? 0.5 : 1 }}>
           {driver.isActive ? (
             <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -332,20 +343,25 @@ function DriverRow({ driver, onEdit, onToggleActive, onDelete, isToggling, isDel
             </svg>
           )}
         </button>
+        )}
 
+        {onEdit && (
         <button onClick={() => onEdit(driver)} title="Editar" style={{ width: 32, height: 32, borderRadius: 999, border: 'none', background: 'none', cursor: 'pointer', display: 'grid', placeItems: 'center', color: 'var(--t-text-3)' }}>
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
           </svg>
         </button>
+        )}
 
+        {onDelete && (
         <button onClick={() => onDelete(driver)} disabled={isDeleting} title="Eliminar" style={{ width: 32, height: 32, borderRadius: 999, border: 'none', background: 'none', cursor: isDeleting ? 'default' : 'pointer', display: 'grid', placeItems: 'center', color: 'var(--t-text-3)', opacity: isDeleting ? 0.5 : 1 }}>
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
             <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
           </svg>
         </button>
+        )}
       </div>
     </div>
   );

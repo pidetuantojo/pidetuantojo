@@ -79,6 +79,7 @@ const defaultValues: RestaurantFormData = {
   deliveryMode: 'manual',
   openingHours: defaultOpeningHours(),
   allowScheduledWhenClosed: false,
+  planId: '',
   adminName: '',
   adminEmail: '',
   adminPassword: '',
@@ -114,6 +115,7 @@ export function useRestaurantForm(restaurant?: Restaurant) {
       deliveryMode: restaurant.deliveryMode ?? 'manual',
       openingHours: firebaseToHoursForm(restaurant.openingHours),
       allowScheduledWhenClosed: restaurant.allowScheduledWhenClosed ?? false,
+      planId: restaurant.planId ?? '',
       adminName: '',
       adminEmail: '',
       adminPassword: '',
@@ -196,6 +198,7 @@ export function useRestaurantForm(restaurant?: Restaurant) {
       deliveryMode: data.deliveryMode,
       ...(hasAnyHours ? { openingHours: hours } : {}),
       allowScheduledWhenClosed: data.allowScheduledWhenClosed,
+      ...(data.planId ? { planId: data.planId, planAssignedAt: new Date().toISOString() } : {}),
       adminEmail: data.adminEmail,
       adminPassword: data.adminPassword,
       adminName: data.adminName,
@@ -231,8 +234,13 @@ export function useRestaurantForm(restaurant?: Restaurant) {
       deliveryMode: data.deliveryMode,
       ...(hasAnyHours ? { openingHours: hours } : {}),
       allowScheduledWhenClosed: data.allowScheduledWhenClosed,
+      // Solo si el super admin cambió el plan (el admin del restaurante nunca lo envía)
+      ...(planChanged ? { planId: data.planId, planAssignedAt: new Date().toISOString() } : {}),
     };
   }
 
-  return { data, errors, handleChange, setDayHours, validate, toCreateData, toUpdateData, isEditing };
+  /** true si el plan elegido es distinto al guardado (hay que recalcular permisos). */
+  const planChanged = !!data.planId && data.planId !== (restaurant?.planId ?? '');
+
+  return { data, errors, handleChange, setDayHours, validate, toCreateData, toUpdateData, isEditing, planChanged };
 }

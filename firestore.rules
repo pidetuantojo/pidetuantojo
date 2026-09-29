@@ -1,5 +1,14 @@
 rules_version = '2';
 
+// Planes, roles y permisos (ver docs/plan-roles-permisos.md).
+// - Los permisos efectivos (`users/{uid}.effectivePermissions`) los calcula SOLO el servidor
+//   (Admin SDK, que no pasa por estas reglas). El cliente nunca los escribe.
+// - Usuarios sin `effectivePermissions` (antes de migrar): restaurant_admin = todo;
+//   restaurant_employee / restaurant_view = permisos legacy del cajero. Así estas reglas se
+//   pueden desplegar antes de correr la migración sin dejar a nadie sin acceso.
+// - La lista legacy debe coincidir con LEGACY_EMPLOYEE_PERMISSIONS (+ requires) en
+//   src/constants/permissions.ts.
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -9,85 +18,124 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isSuperAdmin() {
-      return isAuthenticated()
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin';
-    }
-
-    function getCallerData() {
+    function callerData() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    function isRestaurantAdmin(restaurantId) {
-      let user = getCallerData();
-      return isAuthenticated()
-        && user.role == 'restaurant_admin'
+    function isSuperAdmin() {
+      return isAuthenticated() && callerData().role == 'super_admin';
+    }
+
+    function legacyEmployeePermissions() {
+      return [
+        'orders.view', 'orders.change_status', 'orders.set_delivery_fee', 'orders.mark_paid',
+        'orders.manage_notes', 'orders.assign_driver', 'orders.print', 'features.printing',
+        'accounting.view', 'print_station.run'
+      ];
+    }
+
+    // Usuario activo de ese restaurante (admin o empleado)
+    function isMemberData(user, restaurantId) {
+      return user.isActive == true
         && user.restaurantId == restaurantId
-        && user.isActive == true;
+        && user.role in ['restaurant_admin', 'restaurant_employee', 'restaurant_view'];
     }
 
-    function isRestaurantViewUser(restaurantId) {
-      let user = getCallerData();
-      return isAuthenticated()
-        && user.role == 'restaurant_view'
-        && user.restaurantId == restaurantId
-        && user.isActive == true;
+    function isMember(restaurantId) {
+      return isAuthenticated() && isMemberData(callerData(), restaurantId);
     }
 
-    function isOwnerOrSuperAdmin(restaurantId) {
-      return isSuperAdmin() || isRestaurantAdmin(restaurantId);
+    // ¿El usuario tiene alguno de los permisos? (con fallback legacy si aún no se migró)
+    function userHasAny(user, permissions) {
+      return ('effectivePermissions' in user)
+        ? user.effectivePermissions.hasAny(permissions)
+        : (user.role == 'restaurant_admin' || legacyEmployeePermissions().hasAny(permissions));
     }
 
-    function canAccessRestaurant(restaurantId) {
-      return isOwnerOrSuperAdmin(restaurantId) || isRestaurantViewUser(restaurantId);
+    // Super admin siempre; si no, miembro activo del restaurante con alguno de los permisos
+    function hasAnyPerm(restaurantId, permissions) {
+      let user = callerData();
+      return isAuthenticated() && (
+        user.role == 'super_admin'
+        || (isMemberData(user, restaurantId) && userHasAny(user, permissions))
+      );
+    }
+
+    function hasPerm(restaurantId, permission) {
+      return hasAnyPerm(restaurantId, [permission]);
+    }
+
+    // Campos que cambian en este update (en el primer nivel del documento)
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    // Si el update toca alguno de `keys`, exige alguno de `permissions`
+    function guard(restaurantId, keys, permissions) {
+      return !changedKeys().hasAny(keys) || hasAnyPerm(restaurantId, permissions);
     }
 
     // ─── Users ─────────────────────────────────────────────────────────────────
+    // Crear/editar empleados, permisos, contraseñas y estado: solo vía /api/team (Admin SDK).
+    // Desde el cliente solo escribe el super admin (alta del admin al crear un restaurante).
 
     match /users/{userId} {
-      // Cada usuario puede leer su propio doc; super admin lee todos;
-      // restaurant_admin puede leer view users de su mismo restaurante
       allow read: if isAuthenticated() && (
         request.auth.uid == userId
         || isSuperAdmin()
-        || (
-          getCallerData().role == 'restaurant_admin'
-          && resource.data.restaurantId == getCallerData().restaurantId
-          && resource.data.role == 'restaurant_view'
-        )
+        || (resource.data.restaurantId is string && hasPerm(resource.data.restaurantId, 'team.view'))
       );
+      allow create, update, delete: if isSuperAdmin();
+    }
 
-      // Super admin puede todo; restaurant_admin puede crear/actualizar/eliminar
-      // view users de su propio restaurante
-      allow create: if isSuperAdmin() || (
-        getCallerData().role == 'restaurant_admin'
-        && request.resource.data.restaurantId == getCallerData().restaurantId
-        && request.resource.data.role == 'restaurant_view'
-      );
+    // ─── Plans ─────────────────────────────────────────────────────────────────
 
-      allow update, delete: if isSuperAdmin() || (
-        getCallerData().role == 'restaurant_admin'
-        && resource.data.restaurantId == getCallerData().restaurantId
-        && resource.data.role == 'restaurant_view'
-      );
+    match /plans/{planId} {
+      allow read: if isAuthenticated();
+      allow write: if isSuperAdmin();
     }
 
     // ─── Restaurants ───────────────────────────────────────────────────────────
+
+    // Campos que el restaurante puede cambiar; el resto (slug, isActive, plan*, adminUserId…)
+    // solo el super admin. Debe coincidir con RESTAURANT_FIELD_GROUPS (src/lib/permissions/restaurantFields.ts).
+    function restaurantUpdateAllowed(restaurantId) {
+      return isMember(restaurantId)
+        && changedKeys().hasOnly([
+          'updatedAt',
+          'name', 'tagline', 'description', 'phone', 'category',
+          'logo', 'bannerImage', 'theme', 'menuLayout',
+          'address', 'department', 'city', 'mapUrl', 'mapEmbed',
+          'instagram', 'facebook',
+          'openingHours', 'allowScheduledWhenClosed',
+          'deliveryMode',
+          'paymentMethods',
+          'deliveryMethods'
+        ])
+        && guard(restaurantId, ['name', 'tagline', 'description', 'phone', 'category'], ['settings.update_info'])
+        && guard(restaurantId, ['logo', 'bannerImage', 'theme', 'menuLayout'], ['settings.update_branding'])
+        && guard(restaurantId, ['address', 'department', 'city', 'mapUrl', 'mapEmbed'], ['settings.update_location'])
+        && guard(restaurantId, ['instagram', 'facebook'], ['settings.update_social'])
+        && guard(restaurantId, ['openingHours', 'allowScheduledWhenClosed'], ['settings.update_hours'])
+        && guard(restaurantId, ['deliveryMode'], ['settings.update_delivery_mode'])
+        && guard(restaurantId, ['paymentMethods'], ['payment_methods.manage'])
+        && guard(restaurantId, ['deliveryMethods'], ['delivery_methods.manage']);
+    }
 
     match /restaurants/{restaurantId} {
       // El menú público necesita leer el restaurante (sin auth)
       allow read: if true;
 
-      // Solo super admin puede crear/actualizar/eliminar restaurantes
       allow create, delete: if isSuperAdmin();
-      allow update: if isOwnerOrSuperAdmin(restaurantId);
+      allow update: if isSuperAdmin() || restaurantUpdateAllowed(restaurantId);
 
       // ─── Order Statuses ──────────────────────────────────────────────────────
 
       match /orderStatuses/{statusId} {
         allow read: if true;
-        // Solo admin puede crear/modificar/eliminar estados
-        allow write: if isOwnerOrSuperAdmin(restaurantId);
+        allow create: if hasPerm(restaurantId, 'order_statuses.create');
+        allow update: if hasPerm(restaurantId, 'order_statuses.update');
+        allow delete: if hasPerm(restaurantId, 'order_statuses.delete');
       }
 
       // ─── Categories ──────────────────────────────────────────────────────────
@@ -95,7 +143,9 @@ service cloud.firestore {
       match /categories/{categoryId} {
         // El menú público necesita leer categorías
         allow read: if true;
-        allow write: if isOwnerOrSuperAdmin(restaurantId);
+        allow create: if hasPerm(restaurantId, 'categories.create');
+        allow update: if hasPerm(restaurantId, 'categories.update');
+        allow delete: if hasPerm(restaurantId, 'categories.delete');
       }
 
       // ─── Products ────────────────────────────────────────────────────────────
@@ -103,14 +153,21 @@ service cloud.firestore {
       match /products/{productId} {
         // El menú público necesita leer productos
         allow read: if true;
-        allow write: if isOwnerOrSuperAdmin(restaurantId);
+        allow create: if hasPerm(restaurantId, 'products.create');
+        // Marcar disponible/agotado es un permiso aparte; cualquier otro cambio exige products.update
+        allow update: if hasPerm(restaurantId, 'products.update')
+          || (changedKeys().hasOnly(['isAvailable', 'updatedAt'])
+              && hasPerm(restaurantId, 'products.toggle_availability'));
+        allow delete: if hasPerm(restaurantId, 'products.delete');
       }
 
       // ─── Adicionales ─────────────────────────────────────────────────────────
 
       match /adicionales/{adicionalId} {
         allow read: if true;
-        allow write: if isOwnerOrSuperAdmin(restaurantId);
+        allow create: if hasPerm(restaurantId, 'addons.create');
+        allow update: if hasPerm(restaurantId, 'addons.update');
+        allow delete: if hasPerm(restaurantId, 'addons.delete');
       }
 
       // ─── Delivery Zones ──────────────────────────────────────────────────────
@@ -118,7 +175,9 @@ service cloud.firestore {
       match /deliveryZones/{zoneId} {
         // El menú público necesita leer zonas para el checkout
         allow read: if true;
-        allow write: if isOwnerOrSuperAdmin(restaurantId);
+        allow create: if hasPerm(restaurantId, 'delivery_zones.create');
+        allow update: if hasPerm(restaurantId, 'delivery_zones.update');
+        allow delete: if hasPerm(restaurantId, 'delivery_zones.delete');
       }
 
       // ─── Mesas ───────────────────────────────────────────────────────────────
@@ -126,48 +185,69 @@ service cloud.firestore {
       match /mesas/{mesaId} {
         // El menú público necesita leer mesas para el selector del checkout
         allow read: if true;
-        allow write: if isOwnerOrSuperAdmin(restaurantId);
+        allow write: if hasPerm(restaurantId, 'tables.manage');
       }
 
       // ─── Domiciliarios ───────────────────────────────────────────────────────
 
       match /domiciliarios/{domiciliarioId} {
-        allow read: if canAccessRestaurant(restaurantId);
-        allow write: if isOwnerOrSuperAdmin(restaurantId);
+        // Quien ve pedidos necesita la lista para asignar domiciliario
+        allow read: if hasAnyPerm(restaurantId, ['drivers.view', 'orders.view']);
+        allow create: if hasPerm(restaurantId, 'drivers.create');
+        allow update: if hasPerm(restaurantId, 'drivers.update');
+        allow delete: if hasPerm(restaurantId, 'drivers.delete');
       }
 
       // ─── Impresoras (QZ Tray) ────────────────────────────────────────────────
 
       match /printers/{printerId} {
-        // Cajeros (view users) necesitan leerla para imprimir comandas
-        allow read: if canAccessRestaurant(restaurantId);
-        allow write: if isOwnerOrSuperAdmin(restaurantId);
+        // Quien imprime comandas necesita leer la configuración
+        allow read: if hasAnyPerm(restaurantId, ['printers.view', 'orders.print', 'print_station.run']);
+        allow write: if hasPerm(restaurantId, 'printers.manage');
       }
 
       // ─── Cola de impresión ───────────────────────────────────────────────────
-      // Cualquier dispositivo del restaurante encola; la estación (PC con QZ Tray) la procesa.
+      // Cualquier dispositivo con permiso de imprimir encola; la estación (PC con QZ Tray) la procesa.
 
       match /printJobs/{jobId} {
-        allow read: if canAccessRestaurant(restaurantId);
-        allow create: if canAccessRestaurant(restaurantId)
+        allow read: if hasAnyPerm(restaurantId, ['orders.print', 'print_station.run']);
+        allow create: if hasPerm(restaurantId, 'orders.print')
           && request.resource.data.status == 'pending'
           && request.resource.data.requestedBy == request.auth.uid;
-        allow update: if canAccessRestaurant(restaurantId);
-        allow delete: if isOwnerOrSuperAdmin(restaurantId);
+        allow update, delete: if hasPerm(restaurantId, 'print_station.run');
       }
 
       // Latido de la estación de impresión (para avisar en la tablet si está apagada)
       match /printStations/{stationId} {
-        allow read, write: if canAccessRestaurant(restaurantId);
+        allow read: if hasAnyPerm(restaurantId, ['orders.print', 'print_station.run']);
+        allow write: if hasPerm(restaurantId, 'print_station.run');
       }
 
       // ─── Orders ──────────────────────────────────────────────────────────────
 
+      // Cada grupo de campos tiene su permiso; lo que no esté en ningún grupo exige orders.edit
+      function orderUpdateAllowed() {
+        let printKeys = ['printStatus', 'printJobId', 'printQueuedAt', 'printError',
+                         'printingStartedAt', 'printedAt', 'printCount'];
+        let groupedKeys = ['updatedAt', 'statusId', 'isPaid', 'internalNote', 'assignedDriver',
+                           'deliveryFee', 'total'].concat(printKeys);
+        return isMember(restaurantId)
+          && guard(restaurantId, ['statusId'], ['orders.change_status'])
+          && guard(restaurantId, ['isPaid'], ['orders.mark_paid'])
+          && guard(restaurantId, ['internalNote'], ['orders.manage_notes'])
+          && guard(restaurantId, ['assignedDriver'], ['orders.assign_driver'])
+          && guard(restaurantId, ['deliveryFee', 'total'], ['orders.set_delivery_fee', 'orders.edit'])
+          && guard(restaurantId, printKeys, ['orders.print', 'print_station.run'])
+          && (changedKeys().difference(groupedKeys.toSet()).size() == 0
+              || hasPerm(restaurantId, 'orders.edit'));
+      }
+
       match /orders/{orderId} {
-        // Clientes pueden crear pedidos (checkout WhatsApp alternativo vía Firestore)
-        // Admin y view users pueden leer y actualizar (cambiar estado)
-        allow create: if true;
-        allow read, update: if canAccessRestaurant(restaurantId);
+        // Clientes (menú público) y pedidos manuales crean pedidos
+        allow create: if request.resource.data.restaurantId == restaurantId;
+        // Contabilidad y la estación de impresión también leen pedidos
+        allow read: if hasAnyPerm(restaurantId, ['orders.view', 'accounting.view', 'print_station.run']);
+        allow update: if isSuperAdmin() || orderUpdateAllowed();
         // Nadie elimina pedidos — solo se cambia el estado
         allow delete: if isSuperAdmin();
       }

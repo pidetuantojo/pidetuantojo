@@ -8,6 +8,7 @@ import { useRestaurant } from '@/features/restaurants/hooks/useRestaurants';
 import { RestaurantForm } from '@/features/restaurants/components/RestaurantForm';
 import { MenuPreview } from '@/features/restaurants/components/RestaurantForm/MenuPreview';
 import { Modal } from '@/components/ui/Modal';
+import { authFetch } from '@/lib/auth/authFetch';
 import type { RestaurantColorsPayload } from '@/features/restaurants/components/RestaurantForm/RestaurantForm.types';
 
 const sg = "var(--font-sans, sans-serif)";
@@ -58,7 +59,7 @@ export default function EditarRestaurantePage() {
     setPasswordError('');
     setPasswordLoading(true);
     try {
-      const res = await fetch('/api/restaurants', {
+      const res = await authFetch('/api/restaurants', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ uid: restaurant!.adminUserId, newPassword }),
@@ -170,6 +171,7 @@ export default function EditarRestaurantePage() {
               onSuccess={goBack}
               onCancel={goBack}
               onColorsChange={setColors}
+              showPlanSelector
             />
           </div>
         )}

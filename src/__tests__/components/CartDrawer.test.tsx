@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 import { CartDrawer } from '@/features/menu/components/CartDrawer';
 import { useCartStore } from '@/store/cart.store';
 import { ordersService } from '@/features/orders/services/orders.service';
-import { buildWhatsAppMessage, openWhatsApp } from '@/features/menu/helpers/whatsapp.helpers';
+import { buildWhatsAppMessage, buildWhatsAppUrl } from '@/features/menu/helpers/whatsapp.helpers';
 
 vi.mock('@/features/orders/services/orders.service', () => ({
   ordersService: {
@@ -14,8 +14,18 @@ vi.mock('@/features/orders/services/orders.service', () => ({
 
 vi.mock('@/features/menu/helpers/whatsapp.helpers', () => ({
   buildWhatsAppMessage: vi.fn().mockReturnValue('mensaje de prueba'),
-  openWhatsApp: vi.fn(),
+  buildWhatsAppUrl: vi.fn().mockReturnValue('https://wa.me/573001234567?text=mensaje'),
 }));
+
+// El envío termina navegando a WhatsApp (window.location.href); jsdom no navega, así que se reemplaza
+const originalLocation = window.location;
+function mockLocation() {
+  Object.defineProperty(window, 'location', { value: { href: '' }, writable: true, configurable: true });
+}
+function restoreLocation() {
+  Object.defineProperty(window, 'location', { value: originalLocation, writable: true, configurable: true });
+}
+const WHATSAPP_URL = 'https://wa.me/573001234567?text=mensaje';
 
 const mockItem = {
   cartId: 'cart-1',
@@ -50,6 +60,11 @@ describe('CartDrawer', () => {
   beforeEach(() => {
     resetStore();
     vi.clearAllMocks();
+    mockLocation();
+  });
+
+  afterEach(() => {
+    restoreLocation();
   });
 
   it('returns null when cart is closed', () => {
@@ -61,7 +76,7 @@ describe('CartDrawer', () => {
     useCartStore.setState({ isCartOpen: true });
     render(<CartDrawer {...defaultProps} />);
     expect(screen.getByText('Tu pedido está vacío')).toBeInTheDocument();
-    expect(screen.getByText(/Agregá productos del menú/i)).toBeInTheDocument();
+    expect(screen.getByText(/Agrega productos del menú/i)).toBeInTheDocument();
   });
 
   it('renders cart items when cart has items', () => {
@@ -85,12 +100,12 @@ describe('CartDrawer', () => {
     fireEvent.click(screen.getByRole('button', { name: /Confirmar Pedido/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Elegí la forma de entrega/i)).toBeInTheDocument();
-      expect(screen.getByText(/Elegí un método de pago/i)).toBeInTheDocument();
+      expect(screen.getByText(/Elige la forma de entrega/i)).toBeInTheDocument();
+      expect(screen.getByText(/Elige un método de pago/i)).toBeInTheDocument();
     });
   });
 
-  it('calls ordersService.create and openWhatsApp on valid recoger + efectivo submit', async () => {
+  it('calls ordersService.create and opens WhatsApp on valid recoger + efectivo submit', async () => {
     useCartStore.setState({ isCartOpen: true, items: [mockItem] });
     render(<CartDrawer {...defaultProps} />);
 
@@ -107,8 +122,9 @@ describe('CartDrawer', () => {
 
     await waitFor(() => {
       expect(vi.mocked(ordersService.create)).toHaveBeenCalledOnce();
-      expect(vi.mocked(openWhatsApp)).toHaveBeenCalledOnce();
+      expect(window.location.href).toBe(WHATSAPP_URL);
     });
+    expect(vi.mocked(buildWhatsAppUrl)).toHaveBeenCalledWith('573001234567', 'mensaje de prueba');
     // El mensaje lleva el número de orden generado y el subtotal de productos
     expect(vi.mocked(buildWhatsAppMessage)).toHaveBeenCalledWith(
       'Mi Restaurante',
@@ -173,7 +189,7 @@ describe('CartDrawer', () => {
     expect(writeText).toHaveBeenCalledWith('3007581655');
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent('Número de cuenta copiado');
-    expect(alert).toHaveTextContent('Transferí a Nequi: 3007581655');
+    expect(alert).toHaveTextContent('Transfiere a Nequi: 3007581655');
     fireEvent.change(screen.getByPlaceholderText('Nombre completo'), {
       target: { value: 'María' },
     });
@@ -223,7 +239,7 @@ describe('CartDrawer', () => {
     // Terminar el envío dentro del test para no dejar trabajo pendiente
     resolveCreate({ id: 'id', orderNumber: '#000001' });
     await waitFor(() => {
-      expect(vi.mocked(openWhatsApp)).toHaveBeenCalledOnce();
+      expect(window.location.href).toBe(WHATSAPP_URL);
     });
   });
 
@@ -286,7 +302,7 @@ describe('CartDrawer', () => {
       useCartStore.setState({ isCartOpen: true, items: [mockItem] });
       render(<CartDrawer {...defaultProps} deliveryMethods={methods} mesas={[mesa]} />);
       fireEvent.click(screen.getByRole('button', { name: 'Comer en el Local' }));
-      expect(screen.getByText(/No sabés en qué mesa estás/i)).toBeInTheDocument();
+      expect(screen.getByText(/No sabes en qué mesa estás/i)).toBeInTheDocument();
     });
 
     it('muestra la opción y el selector de mesas si hay mesas', () => {

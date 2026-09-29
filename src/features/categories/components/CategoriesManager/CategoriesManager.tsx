@@ -17,7 +17,7 @@ import {
 import { CategoryForm } from '../CategoryForm';
 
 export function CategoriesManager() {
-  const { user } = useAuth();
+  const { user, can } = useAuth();
   const restaurantId = user?.restaurantId ?? '';
 
   const { data: categories = [], isLoading, error } = useCategories(restaurantId);
@@ -97,10 +97,12 @@ export function CategoriesManager() {
             menú por orden de aparición
           </p>
         </div>
-        <Button onClick={handleAdd}>
-          <Plus className="h-4 w-4" />
-          Nueva categoría
-        </Button>
+        {can('categories.create') && (
+          <Button onClick={handleAdd}>
+            <Plus className="h-4 w-4" />
+            Nueva categoría
+          </Button>
+        )}
       </div>
 
       {/* Lista */}
@@ -111,10 +113,12 @@ export function CategoriesManager() {
           <p className="mt-1 text-sm text-[var(--t-text-3)]">
             Crea las categorías para organizar tu menú.
           </p>
-          <Button onClick={handleAdd} className="mt-4">
-            <Plus className="h-4 w-4" />
-            Crear primera categoría
-          </Button>
+          {can('categories.create') && (
+            <Button onClick={handleAdd} className="mt-4">
+              <Plus className="h-4 w-4" />
+              Crear primera categoría
+            </Button>
+          )}
         </div>
       ) : (
         <div className="space-y-2">
@@ -146,6 +150,7 @@ export function CategoriesManager() {
 
               {/* Actions */}
               <div className="flex flex-shrink-0 items-center gap-1">
+                {can('categories.update') && (<>
                 <button
                   onClick={() => handleToggleActive(category.id, !category.isActive)}
                   disabled={togglingId === category.id}
@@ -166,7 +171,9 @@ export function CategoriesManager() {
                 >
                   <Edit className="h-4 w-4" />
                 </button>
+                </>)}
 
+                {can('categories.delete') && (
                 <button
                   onClick={() => handleDelete(category.id, category.name)}
                   disabled={deletingId === category.id}
@@ -175,6 +182,7 @@ export function CategoriesManager() {
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
+                )}
               </div>
             </div>
           ))}

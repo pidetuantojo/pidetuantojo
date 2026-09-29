@@ -43,7 +43,9 @@ function Chip({ selected, onClick, children }: { selected: boolean; onClick: () 
 
 /** Configuración de la impresora térmica (QZ Tray): estado, impresoras detectadas, prueba y guardado. */
 export function PrinterSettings() {
-  const { user } = useAuth();
+  const { user, can } = useAuth();
+  // Con printers.view se puede ver y probar; guardar requiere printers.manage
+  const canManage = can('printers.manage');
   const restaurantId = user?.restaurantId ?? '';
   const { data: restaurant } = useRestaurant(restaurantId || undefined);
   const { data: saved, isLoading } = usePrinterConfig(restaurantId || undefined);
@@ -231,6 +233,7 @@ export function PrinterSettings() {
 
       {/* Guardar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        {canManage ? (
         <button
           type="button"
           onClick={handleSave}
@@ -239,6 +242,9 @@ export function PrinterSettings() {
         >
           {save.isPending ? 'Guardando...' : 'Guardar impresora'}
         </button>
+        ) : (
+          <span style={{ fontSize: 13, color: C.muted }}>Solo lectura: no tienes permiso para cambiar la impresora.</span>
+        )}
         {savedOk && !dirty && <span style={{ fontSize: 13, color: '#059669', fontWeight: 600 }}>Guardado ✓</span>}
         {saved && (
           <span style={{ fontSize: 13, color: C.muted }}>

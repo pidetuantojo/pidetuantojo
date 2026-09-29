@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { buildWhatsAppMessage, openWhatsApp } from '@/features/menu/helpers/whatsapp.helpers';
+import { describe, it, expect } from 'vitest';
+import { buildWhatsAppMessage, buildWhatsAppUrl } from '@/features/menu/helpers/whatsapp.helpers';
 import type { CartItem } from '@/store/cart.store';
 
 function makeItem(overrides: Partial<CartItem> = {}): CartItem {
@@ -74,8 +74,8 @@ describe('buildWhatsAppMessage', () => {
       orderNumber: '#7435',
       customerName: 'Grace Castellanos ',
     });
-    expect(msg.startsWith('*Orden #7435*\nHola *Morcillas Rosa*, soy *Grace Castellanos* y me gustaría hacer un pedido.')).toBe(true);
-    expect(msg.trimEnd().endsWith('Gracias.')).toBe(true);
+    expect(msg.startsWith('🧾 *Orden #7435*\nHola *Morcillas Rosa*, soy *Grace Castellanos* y me gustaría hacer un pedido.')).toBe(true);
+    expect(msg.trimEnd().endsWith('¡Gracias! 🙏')).toBe(true);
   });
 
   it('sin número de orden (falló el guardado) → no muestra la línea de orden', () => {
@@ -88,12 +88,13 @@ describe('buildWhatsAppMessage', () => {
     expect(msg).toContain('*Celular:* (300) 666-4779');
   });
 
-  it('detalle de la orden: "- 1 x Producto ($precio)"', () => {
+  it('detalle de la orden: "• 1 x Producto ($precio)"', () => {
     const msg = buildWhatsAppMessage('Restaurante', [makeItem({ productName: 'Morcilla Para dos', subtotal: 15800 })], BASE_CHECKOUT);
-    expect(msg).toContain('*Detalle de la orden:*\n- 1 x Morcilla Para dos ($15.800)');
+    expect(msg).toContain('🛒 *Detalle de la orden:*\n• 1 x Morcilla Para dos ($15.800)');
   });
 
-  it('no usa emojis fuera del plano básico (llegan como "�" en WhatsApp)', () => {
+  // Los emojis se envían en el texto (wa.me los muestra bien si el mensaje es Unicode válido)
+  it('el mensaje es Unicode válido y se puede codificar en la URL de wa.me', () => {
     const msg = buildWhatsAppMessage('Restaurante', [makeItem({ observacion: 'sin cebolla' })], {
       ...BASE_CHECKOUT,
       deliveryType: 'domicilio',
@@ -101,8 +102,9 @@ describe('buildWhatsAppMessage', () => {
       location: { lat: 1, lng: 2 },
       scheduledLabel: 'viernes 26',
     });
-    // Los emojis fuera del plano básico se representan como pares sustitutos en JS
-    expect(/[\uD800-\uDFFF]/.test(msg)).toBe(false);
+    // Un sustituto suelto haría fallar encodeURIComponent y llegaría como "�"
+    expect(() => encodeURIComponent(msg)).not.toThrow();
+    expect(msg).toContain('📝 _Nota: sin cebolla_');
   });
 });
 
@@ -129,7 +131,7 @@ describe('buildWhatsAppMessage — Total vs Subtotal', () => {
       deliveryFee: 5000,
       deliveryZoneName: 'Centro',
     });
-    expect(msg).toContain('Subtotal: $30.000\nDomicilio (Centro): $5.000\n*Total del pedido: $35.000*');
+    expect(msg).toContain('Subtotal: $30.000\n🏍 Domicilio (Centro): $5.000\n💰 *Total del pedido: $35.000*');
   });
 
   it('domicilio sin valor del envío → "Subtotal" y aviso', () => {
@@ -225,43 +227,22 @@ describe('buildWhatsAppMessage — Total vs Subtotal', () => {
   it('muestra la cantidad de cada producto con "x"', () => {
     const item = makeItem({ quantity: 3, productName: 'Pizza', subtotal: 30000 });
     const msg = buildWhatsAppMessage('Restaurante', [item], BASE_CHECKOUT);
-    expect(msg).toContain('- 3 x Pizza');
+    expect(msg).toContain('• 3 x Pizza');
     expect(msg).toContain('Pizza');
   });
 });
 
-describe('openWhatsApp', () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
+describe('buildWhatsAppUrl', () => {
   it('limpia caracteres no numéricos del teléfono', () => {
-    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
-    openWhatsApp('+57 (300) 123-4567', 'Hola');
-    expect(openSpy).toHaveBeenCalledWith(
-      expect.stringContaining('573001234567'),
-      '_blank',
-    );
+    expect(buildWhatsAppUrl('+57 (300) 123-4567', 'Hola')).toContain('wa.me/573001234567?');
   });
 
   it('construye una URL de wa.me válida', () => {
-    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
-    openWhatsApp('3001234567', 'Test');
-    const [url] = openSpy.mock.calls[0] as [string];
-    expect(url).toMatch(/^https:\/\/wa\.me\/\d+\?text=/);
+    expect(buildWhatsAppUrl('3001234567', 'Test')).toMatch(/^https:\/\/wa\.me\/\d+\?text=/);
   });
 
   it('encoda el mensaje en la URL', () => {
-    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
-    const mensaje = 'Pedido #123 — Burger';
-    openWhatsApp('3001234567', mensaje);
-    const [url] = openSpy.mock.calls[0] as [string];
-    expect(url).toContain(encodeURIComponent(mensaje));
-  });
-
-  it('abre la URL en _blank', () => {
-    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
-    openWhatsApp('3001234567', 'Test');
-    expect(openSpy).toHaveBeenCalledWith(expect.any(String), '_blank');
+    const mensaje = 'Pedido #123 — Burger 🛵';
+    expect(buildWhatsAppUrl('3001234567', mensaje)).toContain(encodeURIComponent(mensaje));
   });
 });

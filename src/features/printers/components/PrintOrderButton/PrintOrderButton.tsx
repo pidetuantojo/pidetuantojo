@@ -28,7 +28,7 @@ function formatTime(iso: string): string {
  * vivo en el pedido: en cola → imprimiendo → impreso / error.
  */
 export function PrintOrderButton({ order, restaurantId }: PrintOrderButtonProps) {
-  const { user } = useAuth();
+  const { user, can } = useAuth();
   const { data: printer, isLoading } = usePrinterConfig(restaurantId);
   const { online: stationOnline, loaded: stationLoaded } = usePrintStationStatus(restaurantId);
   const [sending, setSending] = useState(false);
@@ -42,7 +42,8 @@ export function PrintOrderButton({ order, restaurantId }: PrintOrderButtonProps)
     return () => clearInterval(t);
   }, [order.printStatus]);
 
-  const isAdmin = user?.role === 'restaurant_admin' || user?.role === 'super_admin';
+  const canConfigure = can('printers.manage');
+  const canOpenStation = can('print_station.run');
   const locked = isPrintLocked(order, now);
   const queued = order.printStatus === 'queued' && locked;
   const printing = order.printStatus === 'printing' && locked;
@@ -74,12 +75,13 @@ export function PrintOrderButton({ order, restaurantId }: PrintOrderButtonProps)
     }
   }
 
-  if (isLoading) return null;
+  // Sin permiso de imprimir (o plan sin impresión) el botón no se muestra
+  if (!can('orders.print') || isLoading) return null;
 
   if (!printer) {
     return (
       <div className="mt-2 rounded-xl border border-dashed border-[var(--t-border)] px-3 py-2 text-center text-xs text-[var(--t-text-4)]" onClick={(e) => e.stopPropagation()}>
-        {isAdmin ? (
+        {canConfigure ? (
           <Link href={ROUTES.dashboard.impresoras} className="font-semibold text-[#FF6A1A] hover:underline">
             Configurar impresora para imprimir comandas
           </Link>
@@ -123,7 +125,7 @@ export function PrintOrderButton({ order, restaurantId }: PrintOrderButtonProps)
       {stationLoaded && !stationOnline && (queued || !busy) && (
         <p className="mt-1 text-center text-[10px] font-medium text-amber-600">
           La estación de impresión no está activa: abre{' '}
-          {isAdmin ? (
+          {canOpenStation ? (
             <Link href={ROUTES.dashboard.estacionImpresion} className="underline">Estación de impresión</Link>
           ) : (
             'Estación de impresión'

@@ -154,8 +154,10 @@ function DroppableColumn({
 
 // ── Draggable card ────────────────────────────────────────────────────────────
 
-function DraggableCard(props: React.ComponentProps<typeof OrderCard>) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: props.order.id });
+function DraggableCard({ canDrag, ...props }: React.ComponentProps<typeof OrderCard> & { canDrag: boolean }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: props.order.id, disabled: !canDrag });
+  // Sin permiso para cambiar estados la tarjeta no se arrastra
+  if (!canDrag) return <OrderCard {...props} />;
   return (
     <div
       ref={setNodeRef}
@@ -234,7 +236,8 @@ function isThisMonth(isoString: string): boolean {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function OrdersManager() {
-  const { user } = useAuth();
+  const { user, can } = useAuth();
+  const canChangeStatus = can('orders.change_status');
   const restaurantId = user?.restaurantId ?? '';
 
   const [refreshKey, setRefreshKey] = useState(0);
@@ -374,7 +377,7 @@ export function OrdersManager() {
     if (!over) return;
 
     const order = filteredOrders.find((o) => o.id === String(active.id));
-    if (!order) return;
+    if (!order || !canChangeStatus) return;
 
     const newStatusId = String(over.id);
     if (order.statusId === newStatusId) return;
@@ -422,6 +425,7 @@ export function OrdersManager() {
         </div>
 
         <div className="flex gap-2">
+          {can('orders.create') && (
           <button
             onClick={() => setIsManualModalOpen(true)}
             className="flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-orange-600"
@@ -429,6 +433,7 @@ export function OrdersManager() {
             <Plus className="h-4 w-4" />
             Pedido manual
           </button>
+          )}
           <button
             onClick={playNotificationSound}
             title="Probar sonido"
@@ -547,6 +552,7 @@ export function OrdersManager() {
                       columnOrders.map((order) => (
                         <DraggableCard
                           key={order.id}
+                          canDrag={canChangeStatus}
                           order={order}
                           status={status}
                           statuses={activeStatuses}

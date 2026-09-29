@@ -24,7 +24,9 @@ interface ZoneFormState {
 const emptyForm: ZoneFormState = { name: '', price: '' };
 
 export function DeliveryZonesManager() {
-  const { user } = useAuth();
+  const { user, can } = useAuth();
+  const canCreate = can('delivery_zones.create');
+  const canUpdate = can('delivery_zones.update');
   const restaurantId = user?.restaurantId ?? '';
 
   const { data: zones = [], isLoading: zonesLoading, error } = useDeliveryZones(restaurantId || undefined);
@@ -140,6 +142,7 @@ export function DeliveryZonesManager() {
             Define los barrios o sectores con su precio de envío
           </p>
         </div>
+        {canCreate && (
         <button
           onClick={openAdd}
           style={{
@@ -154,6 +157,7 @@ export function DeliveryZonesManager() {
           </svg>
           Nueva zona
         </button>
+        )}
       </div>
 
       {/* Modal */}
@@ -238,6 +242,7 @@ export function DeliveryZonesManager() {
             <p style={{ fontFamily: sg, fontSize: 13, color: 'var(--t-text-3)', margin: '0 0 16px' }}>
               Agrega barrios o sectores con su precio de envío correspondiente
             </p>
+            {canCreate && (
             <button
               onClick={openAdd}
               style={{
@@ -247,6 +252,7 @@ export function DeliveryZonesManager() {
             >
               + Agregar primera zona
             </button>
+            )}
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -254,9 +260,9 @@ export function DeliveryZonesManager() {
               <ZoneRow
                 key={zone.id}
                 zone={zone}
-                onEdit={openEdit}
-                onToggleActive={handleToggleActive}
-                onDelete={handleDelete}
+                onEdit={canUpdate ? openEdit : undefined}
+                onToggleActive={canUpdate ? handleToggleActive : undefined}
+                onDelete={can('delivery_zones.delete') ? handleDelete : undefined}
                 isToggling={togglingId === zone.id}
                 isDeleting={deletingId === zone.id}
               />
@@ -270,9 +276,9 @@ export function DeliveryZonesManager() {
 
 interface ZoneRowProps {
   zone: DeliveryZone;
-  onEdit: (zone: DeliveryZone) => void;
-  onToggleActive: (zone: DeliveryZone) => void;
-  onDelete: (zone: DeliveryZone) => void;
+  onEdit?: (zone: DeliveryZone) => void;
+  onToggleActive?: (zone: DeliveryZone) => void;
+  onDelete?: (zone: DeliveryZone) => void;
   isToggling?: boolean;
   isDeleting?: boolean;
 }
@@ -315,6 +321,7 @@ function ZoneRow({ zone, onEdit, onToggleActive, onDelete, isToggling, isDeletin
 
       {/* Acciones */}
       <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+        {onToggleActive && (
         <button
           onClick={() => onToggleActive(zone)}
           disabled={isToggling}
@@ -337,7 +344,9 @@ function ZoneRow({ zone, onEdit, onToggleActive, onDelete, isToggling, isDeletin
             </svg>
           )}
         </button>
+        )}
 
+        {onEdit && (
         <button
           onClick={() => onEdit(zone)}
           title="Editar"
@@ -351,7 +360,9 @@ function ZoneRow({ zone, onEdit, onToggleActive, onDelete, isToggling, isDeletin
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
           </svg>
         </button>
+        )}
 
+        {onDelete && (
         <button
           onClick={() => onDelete(zone)}
           disabled={isDeleting}
@@ -367,6 +378,7 @@ function ZoneRow({ zone, onEdit, onToggleActive, onDelete, isToggling, isDeletin
             <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
           </svg>
         </button>
+        )}
       </div>
     </div>
   );

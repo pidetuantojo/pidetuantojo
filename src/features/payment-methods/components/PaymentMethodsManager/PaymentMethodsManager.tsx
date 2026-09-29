@@ -87,7 +87,10 @@ interface AccountForm {
 }
 
 export function PaymentMethodsManager() {
-  const { user } = useAuth();
+  const { user, can } = useAuth();
+  const canManage = can('payment_methods.manage');
+  // Sin la feature del plan solo hay efectivo (sin datáfono ni transferencias)
+  const accountsEnabled = can('features.payment_accounts');
   const restaurantId = user?.restaurantId ?? '';
 
   const { data: restaurant, isLoading } = useRestaurant(restaurantId || undefined);
@@ -199,6 +202,11 @@ export function PaymentMethodsManager() {
         <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--t-text-3)' }}>
           Elige cómo te pueden pagar tus clientes. Lo que actives acá es lo que verán al confirmar su pedido. Al menos uno debe quedar activo.
         </p>
+        {!canManage && (
+          <p style={{ margin: '8px 0 0', fontSize: 12, color: 'var(--t-text-3)' }}>
+            Solo lectura: no tienes permiso para cambiar los métodos de pago.
+          </p>
+        )}
       </div>
 
       {/* Pago presencial */}
@@ -206,7 +214,7 @@ export function PaymentMethodsManager() {
         <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--t-border-2)' }}>
           <span style={sectionLabelStyle}>Pago al recibir o en el local</span>
         </div>
-        {IN_PERSON_TYPES.map((type) => {
+        {IN_PERSON_TYPES.filter((type) => accountsEnabled || type === 'efectivo').map((type) => {
           const method = methods.find((m) => m.type === type);
           const active = method?.isActive ?? false;
           const lastActive = isLastActive(method);
@@ -221,13 +229,14 @@ export function PaymentMethodsManager() {
                   mín. 1
                 </span>
               )}
-              <Toggle checked={active} onChange={(v) => toggleInPerson(type, v)} disabled={isSaving || lastActive} />
+              <Toggle checked={active} onChange={(v) => toggleInPerson(type, v)} disabled={!canManage || isSaving || lastActive} />
             </div>
           );
         })}
       </div>
 
       {/* Transferencias */}
+      {accountsEnabled && (
       <div style={{ ...cardStyle, opacity: isSaving ? 0.7 : 1 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '14px 20px', borderBottom: '1px solid var(--t-border-2)' }}>
           <div>
@@ -236,6 +245,7 @@ export function PaymentMethodsManager() {
               Nequi, Daviplata, BreB, Bancolombia u otros bancos. Puedes agregar todas las cuentas que quieras.
             </p>
           </div>
+          {canManage && (
           <button
             type="button"
             onClick={() => openForm()}
@@ -244,6 +254,7 @@ export function PaymentMethodsManager() {
             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
             Agregar cuenta
           </button>
+          )}
         </div>
 
         {transferAccounts.length === 0 ? (
@@ -262,18 +273,21 @@ export function PaymentMethodsManager() {
                     {method.account ?? 'Sin número visible para el cliente'}
                   </div>
                 </div>
+                {canManage && (<>
                 <button type="button" aria-label="Editar cuenta" onClick={() => openForm(method)} style={{ width: 30, height: 30, borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', display: 'grid', placeItems: 'center', color: 'var(--t-text-3)', flexShrink: 0 }}>
                   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                 </button>
                 <button type="button" aria-label="Eliminar cuenta" onClick={() => deleteAccount(method)} disabled={isSaving || lastActive} style={{ width: 30, height: 30, borderRadius: 8, border: 'none', background: 'none', cursor: lastActive ? 'not-allowed' : 'pointer', display: 'grid', placeItems: 'center', color: 'var(--t-text-3)', flexShrink: 0, opacity: lastActive ? 0.4 : 1 }}>
                   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" /></svg>
                 </button>
-                <Toggle checked={method.isActive} onChange={(v) => toggleAccount(method, v)} disabled={isSaving || lastActive} />
+                </>)}
+                <Toggle checked={method.isActive} onChange={(v) => toggleAccount(method, v)} disabled={!canManage || isSaving || lastActive} />
               </div>
             );
           })
         )}
       </div>
+      )}
 
       {/* Modal cuenta */}
       {form && formDef && (

@@ -17,7 +17,9 @@ import {
 import { OrderStatusForm } from '../OrderStatusForm';
 
 export function OrderStatusesManager() {
-  const { user } = useAuth();
+  const { user, can } = useAuth();
+  const canUpdate = can('order_statuses.update');
+  const canDelete = can('order_statuses.delete');
   const restaurantId = user?.restaurantId ?? '';
 
   const { data: statuses = [], isLoading, error } = useOrderStatuses(restaurantId);
@@ -97,10 +99,12 @@ export function OrderStatusesManager() {
             Flujo de estados para gestionar los pedidos de tu restaurante
           </p>
         </div>
-        <Button onClick={handleAdd}>
-          <Plus className="h-4 w-4" />
-          Nuevo estado
-        </Button>
+        {can('order_statuses.create') && (
+          <Button onClick={handleAdd}>
+            <Plus className="h-4 w-4" />
+            Nuevo estado
+          </Button>
+        )}
       </div>
 
       {/* Estados base */}
@@ -117,7 +121,7 @@ export function OrderStatusesManager() {
             <StatusRow
               key={status.id}
               status={status}
-              onToggleActive={handleToggleActive}
+              onToggleActive={canUpdate ? handleToggleActive : undefined}
               isToggling={togglingId === status.id}
             />
           ))}
@@ -141,12 +145,14 @@ export function OrderStatusesManager() {
             <p className="text-sm" style={{ color: 'var(--t-text-4)' }}>
               No hay estados personalizados. Puedes agregar intermedios para tu flujo específico.
             </p>
-            <button
-              onClick={handleAdd}
-              className="mt-3 text-sm font-medium text-orange-600 hover:text-orange-700"
-            >
-              + Agregar estado
-            </button>
+            {can('order_statuses.create') && (
+              <button
+                onClick={handleAdd}
+                className="mt-3 text-sm font-medium text-orange-600 hover:text-orange-700"
+              >
+                + Agregar estado
+              </button>
+            )}
           </div>
         ) : (
           <div className="space-y-2">
@@ -154,9 +160,9 @@ export function OrderStatusesManager() {
               <StatusRow
                 key={status.id}
                 status={status}
-                onEdit={handleEdit}
-                onToggleActive={handleToggleActive}
-                onDelete={handleDelete}
+                onEdit={canUpdate ? handleEdit : undefined}
+                onToggleActive={canUpdate ? handleToggleActive : undefined}
+                onDelete={canDelete ? handleDelete : undefined}
                 isToggling={togglingId === status.id}
                 isDeleting={deletingId === status.id}
               />
@@ -188,7 +194,7 @@ export function OrderStatusesManager() {
 interface StatusRowProps {
   status: OrderStatus;
   onEdit?: (status: OrderStatus) => void;
-  onToggleActive: (id: string, isActive: boolean) => void;
+  onToggleActive?: (id: string, isActive: boolean) => void;
   onDelete?: (id: string, name: string) => void;
   isToggling?: boolean;
   isDeleting?: boolean;
@@ -244,6 +250,7 @@ function StatusRow({
 
       {/* Actions */}
       <div className="flex flex-shrink-0 items-center gap-1">
+        {onToggleActive && (
         <button
           onClick={() => onToggleActive(status.id, !status.isActive)}
           disabled={isToggling}
@@ -261,6 +268,7 @@ function StatusRow({
         >
           {status.isActive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
+        )}
 
         {!status.isBase && onEdit && (
           <button

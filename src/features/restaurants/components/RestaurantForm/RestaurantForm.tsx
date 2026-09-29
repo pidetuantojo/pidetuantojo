@@ -8,6 +8,13 @@ import { Button } from '@/components/ui/Button';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { Select } from '@/components/ui/Select';
 import { COLOMBIA_LOCATIONS, RESTAURANT_CATEGORIES } from '@/constants/colombia-locations';
+import { ROUTES } from '@/constants/routes';
+import type { Permission } from '@/constants/permissions';
+import { useAuth } from '@/features/auth';
+import { pickEditableRestaurantFields } from '@/lib/permissions/restaurantFields';
+import { usePlans } from '@/features/plans/hooks/usePlans';
+import { plansService } from '@/features/plans/services/plans.service';
+import { formatCurrency } from '@/lib/utils';
 
 import { useRestaurantForm } from '../../hooks/useRestaurantForm';
 import { useCreateRestaurant } from '../../hooks/useRestaurantMutations';
@@ -150,11 +157,23 @@ function PaletteSection({
   );
 }
 
+// Deshabilita todos los controles de un bloque sin cambiar el layout
+function ReadOnly({ locked, children }: { locked: boolean; children: React.ReactNode }) {
+  if (!locked) return <>{children}</>;
+  return (
+    <fieldset disabled style={{ border: 0, padding: 0, margin: 0, minWidth: 0, display: 'contents' }}>
+      {children}
+    </fieldset>
+  );
+}
+
 function AccordionSection({
-  label, open, onToggle, children, summary,
+  label, open, onToggle, children, summary, locked = false,
 }: {
   label: string; open: boolean; onToggle: () => void;
   children: React.ReactNode; summary?: string;
+  // Sin permiso para editar esta sección: se ve pero no se puede cambiar
+  locked?: boolean;
 }) {
   return (
     <div style={{ border: '1.5px solid var(--t-border)', borderRadius: 14, overflow: 'hidden' }}>
@@ -172,6 +191,11 @@ function AccordionSection({
           {label}
         </span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          {locked && (
+            <span style={{ fontFamily: sm, fontSize: 10, fontWeight: 700, letterSpacing: '.06em', color: 'var(--t-text-3)', background: 'var(--t-surface-2)', padding: '3px 8px', borderRadius: 999 }}>
+              SOLO LECTURA
+            </span>
+          )}
           {!open && summary && (
             <span style={{ fontFamily: sm, fontSize: 11, color: 'var(--t-text-3)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {summary}
@@ -186,16 +210,33 @@ function AccordionSection({
       </button>
       {open && (
         <div style={{ padding: '18px 18px', display: 'flex', flexDirection: 'column', gap: 16, borderTop: '1px solid var(--t-border)' }}>
-          {children}
+          <ReadOnly locked={locked}>{children}</ReadOnly>
         </div>
       )}
     </div>
   );
 }
 
-export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange }: RestaurantFormProps) {
-  const { data, errors, handleChange, setDayHours, validate, toCreateData, toUpdateData, isEditing } =
+const SETTINGS_UPDATE_PERMISSIONS: readonly Permission[] = [
+  'settings.update_info', 'settings.update_branding', 'settings.update_location',
+  'settings.update_social', 'settings.update_hours', 'settings.update_delivery_mode',
+];
+
+export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange, showPlanSelector = false }: RestaurantFormProps) {
+  const { data, errors, handleChange, setDayHours, validate, toCreateData, toUpdateData, isEditing, planChanged } =
     useRestaurantForm(restaurant);
+  const { can } = useAuth();
+  // El super admin (selector de plan) edita todo; los usuarios del restaurante, según sus permisos
+  const canEdit = (permission: Permission) => showPlanSelector || can(permission);
+  const canEditAny = showPlanSelector || SETTINGS_UPDATE_PERMISSIONS.some((p) => can(p));
+  // Features del plan que condicionan opciones de la configuración
+  const zonesEnabled = showPlanSelector || can('features.delivery_zones');
+  const scheduledEnabled = showPlanSelector || can('features.scheduled_orders');
+  const { data: plans = [] } = usePlans();
+  const [planError, setPlanError] = useState('');
+  // Planes activos + el actual aunque esté inactivo (para no perderlo al editar)
+  const planOptions = plans.filter((p) => p.isActive || p.id === restaurant?.planId);
+  const selectedPlan = plans.find((p) => p.id === data.planId);
 
   useEffect(() => {
     onColorsChange?.({ pri: data.primaryColor, sec: data.secondaryColor, acc: data.accentColor, bg: data.bgColor, name: data.name, layout: data.menuLayout, logo: data.logo, bannerImage: data.bannerImage });
@@ -217,12 +258,30 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!validate()) return;
+    setPlanError('');
+    const validForm = validate();
+    if (showPlanSelector && !isEditing && !data.planId) {
+      setPlanError('Elige el plan del restaurante');
+      return;
+    }
+    if (!validForm) return;
     try {
+      let restaurantId = restaurant?.id;
       if (isEditing && restaurant) {
-        await updateMutation.mutateAsync({ id: restaurant.id, data: toUpdateData() });
+        // Usuarios del restaurante: solo se envían las secciones que pueden editar
+        const updateData = showPlanSelector ? toUpdateData() : pickEditableRestaurantFields(toUpdateData(), can);
+        await updateMutation.mutateAsync({ id: restaurant.id, data: updateData });
       } else {
-        await createMutation.mutateAsync(toCreateData());
+        restaurantId = (await createMutation.mutateAsync(toCreateData())).id;
+      }
+      // Nuevo restaurante o cambio de plan: recalcular permisos del admin y empleados (servidor)
+      if (showPlanSelector && restaurantId && (!isEditing || planChanged)) {
+        try {
+          await plansService.sync({ restaurantId });
+        } catch (syncError) {
+          setPlanError(`Restaurante guardado, pero no se pudieron actualizar los permisos: ${syncError instanceof Error ? syncError.message : ''}. Usa "Resincronizar" en Planes.`);
+          return;
+        }
       }
       onSuccess();
     } catch {
@@ -266,12 +325,49 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
+        {/* Plan (solo super admin) */}
+        {showPlanSelector && (
+          <div style={{ border: `1.5px solid ${planError ? '#fca5a5' : 'var(--t-border)'}`, borderRadius: 14, padding: '14px 16px', background: 'var(--t-surface)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <label htmlFor="restaurant-plan" style={{ fontFamily: sg, fontWeight: 700, fontSize: 14, color: 'var(--t-text-1)' }}>
+              Plan del restaurante {!isEditing && <span style={{ color: '#ef4444' }}>*</span>}
+            </label>
+            {planOptions.length === 0 ? (
+              <p style={{ margin: 0, fontFamily: sg, fontSize: 13, color: 'var(--t-text-3)' }}>
+                No hay planes activos. Créalos en <a href={ROUTES.admin.plans} style={{ color: '#FF6A1A', fontWeight: 600 }}>Planes</a>.
+              </p>
+            ) : (
+              <select
+                id="restaurant-plan"
+                value={data.planId}
+                onChange={(e) => { handleChange('planId', e.target.value); setPlanError(''); }}
+                disabled={isPending}
+                style={{ width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 10, padding: '10px 12px', fontSize: 14, fontFamily: sg, color: 'var(--t-text-1)' }}
+              >
+                <option value="">{isEditing && !restaurant?.planId ? 'Sin plan (acceso completo)' : 'Elige un plan'}</option>
+                {planOptions.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} · {formatCurrency(p.price)}/{p.billingPeriod === 'yearly' ? 'año' : 'mes'}{p.isActive ? '' : ' (inactivo)'}
+                  </option>
+                ))}
+              </select>
+            )}
+            {selectedPlan?.description && <p style={{ margin: 0, fontFamily: sg, fontSize: 12, color: 'var(--t-text-3)' }}>{selectedPlan.description}</p>}
+            {isEditing && planChanged && (
+              <p style={{ margin: 0, fontFamily: sg, fontSize: 12, color: '#92400e' }}>
+                Al guardar, el administrador y los empleados de este restaurante tendrán los permisos del nuevo plan.
+              </p>
+            )}
+            {planError && <p role="alert" style={{ margin: 0, fontFamily: sg, fontSize: 12, color: '#ef4444' }}>{planError}</p>}
+          </div>
+        )}
+
         {/* Información básica */}
         <AccordionSection
           label="Información básica"
           open={openSections.has('info')}
           onToggle={() => toggleSection('info')}
           summary={data.name || undefined}
+          locked={!canEdit('settings.update_info')}
         >
           <div className="grid gap-4 sm:grid-cols-2">
             <Input
@@ -339,6 +435,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
           label="Branding"
           open={openSections.has('branding')}
           onToggle={() => toggleSection('branding')}
+          locked={!canEdit('settings.update_branding')}
         >
           <ImageUpload
             label="Logo del restaurante *"
@@ -368,6 +465,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
           onToggle={() => toggleSection('design')}
           summary={activePaletteName}
         >
+          <ReadOnly locked={!canEdit('settings.update_branding')}>
           <div>
             <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', marginBottom: 10 }}>FORMATO DEL MENÚ PÚBLICO</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -433,6 +531,9 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             </div>
           </div>
 
+          </ReadOnly>
+
+          <ReadOnly locked={!canEdit('settings.update_delivery_mode')}>
           <div>
             <div style={{ fontFamily: sm, fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', marginBottom: 10 }}>MODO DE DOMICILIOS</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -461,12 +562,15 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
                 },
               ]).map((mode) => {
                 const sel = data.deliveryMode === mode.id;
+                // "Por zonas" requiere la feature del plan (si ya estaba elegido, se puede volver a manual)
+                const unavailable = mode.id === 'zones' && !zonesEnabled && !sel;
                 return (
                   <button
                     key={mode.id}
                     type="button"
                     onClick={() => handleChange('deliveryMode', mode.id)}
-                    disabled={isPending}
+                    disabled={isPending || unavailable}
+                    title={unavailable ? 'No incluido en tu plan' : undefined}
                     style={{
                       background: 'var(--t-surface)',
                       border: sel ? '2px solid #FF6A1A' : '1.5px solid var(--t-border)',
@@ -491,7 +595,11 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             </div>
           </div>
 
-          <PaletteSection data={data} handleChange={handleChange} isPending={isPending} />
+          </ReadOnly>
+
+          <ReadOnly locked={!canEdit('settings.update_branding')}>
+            <PaletteSection data={data} handleChange={handleChange} isPending={isPending} />
+          </ReadOnly>
         </AccordionSection>
 
         {/* Ubicación */}
@@ -499,6 +607,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
           label="Ubicación"
           open={openSections.has('location')}
           onToggle={() => toggleSection('location')}
+          locked={!canEdit('settings.update_location')}
           summary={data.city && data.department ? `${data.city}, ${data.department}` : undefined}
         >
           <Input
@@ -565,6 +674,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
           label="Redes sociales"
           open={openSections.has('social')}
           onToggle={() => toggleSection('social')}
+          locked={!canEdit('settings.update_social')}
           summary={data.instagram || data.facebook ? 'Configuradas' : undefined}
         >
           <Input
@@ -591,6 +701,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
           open={openSections.has('hours')}
           onToggle={() => toggleSection('hours')}
           summary={statusNow.text}
+          locked={!canEdit('settings.update_hours')}
         >
           <p style={{ fontFamily: sg, fontSize: 12.5, color: 'var(--t-text-3)', margin: 0 }}>
             Activa los días que abres y define la hora de apertura y cierre. El menú y el home muestran automáticamente si estás abierto o cerrado.
@@ -690,6 +801,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             Copiar Lunes a toda la semana
           </button>
 
+          {scheduledEnabled && (
           <label
             style={{
               display: 'flex', alignItems: 'flex-start', gap: 10,
@@ -716,6 +828,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
               </span>
             </span>
           </label>
+          )}
 
           <div style={{
             fontFamily: sm, fontSize: 10.5, lineHeight: 1.9, color: 'var(--t-text-4)',
@@ -771,7 +884,8 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
           </AccordionSection>
         )}
 
-        {/* Estado */}
+        {/* Estado: activar/desactivar un restaurante es solo del super admin */}
+        {showPlanSelector && (
         <label className="flex cursor-pointer items-center gap-3" style={{ padding: '4px 2px' }}>
           <input
             type="checkbox"
@@ -782,6 +896,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
           />
           <span className="text-sm font-medium text-[var(--t-text-2)]">Restaurante activo</span>
         </label>
+        )}
 
         {mutationError && (
           <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{mutationError}</p>
@@ -800,9 +915,11 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
         <Button type="button" variant="secondary" onClick={onCancel} disabled={isPending} className="flex-1" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
           Cancelar
         </Button>
+        {canEditAny && (
         <Button type="submit" isLoading={isPending} className="flex-1" style={{ boxShadow: '0 2px 8px rgba(251,114,26,0.35)' }}>
           {isEditing ? 'Guardar cambios' : 'Crear restaurante'}
         </Button>
+        )}
       </div>
     </form>
   );
