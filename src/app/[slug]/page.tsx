@@ -10,6 +10,9 @@ import { orderStatusesService } from '@/features/order-statuses/services/order-s
 import { deliveryZonesService } from '@/features/delivery-zones/services/delivery-zones.service';
 import { mesasService } from '@/features/delivery-methods/services/mesas.service';
 import { applyPlanFeatures } from '@/lib/permissions/planFeatures';
+import { adminDb } from '@/lib/firebase/admin';
+import { getSubscriptionInfo } from '@/lib/subscription/subscription';
+import type { Plan } from '@/types';
 
 interface Props {
   params: { slug: string };
@@ -29,6 +32,14 @@ export default async function RestaurantMenuPage({ params }: Props) {
 
   if (!stored || !stored.isActive) {
     notFound();
+  }
+
+  // Bloquear menú si la suscripción está suspendida
+  if (stored.planId && stored.subscriptionStartDate) {
+    let billingPeriod: 'monthly' | 'yearly' | undefined;
+    const planSnap = await adminDb.collection('plans').doc(stored.planId).get();
+    if (planSnap.exists) billingPeriod = (planSnap.data() as Plan).billingPeriod;
+    if (getSubscriptionInfo(stored, billingPeriod).status === 'suspended') notFound();
   }
 
   // Lo que el plan no incluye no se ofrece en el menú (mesa, programados, zonas, cuentas de pago)

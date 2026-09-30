@@ -80,6 +80,7 @@ const defaultValues: RestaurantFormData = {
   openingHours: defaultOpeningHours(),
   allowScheduledWhenClosed: false,
   planId: '',
+  subscriptionStartDate: new Date().toISOString().slice(0, 10),
   adminName: '',
   adminEmail: '',
   adminPassword: '',
@@ -116,6 +117,9 @@ export function useRestaurantForm(restaurant?: Restaurant) {
       openingHours: firebaseToHoursForm(restaurant.openingHours),
       allowScheduledWhenClosed: restaurant.allowScheduledWhenClosed ?? false,
       planId: restaurant.planId ?? '',
+      subscriptionStartDate: restaurant.subscriptionStartDate
+        ? restaurant.subscriptionStartDate.slice(0, 10)
+        : new Date().toISOString().slice(0, 10),
       adminName: '',
       adminEmail: '',
       adminPassword: '',
@@ -198,7 +202,7 @@ export function useRestaurantForm(restaurant?: Restaurant) {
       deliveryMode: data.deliveryMode,
       ...(hasAnyHours ? { openingHours: hours } : {}),
       allowScheduledWhenClosed: data.allowScheduledWhenClosed,
-      ...(data.planId ? { planId: data.planId, planAssignedAt: new Date().toISOString() } : {}),
+      ...(data.planId ? { planId: data.planId, planAssignedAt: new Date().toISOString(), subscriptionStartDate: new Date(data.subscriptionStartDate).toISOString() } : {}),
       adminEmail: data.adminEmail,
       adminPassword: data.adminPassword,
       adminName: data.adminName,
@@ -235,7 +239,7 @@ export function useRestaurantForm(restaurant?: Restaurant) {
       ...(hasAnyHours ? { openingHours: hours } : {}),
       allowScheduledWhenClosed: data.allowScheduledWhenClosed,
       // Solo si el super admin cambió el plan (el admin del restaurante nunca lo envía)
-      ...(planChanged ? { planId: data.planId, planAssignedAt: new Date().toISOString() } : {}),
+      ...(data.planId ? { planId: data.planId, planAssignedAt: new Date().toISOString(), subscriptionStartDate: new Date(data.subscriptionStartDate).toISOString() } : {}),
     };
   }
 

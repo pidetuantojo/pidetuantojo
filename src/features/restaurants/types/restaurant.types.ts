@@ -37,6 +37,7 @@ export interface RestaurantFormData {
   allowScheduledWhenClosed: boolean;
   // Plan asignado (solo lo edita el super admin)
   planId: string;
+  subscriptionStartDate: string; // YYYY-MM-DD para el input de fecha
   // Solo en creación
   adminName: string;
   adminEmail: string;

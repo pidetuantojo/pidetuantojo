@@ -132,6 +132,7 @@ export interface Restaurant {
   planId?: string;
   planName?: string;
   planAssignedAt?: string;
+  subscriptionStartDate?: string; // ISO 8601 — when plan was last activated/renewed
   // Funcionalidades del plan (features.*), copiadas por el servidor: el menú público las lee sin sesión
   planFeatures?: string[];
   adminUserId: string;

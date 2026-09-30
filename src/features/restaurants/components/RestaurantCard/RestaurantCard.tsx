@@ -2,6 +2,8 @@
 
 import Image from 'next/image';
 
+import { usePlans } from '@/features/plans/hooks/usePlans';
+import { getSubscriptionInfo } from '@/lib/subscription/subscription';
 import type { RestaurantCardProps } from './RestaurantCard.types';
 
 const sg = "var(--font-sans, sans-serif)";
@@ -17,6 +19,10 @@ export function RestaurantCard({
 }: RestaurantCardProps) {
   const { id, name, slug, description, phone, logo, isActive, theme } = restaurant;
   const primaryColor = theme.primaryColor;
+
+  const { data: plans = [] } = usePlans();
+  const plan = plans.find((p) => p.id === restaurant.planId);
+  const subInfo = getSubscriptionInfo(restaurant, plan?.billingPeriod);
 
   const headerBg = logo
     ? 'var(--t-surface-2)'
@@ -125,6 +131,33 @@ export function RestaurantCard({
             {phone}
           </div>
         )}
+
+        {/* Subscription status badge */}
+        <div style={{ marginBottom: 10 }}>
+          {subInfo.status === 'active' && (
+            <span style={{ fontFamily: sm, fontSize: 10, fontWeight: 700, color: '#2C7A52', background: '#DFF3E7', borderRadius: 999, padding: '4px 9px' }}>
+              ● ACTIVA
+              {subInfo.daysUntilEnd !== null && subInfo.daysUntilEnd <= 7 && (
+                <span style={{ marginLeft: 4 }}>· {subInfo.daysUntilEnd}d</span>
+              )}
+            </span>
+          )}
+          {subInfo.status === 'grace_period' && (
+            <span style={{ fontFamily: sm, fontSize: 10, fontWeight: 700, color: '#92400e', background: '#fef3c7', borderRadius: 999, padding: '4px 9px' }}>
+              ● GRACIA · {subInfo.graceDaysLeft} d.h.
+            </span>
+          )}
+          {subInfo.status === 'suspended' && (
+            <span style={{ fontFamily: sm, fontSize: 10, fontWeight: 700, color: '#dc2626', background: '#fee2e2', borderRadius: 999, padding: '4px 9px' }}>
+              ● SUSPENDIDO
+            </span>
+          )}
+          {subInfo.status === 'no_plan' && (
+            <span style={{ fontFamily: sm, fontSize: 10, fontWeight: 700, color: 'var(--t-text-3)', background: 'var(--t-surface-2)', borderRadius: 999, padding: '4px 9px' }}>
+              ○ SIN PLAN
+            </span>
+          )}
+        </div>
 
         {/* Theme colors */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 9, paddingBottom: 2 }}>

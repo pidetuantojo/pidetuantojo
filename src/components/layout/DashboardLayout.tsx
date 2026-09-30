@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/features/auth';
 import { useRestaurant } from '@/features/restaurants/hooks/useRestaurants';
+import { usePlan } from '@/features/plans/hooks/usePlans';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Sidebar } from './Sidebar';
@@ -10,6 +11,7 @@ import { Toaster } from '@/components/ui/Toast';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ROUTES } from '@/constants/routes';
 import { canAccessPath, firstAllowedRoute } from '@/lib/permissions/permissions';
+import { getSubscriptionInfo } from '@/lib/subscription/subscription';
 
 /**
  * Destino al que hay que mandar al usuario si no puede estar en `pathname` (null = puede quedarse).
@@ -26,6 +28,16 @@ function redirectTarget(role: string, permissions: readonly string[], pathname: 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, permissions, signOut } = useAuth();
   const { data: restaurant } = useRestaurant(user?.restaurantId ?? undefined);
+  const { data: restaurantPlan } = usePlan(restaurant?.planId);
+  const subscriptionInfo = restaurant
+    ? getSubscriptionInfo(restaurant, restaurantPlan?.billingPeriod)
+    : null;
+  const showGraceBanner =
+    user?.role !== 'super_admin' &&
+    subscriptionInfo?.status === 'grace_period';
+  const isSuspended =
+    user?.role !== 'super_admin' &&
+    subscriptionInfo?.status === 'suspended';
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -67,6 +79,29 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   // Mientras redirige, no mostrar una pantalla sin permiso
   if (target) return <AppLoader theme="dark" message="Cargando" />;
 
+  // Suscripción suspendida — bloquear todo el dashboard
+  if (isSuspended) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'var(--t-bg)', fontFamily: 'var(--font-sans, sans-serif)', padding: 24 }}>
+        <div style={{ maxWidth: 440, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+          <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#fee2e2', display: 'grid', placeItems: 'center', fontSize: 26 }}>🔒</div>
+          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: 'var(--t-text-1)' }}>Suscripción vencida</h1>
+          <p style={{ margin: 0, fontSize: 14, color: 'var(--t-text-3)', lineHeight: 1.6 }}>
+            Tu plan venció el <strong>{subscriptionInfo?.endDate?.toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}</strong> y el período de gracia ya expiró.
+            Contactá a soporte para reactivar tu cuenta.
+          </p>
+          <button
+            type="button"
+            onClick={() => void signOut()}
+            style={{ padding: '10px 24px', borderRadius: 999, border: '1.5px solid var(--t-border)', background: 'var(--t-surface)', color: 'var(--t-text-2)', cursor: 'pointer', fontFamily: 'var(--font-sans, sans-serif)', fontWeight: 600, fontSize: 14 }}
+          >
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen" style={{ background: 'var(--t-bg)', fontFamily: "var(--font-sans, sans-serif)" }}>
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} collapsed={sidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(c => !c)} />
@@ -100,6 +135,31 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </span>
           )}
         </header>
+
+        {/* Grace period warning banner */}
+        {showGraceBanner && subscriptionInfo && (
+          <div style={{
+            background: '#fffbeb',
+            borderBottom: '1px solid #fde68a',
+            padding: '10px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            flexWrap: 'wrap',
+            fontFamily: 'var(--font-sans, sans-serif)',
+            fontSize: 13,
+            color: '#92400e',
+          }}>
+            <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
+            <span style={{ flex: 1 }}>
+              <strong>Tu suscripción venció el {subscriptionInfo.endDate?.toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}.</strong>
+              {' '}Tenés{' '}
+              <strong>{subscriptionInfo.graceDaysLeft} {subscriptionInfo.graceDaysLeft === 1 ? 'día hábil' : 'días hábiles'}</strong>
+              {' '}para regularizar el pago.
+              {' '}Contactá a soporte para renovar.
+            </span>
+          </div>
+        )}
 
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8">{children}</main>
       </div>

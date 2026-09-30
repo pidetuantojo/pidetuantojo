@@ -15,6 +15,9 @@ import { useAuth } from '@/features/auth';
 import { pickEditableRestaurantFields } from '@/lib/permissions/restaurantFields';
 import { usePlans } from '@/features/plans/hooks/usePlans';
 import { plansService } from '@/features/plans/services/plans.service';
+import { getSubscriptionInfo } from '@/lib/subscription/subscription';
+import { DatePicker } from '@/components/ui/DatePicker/DatePicker';
+import { restaurantsService } from '../../services/restaurants.service';
 
 import { useRestaurantForm } from '../../hooks/useRestaurantForm';
 import { useCreateRestaurant } from '../../hooks/useRestaurantMutations';
@@ -238,6 +241,32 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
   const planOptions = plans.filter((p) => p.isActive || p.id === restaurant?.planId);
   const selectedPlan = plans.find((p) => p.id === data.planId);
 
+  // Subscription status (only when editing an existing restaurant with a plan)
+  const subscriptionInfo = isEditing && restaurant
+    ? getSubscriptionInfo(restaurant, selectedPlan?.billingPeriod)
+    : null;
+  const [renewLoading, setRenewLoading] = useState(false);
+  const [renewError, setRenewError] = useState('');
+
+  async function handleRenewSubscription() {
+    if (!restaurant) return;
+    setRenewLoading(true);
+    setRenewError('');
+    const today = new Date().toISOString().slice(0, 10);
+    try {
+      await restaurantsService.update(restaurant.id, {
+        subscriptionStartDate: new Date(today).toISOString(),
+      });
+      handleChange('subscriptionStartDate', today);
+      // Invalidate so DashboardLayout + other consumers see the updated status immediately
+      // (react-query cache will refetch on next mount)
+    } catch (err) {
+      setRenewError(err instanceof Error ? err.message : 'Error al renovar la suscripción');
+    } finally {
+      setRenewLoading(false);
+    }
+  }
+
   useEffect(() => {
     onColorsChange?.({ pri: data.primaryColor, sec: data.secondaryColor, acc: data.accentColor, bg: data.bgColor, name: data.name, layout: data.menuLayout, logo: data.logo, bannerImage: data.bannerImage });
   }, [data.primaryColor, data.secondaryColor, data.accentColor, data.bgColor, data.name, data.menuLayout, data.logo, data.bannerImage]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -349,10 +378,83 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
               />
             )}
             {selectedPlan?.description && <p style={{ margin: 0, fontFamily: sg, fontSize: 12, color: 'var(--t-text-3)' }}>{selectedPlan.description}</p>}
+            {data.planId && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: 10, letterSpacing: '.06em', color: 'var(--t-text-3)', textTransform: 'uppercase' }}>
+                  Fecha de inicio de suscripción
+                </span>
+                <DatePicker
+                  value={data.subscriptionStartDate}
+                  onChange={(ymd) => handleChange('subscriptionStartDate', ymd)}
+                  disabled={isPending}
+                  placeholder="Seleccionar fecha de inicio"
+                />
+              </div>
+            )}
             {isEditing && planChanged && (
               <p style={{ margin: 0, fontFamily: sg, fontSize: 12, color: '#92400e' }}>
                 Al guardar, el administrador y los empleados de este restaurante tendrán los permisos del nuevo plan.
               </p>
+            )}
+            {/* Subscription status */}
+            {isEditing && subscriptionInfo && (
+              <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <span style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: 10, fontWeight: 700, letterSpacing: '.04em',
+                    color: subscriptionInfo.status === 'active' ? '#2C7A52' : subscriptionInfo.status === 'grace_period' ? '#92400e' : subscriptionInfo.status === 'suspended' ? '#dc2626' : 'var(--t-text-3)',
+                    background: subscriptionInfo.status === 'active' ? '#DFF3E7' : subscriptionInfo.status === 'grace_period' ? '#fef3c7' : subscriptionInfo.status === 'suspended' ? '#fee2e2' : 'var(--t-surface-2)',
+                    borderRadius: 999, padding: '4px 10px',
+                  }}>
+                    {subscriptionInfo.status === 'active' && '● ACTIVA'}
+                    {subscriptionInfo.status === 'grace_period' && '● PERÍODO DE GRACIA'}
+                    {subscriptionInfo.status === 'suspended' && '● SUSPENDIDA'}
+                    {subscriptionInfo.status === 'no_plan' && '○ SIN PLAN'}
+                  </span>
+                  {subscriptionInfo.endDate && (
+                    <span style={{ fontFamily: sg, fontSize: 12, color: 'var(--t-text-3)' }}>
+                      Vence: {subscriptionInfo.endDate.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      {subscriptionInfo.status === 'active' && subscriptionInfo.daysUntilEnd !== null && subscriptionInfo.daysUntilEnd <= 7 && (
+                        <span style={{ color: '#92400e', fontWeight: 600 }}> ({subscriptionInfo.daysUntilEnd} días)</span>
+                      )}
+                    </span>
+                  )}
+                  {subscriptionInfo.status === 'grace_period' && subscriptionInfo.graceDaysLeft !== null && (
+                    <span style={{ fontFamily: sg, fontSize: 12, color: '#92400e', fontWeight: 600 }}>
+                      {subscriptionInfo.graceDaysLeft} días hábiles de gracia
+                    </span>
+                  )}
+                </div>
+                {!restaurant?.subscriptionStartDate && (
+                  <p style={{ margin: 0, fontFamily: sg, fontSize: 12, color: 'var(--t-text-3)' }}>
+                    Sin fecha de inicio registrada — guardá un cambio de plan para activar el conteo.
+                  </p>
+                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={handleRenewSubscription}
+                    disabled={renewLoading || isPending}
+                    style={{
+                      fontFamily: sg, fontWeight: 600, fontSize: 13,
+                      color: '#fff', background: 'linear-gradient(135deg, #FF8A2B, #FF6A1A 55%, #EA3B2E)',
+                      border: 0, borderRadius: 10, padding: '8px 16px',
+                      cursor: renewLoading || isPending ? 'not-allowed' : 'pointer',
+                      opacity: renewLoading ? 0.7 : 1,
+                      display: 'flex', alignItems: 'center', gap: 6,
+                    }}
+                  >
+                    {renewLoading ? (
+                      <span style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(255,255,255,.4)', borderTopColor: '#fff', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} />
+                    ) : (
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M23 4v6h-6M1 20v-6h6" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                      </svg>
+                    )}
+                    Renovar suscripción
+                  </button>
+                  {renewError && <span style={{ fontFamily: sg, fontSize: 12, color: '#dc2626' }}>{renewError}</span>}
+                </div>
+              </div>
             )}
           </div>
         )}
