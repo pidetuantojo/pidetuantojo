@@ -773,7 +773,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
           open={openSections.has('social')}
           onToggle={() => toggleSection('social')}
           locked={!canEdit('settings.update_social')}
-          summary={data.instagram || data.facebook ? 'Configuradas' : undefined}
+          summary={data.instagram || data.facebook || data.tiktok || data.twitter ? 'Configuradas' : undefined}
         >
           <Input
             label="Instagram"
@@ -789,6 +789,22 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             onChange={(e) => handleChange('facebook', e.target.value)}
             placeholder="https://facebook.com/tu.restaurante"
             hint="URL completa de la página de Facebook"
+            disabled={isPending}
+          />
+          <Input
+            label="TikTok"
+            value={data.tiktok}
+            onChange={(e) => handleChange('tiktok', e.target.value)}
+            placeholder="https://tiktok.com/@tu.restaurante"
+            hint="URL completa del perfil de TikTok"
+            disabled={isPending}
+          />
+          <Input
+            label="X (Twitter)"
+            value={data.twitter}
+            onChange={(e) => handleChange('twitter', e.target.value)}
+            placeholder="https://x.com/tu.restaurante"
+            hint="URL completa del perfil de X"
             disabled={isPending}
           />
         </AccordionSection>

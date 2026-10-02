@@ -28,6 +28,8 @@ export interface RestaurantFormData {
   // Redes sociales
   instagram: string;
   facebook: string;
+  tiktok: string;
+  twitter: string;
   // Formato del menú
   menuLayout: 'cards' | 'list';
   // Modo de domicilios

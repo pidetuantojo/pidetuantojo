@@ -116,6 +116,8 @@ export interface Restaurant {
   // Redes sociales
   instagram?: string;
   facebook?: string;
+  tiktok?: string;
+  twitter?: string;
   // Formato del menú público
   menuLayout?: 'cards' | 'list';
   // Modo de domicilios

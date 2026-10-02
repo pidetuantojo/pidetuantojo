@@ -1,4 +1,5 @@
 ﻿import type { Restaurant, OpeningHours } from '@/types';
+import { SocialLinks } from '../SocialLinks';
 
 const sg = "var(--font-sans, sans-serif)";
 const sm = 'var(--font-mono, monospace)';
@@ -52,7 +53,7 @@ interface MenuHeaderProps {
 }
 
 export function MenuHeader({ restaurant, cartCount, onNavOpen, onCartOpen }: MenuHeaderProps) {
-  const { name, tagline, description, logo, bannerImage, theme, openingHours } = restaurant;
+  const { name, tagline, description, logo, bannerImage, theme, openingHours, instagram, facebook, tiktok, twitter } = restaurant;
   const { primaryColor: pri, secondaryColor: sec, accentColor: acc, bgColor } = theme;
   const bg = bgColor ?? '#FBF8F5';
   const subtitle = tagline || description;
@@ -278,6 +279,18 @@ export function MenuHeader({ restaurant, cartCount, onNavOpen, onCartOpen }: Men
               {subtitle}
             </p>
           )}
+
+          {/* Social icons — always shown if configured, independent of schedule */}
+          <SocialLinks
+            instagram={instagram}
+            facebook={facebook}
+            tiktok={tiktok}
+            twitter={twitter}
+            restaurantName={name}
+            color={pri}
+            variant="dark"
+            align="center"
+          />
 
           {(() => {
             const status = getMenuStatus(openingHours);
