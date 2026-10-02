@@ -499,12 +499,12 @@ export function MenuPage({ restaurant, categories: baseCategories, products: bas
         {/* Info overlay */}
         <div style={{ position: 'absolute', bottom: 52, left: 60, display: 'flex', alignItems: 'center', gap: 28 }}>
           {/* Logo */}
-          <div style={{ width: 100, height: 100, borderRadius: '50%', background: '#fff', padding: 5, boxShadow: '0 8px 28px rgba(0,0,0,.35)', flexShrink: 0 }}>
+          <div style={{ width: 110, height: 110, borderRadius: '50%', background: '#fff', padding: 5, boxShadow: '0 8px 28px rgba(0,0,0,.35)', flexShrink: 0 }}>
             <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: '#fff', display: 'grid', placeItems: 'center', border: '1px solid #f2ede7' }}>
               {restaurant.logo ? (
-                <img src={restaurant.logo} alt={restaurant.name} style={{ width: '65%', height: '65%', objectFit: 'contain' }} />
+                <img src={restaurant.logo} alt={restaurant.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
-                <span style={{ fontWeight: 700, fontSize: 42, color: pri, fontFamily: sg }}>{restaurant.name[0]?.toUpperCase()}</span>
+                <span style={{ fontWeight: 700, fontSize: 46, color: pri, fontFamily: sg }}>{restaurant.name[0]?.toUpperCase()}</span>
               )}
             </div>
           </div>

@@ -314,10 +314,16 @@ export function HomeClient({ restaurants }: HomeClientProps) {
                   </svg>
                 )}
               </button>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: sg, fontWeight: 600, fontSize: 12, color: '#fff', background: 'rgba(255,255,255,.2)', border: '1px solid rgba(255,255,255,.3)', borderRadius: 999, padding: '8px 13px' }}>
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                {locLabel}
-              </div>
+              <Link href="/registrar-local" style={{
+                fontFamily: sg, fontWeight: 700, fontSize: 12, color: '#FF6A1A',
+                textDecoration: 'none', flexShrink: 0,
+                background: '#fff',
+                borderRadius: 999, padding: '8px 14px',
+                boxShadow: '0 4px 14px -4px rgba(0,0,0,.2)',
+                letterSpacing: '.01em',
+              }}>
+                Regístrate aquí
+              </Link>
             </div>
           </div>
 
@@ -427,21 +433,6 @@ export function HomeClient({ restaurants }: HomeClientProps) {
               </div>
             )}
 
-            {/* CTA discreta al pie */}
-            <div style={{ textAlign: 'center', padding: '32px 0 16px', borderTop: '1px solid var(--t-border-2)', marginTop: 24 }}>
-              <p style={{ fontFamily: sg, fontSize: 12.5, color: 'var(--t-text-4)', margin: '0 0 8px' }}>
-                ¿Tienes un restaurante?
-              </p>
-              <Link href="/registrar-local" style={{
-                fontFamily: sg, fontWeight: 600, fontSize: 13, color: '#FF6A1A',
-                textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4,
-              }}>
-                Registra tu local
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 18l6-6-6-6"/>
-                </svg>
-              </Link>
-            </div>
           </div>
         </div>
       </div>
@@ -495,9 +486,9 @@ function DesktopCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open
         {/* Body */}
         <div style={{ padding: '16px 18px 18px', position: 'relative' }}>
           {/* Logo bubble */}
-          <div style={{ position: 'absolute', top: -30, right: 16, width: 62, height: 62, borderRadius: '50%', background: 'var(--t-surface)', overflow: 'hidden', boxShadow: '0 6px 18px -6px rgba(0,0,0,.3)', border: '2.5px solid var(--t-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'absolute', top: -30, right: 16, width: 62, height: 62, borderRadius: '50%', background: '#fff', overflow: 'hidden', boxShadow: '0 6px 18px -6px rgba(0,0,0,.3)', border: '2.5px solid var(--t-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {r.logo ? (
-              <img src={r.logo} alt={r.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 7, boxSizing: 'border-box', display: 'block' }} />
+              <img src={r.logo} alt={r.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             ) : (
               <div style={{ width: '100%', height: '100%', background: `linear-gradient(135deg,${pri},${sec})`, display: 'grid', placeItems: 'center', fontFamily: sg, fontWeight: 700, fontSize: 22, color: '#fff' }}>
                 {r.name.charAt(0)}
@@ -584,9 +575,9 @@ function MobileCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open:
 
         {/* Logo + Name + Category */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 8px 0' }}>
-          <div style={{ width: 62, height: 62, borderRadius: '50%', flexShrink: 0, background: 'var(--t-surface)', overflow: 'hidden', boxShadow: '0 4px 14px -4px rgba(0,0,0,.22)', border: '1.5px solid var(--t-border-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 62, height: 62, borderRadius: '50%', flexShrink: 0, background: '#fff', overflow: 'hidden', boxShadow: '0 4px 14px -4px rgba(0,0,0,.22)', border: '1.5px solid var(--t-border-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {r.logo ? (
-              <img src={r.logo} alt={r.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 7, boxSizing: 'border-box', display: 'block' }} />
+              <img src={r.logo} alt={r.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             ) : (
               <div style={{ width: '100%', height: '100%', background: `linear-gradient(135deg,${pri},${sec})`, display: 'grid', placeItems: 'center', fontFamily: sg, fontWeight: 700, fontSize: 22, color: '#fff' }}>
                 {r.name.charAt(0)}

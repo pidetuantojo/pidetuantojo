@@ -241,7 +241,7 @@ export function MenuHeader({ restaurant, cartCount, onNavOpen, onCartOpen }: Men
                 <img
                   src={logo}
                   alt={name}
-                  style={{ width: '65%', height: '65%', objectFit: 'contain' }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               ) : (
                 <span style={{ fontWeight: 700, fontSize: 36, color: pri, fontFamily: sg }}>

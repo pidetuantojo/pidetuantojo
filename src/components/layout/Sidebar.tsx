@@ -242,13 +242,13 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
             marginBottom: 20,
           }}>
             <div style={{
-              width: 36, height: 36, borderRadius: 10, flexShrink: 0, overflow: 'hidden',
+              width: 36, height: 36, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
               background: restaurant.logo ? '#fff' : 'linear-gradient(135deg, #FFB02E, #EA3B2E)',
               display: 'grid', placeItems: 'center',
               fontWeight: 700, fontSize: 16, color: '#fff', position: 'relative',
             }}>
               {restaurant.logo ? (
-                <Image src={restaurant.logo} alt={restaurant.name} fill style={{ objectFit: 'contain', padding: 4 }} />
+                <Image src={restaurant.logo} alt={restaurant.name} fill style={{ objectFit: 'cover' }} />
               ) : restaurantInitial}
             </div>
             {!collapsed && (
