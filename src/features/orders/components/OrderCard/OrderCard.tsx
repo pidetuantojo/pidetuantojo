@@ -49,7 +49,7 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
 
   const isDomicilio = order.deliveryType === 'domicilio';
   const isMesa = order.deliveryType === 'mesa';
-  const { productsTotal, deliveryFee, total: grandTotal } = getOrderTotals(order);
+  const { productsTotal, discount, deliveryFee, total: grandTotal } = getOrderTotals(order);
   const isTransfer = order.paymentMethodType ? isTransferMethod(order.paymentMethodType) : false;
 
   // — delivery fee inline edit —
@@ -117,7 +117,7 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
     if (isNaN(value) || value < 0) return;
     setSavingFee(true);
     try {
-      await ordersService.updateDeliveryFee(restaurantId, order.id, value, productsTotal);
+      await ordersService.updateDeliveryFee(restaurantId, order.id, value, order);
       setEditingFee(false);
       setFeeInput('');
     } finally {
@@ -230,9 +230,17 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
         {order.items.slice(0, 3).map((item, i) => (
           <div key={i}>
             <div className="flex items-baseline justify-between text-sm">
-              <span className="text-[var(--t-text-1)]">{item.productName} <span className="text-[var(--t-text-3)]">×{item.quantity}</span></span>
-              <span className="text-[var(--t-text-2)] font-medium ml-2 flex-shrink-0">{formatCurrency(item.subtotal)}</span>
+              <span className="text-[var(--t-text-1)]">
+                {item.isGift && '🎁 '}{item.productName} <span className="text-[var(--t-text-3)]">×{item.quantity}</span>
+              </span>
+              <span className="text-[var(--t-text-2)] font-medium ml-2 flex-shrink-0">{item.isGift ? 'Regalo' : formatCurrency(item.subtotal)}</span>
             </div>
+            {!!item.discount && (
+              <div className="ml-3 flex justify-between text-xs text-emerald-600">
+                <span>↳ {item.promotionName ?? 'Promoción'}</span>
+                <span>−{formatCurrency(item.discount)}</span>
+              </div>
+            )}
             {item.additionals.length > 0 && (
               <div className="ml-3 mt-0.5 space-y-0.5">
                 {item.additionals.map((a, j) => (
@@ -254,6 +262,13 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
           <span>Total productos</span>
           <span className="font-medium">{formatCurrency(productsTotal)}</span>
         </div>
+
+        {discount > 0 && (
+          <div className="flex justify-between text-emerald-600">
+            <span>Descuentos</span>
+            <span className="font-medium">−{formatCurrency(discount)}</span>
+          </div>
+        )}
 
         {/* Valor domicilio editable */}
         {isDomicilio && (
@@ -279,10 +294,21 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
                   <XCircle className="h-3.5 w-3.5" />
                 </button>
               </div>
+            ) : order.freeDelivery && deliveryFee === 0 && !canSetFee ? (
+              <span className="text-sm font-bold text-emerald-600">Gratis (promo)</span>
             ) : !canSetFee ? (
               <span className="text-sm font-bold tabular-nums text-[var(--t-text-3)]">
                 {deliveryFee > 0 ? formatCurrency(deliveryFee) : 'Sin valor'}
               </span>
+            ) : order.freeDelivery && deliveryFee === 0 ? (
+              <button
+                onClick={() => { setEditingFee(true); setFeeInput(''); }}
+                title="Domicilio gratis por promoción. Toca para cobrar un valor."
+                className="flex items-center gap-1 text-sm font-bold text-emerald-600 hover:text-[#FF6A1A]"
+              >
+                Gratis (promo)
+                <Pencil className="h-3 w-3 opacity-60" />
+              </button>
             ) : (
               <button
                 onClick={() => { setEditingFee(true); setFeeInput(deliveryFee > 0 ? String(deliveryFee) : ''); }}
@@ -299,6 +325,21 @@ export function OrderCard({ order, status, statuses, restaurantId, domiciliarios
           <span>Total</span>
           <span className="text-[#FF6A1A]">{formatCurrency(grandTotal)}</span>
         </div>
+
+        {/* Promociones aplicadas: el restaurante las valida al confirmar por WhatsApp */}
+        {(order.appliedPromotions?.length ?? 0) > 0 && (
+          <div className="flex flex-wrap gap-1 pt-1">
+            {order.appliedPromotions!.map((p) => (
+              <span
+                key={p.promotionId}
+                title={p.detail ?? p.name}
+                className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${p.type === 'loyalty' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-50 text-emerald-700'}`}
+              >
+                {p.type === 'loyalty' ? '🎁 Canje de fidelidad' : `🏷 ${p.name}`}{p.couponCode ? ` · ${p.couponCode}` : ''}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Cliente */}

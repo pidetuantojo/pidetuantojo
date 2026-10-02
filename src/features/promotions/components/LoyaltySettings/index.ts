@@ -1,0 +1,1 @@
+export { LoyaltySettings } from './LoyaltySettings';

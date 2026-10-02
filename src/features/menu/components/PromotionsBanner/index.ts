@@ -1,0 +1,1 @@
+export { PromotionsBanner } from './PromotionsBanner';

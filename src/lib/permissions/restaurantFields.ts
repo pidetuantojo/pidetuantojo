@@ -17,6 +17,7 @@ export const RESTAURANT_FIELD_GROUPS = {
   'settings.update_delivery_mode': ['deliveryMode'],
   'payment_methods.manage': ['paymentMethods'],
   'delivery_methods.manage': ['deliveryMethods'],
+  'promotions.manage': ['loyalty'],
 } as const satisfies Partial<Record<Permission, readonly RestaurantField[]>>;
 
 /**

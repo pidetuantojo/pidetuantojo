@@ -7,6 +7,7 @@ import { formatCurrency } from '@/lib/utils';
 import type { Product, Adicional, OrderItem, Additional, Category, PaymentMethodConfig } from '@/types';
 import { PaymentMethodPicker } from '@/features/payment-methods/components/PaymentMethodPicker';
 import { getActivePaymentMethods, toOrderPayment } from '@/features/payment-methods/helpers/payment-methods.helpers';
+import { normalizePhone } from '@/lib/customers/phone';
 
 import { ordersService } from '../../services/orders.service';
 
@@ -142,11 +143,14 @@ export function ManualOrderModal({
         return { productId: l.product.id, productName: l.product.name, quantity: l.quantity, unitPrice, subtotal: (unitPrice + addPrice) * l.quantity, additionals };
       });
 
+      // Teléfono normalizado: los pedidos manuales también cuentan para la fidelidad del cliente
+      const phoneKey = normalizePhone(customerPhone);
       await ordersService.create({
         restaurantId,
         statusId: receivedStatusId,
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
+        ...(phoneKey ? { customerPhoneKey: phoneKey } : {}),
         deliveryType,
         ...(deliveryType === 'domicilio' && address.trim() ? { customerAddress: address.trim() } : {}),
         ...(deliveryType === 'domicilio' && barrio.trim() ? { barrio: barrio.trim() } : {}),

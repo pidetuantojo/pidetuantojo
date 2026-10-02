@@ -10,9 +10,11 @@ import { orderStatusesService } from '@/features/order-statuses/services/order-s
 import { deliveryZonesService } from '@/features/delivery-zones/services/delivery-zones.service';
 import { mesasService } from '@/features/delivery-methods/services/mesas.service';
 import { applyPlanFeatures } from '@/lib/permissions/planFeatures';
-import { adminDb } from '@/lib/firebase/admin';
-import { getSubscriptionInfo } from '@/lib/subscription/subscription';
-import type { Plan } from '@/types';
+import { loadActivePromotions, menuPromotions, promotionFeatures } from '@/lib/promotions/promotions.server';
+import { isRestaurantSuspended } from '@/lib/restaurants/restaurant.server';
+
+// Promociones con horario, productos agotados y precios: siempre lo último (sin caché estática)
+export const dynamic = 'force-dynamic';
 
 interface Props {
   params: { slug: string };
@@ -35,19 +37,14 @@ export default async function RestaurantMenuPage({ params }: Props) {
   }
 
   // Bloquear menú si la suscripción está suspendida
-  if (stored.planId && stored.subscriptionStartDate) {
-    let billingPeriod: 'monthly' | 'yearly' | undefined;
-    const planSnap = await adminDb.collection('plans').doc(stored.planId).get();
-    if (planSnap.exists) billingPeriod = (planSnap.data() as Plan).billingPeriod;
-    if (getSubscriptionInfo(stored, billingPeriod).status === 'suspended') notFound();
-  }
+  if (await isRestaurantSuspended(stored)) notFound();
 
   // Lo que el plan no incluye no se ofrece en el menú (mesa, programados, zonas, cuentas de pago)
   const restaurant = applyPlanFeatures(stored);
 
   const mesaMethodActive = restaurant.deliveryMethods?.mesa?.isActive ?? false;
 
-  const [categories, products, adicionales, statuses, allZones, allMesas] = await Promise.all([
+  const [categories, products, adicionales, statuses, allZones, allMesas, promotions] = await Promise.all([
     categoriesService.getAll(restaurant.id),
     productsService.getAll(restaurant.id),
     adicionalesService.getAll(restaurant.id),
@@ -56,6 +53,12 @@ export default async function RestaurantMenuPage({ params }: Props) {
       ? deliveryZonesService.getAll(restaurant.id)
       : Promise.resolve([]),
     mesaMethodActive ? mesasService.getAll(restaurant.id) : Promise.resolve([]),
+    // Sin cupones (no se revela el código) y solo lo que el plan incluye
+    // Si fallan, el menú se muestra igual (sin promociones)
+    loadActivePromotions(restaurant).then(menuPromotions).catch((err) => {
+      console.error('[menu] No se pudieron cargar las promociones:', err);
+      return [];
+    }),
   ]);
 
   const activeCategories = categories.filter((c) => c.isActive);
@@ -75,6 +78,8 @@ export default async function RestaurantMenuPage({ params }: Props) {
       deliveryZones={deliveryZones}
       deliveryMode={restaurant.deliveryMode ?? 'manual'}
       mesas={mesas}
+      promotions={promotions}
+      couponsEnabled={promotionFeatures(restaurant).advanced}
     />
   );
 }

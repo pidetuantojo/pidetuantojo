@@ -1,0 +1,1 @@
+export { PromotionsManager } from './PromotionsManager';

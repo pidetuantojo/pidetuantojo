@@ -247,12 +247,18 @@ export function OrderDetailModal({
                           }}>
                             {item.quantity}
                           </span>
-                          {item.productName}
+                          {item.isGift && '🎁 '}{item.productName}
                         </div>
-                        <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--t-text-1)', flexShrink: 0 }}>
-                          {formatCurrency(item.subtotal)}
+                        <div style={{ fontWeight: 700, fontSize: 14, color: item.isGift ? '#059669' : 'var(--t-text-1)', flexShrink: 0 }}>
+                          {item.isGift ? 'Regalo' : formatCurrency(item.subtotal)}
                         </div>
                       </div>
+                      {!!item.discount && (
+                        <div style={{ marginTop: 4, fontSize: 12, color: '#059669', paddingLeft: 27, display: 'flex', justifyContent: 'space-between' }}>
+                          <span>🏷 {item.promotionName ?? 'Promoción'}</span>
+                          <span>−{formatCurrency(item.discount)}</span>
+                        </div>
+                      )}
                       {item.additionals.length > 0 && (
                         <div style={{ marginTop: 4, fontSize: 12, color: 'var(--t-text-3)', paddingLeft: 27 }}>
                           + {item.additionals.map((a) => a.name).join(', ')}
@@ -268,18 +274,33 @@ export function OrderDetailModal({
                 </div>
               ))}
               <div style={{ padding: '12px 16px', background: 'var(--t-surface-2)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {totals.deliveryFee > 0 && (
-                  <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--t-text-2)' }}>
-                      <span>Total productos</span>
-                      <span>{formatCurrency(totals.productsTotal)}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--t-text-2)' }}>
-                      <span>Valor de domicilio</span>
-                      <span>{formatCurrency(totals.deliveryFee)}</span>
-                    </div>
-                  </>
+                {(totals.deliveryFee > 0 || totals.discount > 0 || order.freeDelivery) && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--t-text-2)' }}>
+                    <span>Total productos</span>
+                    <span>{formatCurrency(totals.productsTotal)}</span>
+                  </div>
                 )}
+                {(order.appliedPromotions ?? []).filter((p) => p.amount > 0 && p.type !== 'free_delivery').map((p) => (
+                  <div key={p.promotionId} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#059669' }}>
+                    <span>{p.type === 'loyalty' ? '🎁 Premio de fidelidad' : `🏷 ${p.name}`}{p.couponCode ? ` (${p.couponCode})` : ''}</span>
+                    <span>−{formatCurrency(p.amount)}</span>
+                  </div>
+                ))}
+                {totals.discount > 0 && !(order.appliedPromotions?.length) && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#059669' }}>
+                    <span>Descuentos</span>
+                    <span>−{formatCurrency(totals.discount)}</span>
+                  </div>
+                )}
+                {(totals.deliveryFee > 0 || order.freeDelivery) && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: order.freeDelivery && totals.deliveryFee === 0 ? '#059669' : 'var(--t-text-2)' }}>
+                    <span>Valor de domicilio</span>
+                    <span>{order.freeDelivery && totals.deliveryFee === 0 ? 'Gratis (promo)' : formatCurrency(totals.deliveryFee)}</span>
+                  </div>
+                )}
+                {(order.appliedPromotions ?? []).filter((p) => p.type === 'gift').map((p) => (
+                  <div key={p.promotionId} style={{ fontSize: 12, color: '#059669' }}>🎁 {p.detail ?? p.name}</div>
+                ))}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--t-text-1)' }}>Total</span>
                   <span style={{ fontWeight: 800, fontSize: 16, color: '#FF6A1A' }}>{formatCurrency(totals.total)}</span>

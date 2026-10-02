@@ -20,6 +20,7 @@ export const ROUTES = {
     categorias: '/dashboard/categorias',
     adicionales: '/dashboard/adicionales',
     contabilidad: '/dashboard/contabilidad',
+    promociones: '/dashboard/promociones',
     pagos: '/dashboard/pagos',
     zonas: '/dashboard/domicilios/zonas',
     domiciliarios: '/dashboard/domicilios/domiciliarios',

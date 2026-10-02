@@ -1,17 +1,17 @@
 import { collection, deleteField, doc, updateDoc, setDoc } from 'firebase/firestore';
 
 import { db } from '@/lib/firebase/config';
-import type { AssignedDriver, CreateOrderData } from '@/types';
+import { generateOrderNumber } from '@/lib/orders/orderNumber';
+import type { AssignedDriver, CreateOrderData, Order } from '@/types';
+
+import { getOrderTotals } from '../helpers/totals.helpers';
 
 function ordersRef(restaurantId: string) {
   return collection(db, 'restaurants', restaurantId, 'orders');
 }
 
-function generateOrderNumber(): string {
-  const timestamp = Date.now().toString().slice(-6);
-  return `#${timestamp}`;
-}
-
+// Pedidos del menú público: POST /api/orders (el servidor calcula precios y promociones).
+// Aquí solo se crean pedidos manuales del panel (regla: orders.create).
 export const ordersService = {
   async create(data: CreateOrderData): Promise<{ id: string; orderNumber: string }> {
     const now = new Date().toISOString();
@@ -41,11 +41,21 @@ export const ordersService = {
     });
   },
 
-  /** Actualiza el valor del domicilio y recalcula `total = subtotal (productos) + deliveryFee`. */
-  async updateDeliveryFee(restaurantId: string, id: string, deliveryFee: number, subtotal: number): Promise<void> {
+  /**
+   * Actualiza el valor del domicilio y recalcula `total = subtotal − descuentos + deliveryFee`.
+   * Si el pedido tenía domicilio gratis por promoción y se cobra un valor, deja de marcarse gratis.
+   */
+  async updateDeliveryFee(
+    restaurantId: string,
+    id: string,
+    deliveryFee: number,
+    order: Pick<Order, 'subtotal' | 'discount' | 'freeDelivery'>,
+  ): Promise<void> {
+    const { total } = getOrderTotals({ ...order, deliveryFee });
     await updateDoc(doc(ordersRef(restaurantId), id), {
       deliveryFee,
-      total: subtotal + deliveryFee,
+      total,
+      ...(order.freeDelivery && deliveryFee > 0 ? { freeDelivery: deleteField() } : {}),
       updatedAt: new Date().toISOString(),
     });
   },

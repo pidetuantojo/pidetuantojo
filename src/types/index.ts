@@ -135,6 +135,8 @@ export interface Restaurant {
   subscriptionStartDate?: string; // ISO 8601 — when plan was last activated/renewed
   // Funcionalidades del plan (features.*), copiadas por el servidor: el menú público las lee sin sesión
   planFeatures?: string[];
+  // Programa de fidelidad ("cada N pedidos, un premio"). Requiere features.promotions_advanced
+  loyalty?: LoyaltyConfig;
   adminUserId: string;
   isActive: boolean;
   createdAt: string;
@@ -186,6 +188,8 @@ export type UpdateAdicionalData = Partial<Pick<Adicional, 'name' | 'price' | 'is
 
 // Used only in cart / order storage (resolved name+price, not DB entity)
 export interface Additional {
+  // id del Adicional (el servidor lo usa para validar el precio; pedidos viejos no lo tienen)
+  id?: string;
   name: string;
   price: number;
 }
@@ -245,9 +249,32 @@ export interface OrderItem {
   productImage?: string;
   quantity: number;
   unitPrice: number;
+  // Precio de lista: (unitPrice + adicionales) × cantidad, sin descuentos
   subtotal: number;
   additionals: Additional[];
   specialInstructions?: string;
+  // Descuento de promociones sobre esta línea (precio tachado, 2x1, combo)
+  discount?: number;
+  promotionName?: string;
+  // Producto de regalo de una promoción (precio 0)
+  isGift?: boolean;
+}
+
+export type OrderDeliveryType = 'recoger' | 'domicilio' | 'mesa';
+
+/**
+ * Foto de una promoción aplicada al pedido: si después editan o borran la promoción,
+ * el pedido sigue mostrando lo que se cobró.
+ */
+export interface AppliedPromotion {
+  promotionId: string;
+  name: string;
+  type: PromotionType | 'loyalty';
+  // Valor descontado (en domicilio gratis: el valor del domicilio; en regalos: 0)
+  amount: number;
+  couponCode?: string;
+  // Texto corto: "2x1 en Empanadas", "Regalo: Gaseosa"
+  detail?: string;
 }
 
 export interface Order {
@@ -256,9 +283,11 @@ export interface Order {
   orderNumber: string;
   customerName: string;
   customerPhone: string;
+  // Teléfono normalizado (10 dígitos): identifica al cliente para promociones y fidelidad
+  customerPhoneKey?: string;
   customerAddress?: string;
   barrio?: string;
-  deliveryType?: 'recoger' | 'domicilio' | 'mesa';
+  deliveryType?: OrderDeliveryType;
   tableId?: string;
   tableName?: string;
   // Programación: false/ausente = inmediato. scheduledFor en ISO 8601
@@ -272,8 +301,17 @@ export interface Order {
   paymentAccount?: string;
   isPaid?: boolean;
   items: OrderItem[];
+  // Montos (ver getOrderTotals): subtotal = productos a precio de lista · discount = promociones
+  // total = subtotal − discount + deliveryFee
   subtotal: number;
+  discount?: number;
   total: number;
+  appliedPromotions?: AppliedPromotion[];
+  // Domicilio gratis por promoción (deliveryFee queda en 0)
+  freeDelivery?: boolean;
+  couponCode?: string;
+  // El cliente canjeó su premio de fidelidad en este pedido
+  loyaltyRedeemed?: boolean;
   statusId: string;
   notes?: string;
   internalNote?: string;
@@ -404,7 +442,7 @@ export interface AssignedDriver {
 export type CreateOrderData = Omit<Order, 'id' | 'orderNumber' | 'createdAt' | 'updatedAt'>;
 export type UpdateOrderData = Partial<Pick<Order,
   'statusId' | 'notes' | 'deliveryFee' | 'isPaid' | 'internalNote' |
-  'items' | 'subtotal' | 'total' | 'customerName' | 'customerPhone' |
+  'items' | 'subtotal' | 'discount' | 'total' | 'customerName' | 'customerPhone' |
   'customerAddress' | 'barrio' | 'deliveryType' | 'paymentMethod' | 'assignedDriver' |
   'tableId' | 'tableName' | 'isScheduled' | 'scheduledFor' |
   'paymentMethodType' | 'paymentAccount'
@@ -424,3 +462,136 @@ export interface Mesa {
 
 export type CreateMesaData = Omit<Mesa, 'id' | 'createdAt' | 'updatedAt'>;
 export type UpdateMesaData = Partial<Pick<Mesa, 'name' | 'isActive' | 'sortOrder'>>;
+
+// ===== PROMOCIONES =====
+// Plan y reglas de negocio: docs/promociones.md
+
+/**
+ * - item_discount:  precio tachado en productos / categorías / todo el menú
+ * - order_discount: descuento al total de productos (con pedido mínimo)
+ * - free_delivery:  domicilio gratis (con pedido mínimo)
+ * - bundle:         NxM (2x1, 3x2) en productos / categorías
+ * - combo:          varios productos juntos por un precio fijo
+ * - gift:           producto de regalo con la compra
+ */
+export type PromotionType = 'item_discount' | 'order_discount' | 'free_delivery' | 'bundle' | 'combo' | 'gift';
+
+// percent: % de descuento · amount: $ de descuento · fixed_price: precio final (solo item_discount)
+export type DiscountKind = 'percent' | 'amount' | 'fixed_price';
+
+export interface PromotionTarget {
+  scope: 'all' | 'categories' | 'products';
+  categoryIds?: string[];
+  productIds?: string[];
+}
+
+export interface ComboComponent {
+  productId: string;
+  quantity: number;
+}
+
+/** Cuándo aplica (hora de Colombia). Campos vacíos = sin restricción. */
+export interface PromotionSchedule {
+  // YYYY-MM-DD (inclusive)
+  startDate?: string;
+  endDate?: string;
+  // 0 = domingo … 6 = sábado
+  daysOfWeek?: number[];
+  // HH:mm — si endTime < startTime la franja cruza la medianoche
+  startTime?: string;
+  endTime?: string;
+}
+
+/** restaurants/{restaurantId}/promotions/{promotionId} */
+export interface Promotion {
+  id: string;
+  restaurantId: string;
+  // Título visible para el cliente
+  name: string;
+  description?: string;
+  image?: string;
+  type: PromotionType;
+
+  // item_discount / order_discount
+  discountKind?: DiscountKind;
+  discountValue?: number;
+  // Tope del descuento en $ (descuentos en %)
+  maxDiscount?: number;
+  // item_discount / bundle
+  target?: PromotionTarget;
+  // bundle: lleva `buyQuantity`, paga `payQuantity`
+  buyQuantity?: number;
+  payQuantity?: number;
+  // combo
+  comboItems?: ComboComponent[];
+  comboPrice?: number;
+  // gift
+  giftProductId?: string;
+  giftQuantity?: number;
+
+  // Condiciones
+  schedule?: PromotionSchedule;
+  // Mínimo de productos (después de los descuentos por producto)
+  minSubtotal?: number;
+  // Formas de entrega en las que aplica (vacío = todas)
+  deliveryTypes?: OrderDeliveryType[];
+  // Cupón: si existe, solo aplica escribiendo el código (se guarda en mayúsculas)
+  couponCode?: string;
+  firstOrderOnly?: boolean;
+  // Límite total de usos ("las primeras 50") y por cliente (teléfono)
+  maxUses?: number;
+  maxUsesPerCustomer?: number;
+  // Solo descuentos al total: si es false, no descuenta sobre productos que ya están en oferta
+  stackable?: boolean;
+
+  // Mostrar en el banner del menú público
+  showInMenu: boolean;
+  // Pausada / activa (sin borrar)
+  isActive: boolean;
+  // Lo incrementa SOLO el servidor al crear pedidos
+  usesCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SavePromotionData = Omit<Promotion, 'id' | 'restaurantId' | 'usesCount' | 'createdAt' | 'updatedAt'>;
+
+// ===== FIDELIDAD =====
+
+/** restaurant.loyalty — "cada N pedidos entregados o pagados, un premio". */
+export interface LoyaltyConfig {
+  isActive: boolean;
+  // Pedidos que hay que completar para ganar el premio
+  ordersRequired: number;
+  // Solo cuentan pedidos con al menos este valor en productos
+  minSubtotal?: number;
+  rewardKind: 'percent' | 'amount';
+  rewardValue: number;
+  // Tope del premio en % (ej: 100% hasta $30.000 = "pedido gratis hasta $30.000")
+  maxReward?: number;
+}
+
+// ===== CLIENTES =====
+
+/**
+ * restaurants/{restaurantId}/customers/{phoneKey} — lo escribe SOLO el servidor al crear pedidos.
+ * La identidad es el teléfono normalizado (débil: ver docs/promociones.md).
+ */
+export interface Customer {
+  id: string;
+  restaurantId: string;
+  phone: string;
+  name: string;
+  ordersCount: number;
+  firstOrderAt: string;
+  lastOrderAt: string;
+  // Usos por promoción (para "1 por cliente")
+  promoUses?: Record<string, number>;
+  // Autorización de tratamiento de datos para promociones (Ley 1581 de 2012)
+  marketingOptIn?: boolean;
+  marketingOptInAt?: string;
+  // Último canje de fidelidad: los sellos se cuentan desde aquí
+  loyaltyRedeemedAt?: string;
+  loyaltyRedemptions?: number;
+  updatedAt: string;
+}

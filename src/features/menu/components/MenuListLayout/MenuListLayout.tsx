@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 import { formatCurrency } from '@/lib/utils';
+import type { ProductPromotion } from '@/features/promotions/engine';
 import type { Category, Product } from '@/types';
 
 interface MenuListLayoutProps {
@@ -14,11 +15,13 @@ interface MenuListLayoutProps {
   restaurantClosed?: boolean;
   onSelect: (product: Product) => void;
   activeCategoryId?: string;
+  // Promoción vigente de cada producto (precio tachado, 2x1, combo)
+  getPromotion?: (product: Product) => ProductPromotion | null;
 }
 
 const sg = "var(--font-sans, sans-serif)";
 
-export function MenuListLayout({ categories, products, primaryColor, secondaryColor, restaurantClosed, onSelect, activeCategoryId }: MenuListLayoutProps) {
+export function MenuListLayout({ categories, products, primaryColor, secondaryColor, restaurantClosed, onSelect, activeCategoryId, getPromotion }: MenuListLayoutProps) {
   // All categories open by default
   const [openIds, setOpenIds] = useState<Set<string>>(() => new Set(categories.slice(0, 1).map((c) => c.id)));
 
@@ -129,9 +132,26 @@ export function MenuListLayout({ categories, products, primaryColor, secondaryCo
                           {product.description}
                         </p>
                       )}
-                      <span style={{ fontFamily: sg, fontWeight: 700, fontSize: 15, color: secondaryColor }}>
-                        {formatCurrency(product.price)}
-                      </span>
+                      {(() => {
+                        const promo = getPromotion?.(product);
+                        return (
+                          <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
+                            {promo?.finalPrice !== undefined && (
+                              <span style={{ fontFamily: sg, fontWeight: 600, fontSize: 12, color: '#9a9088', textDecoration: 'line-through' }}>
+                                {formatCurrency(product.price)}
+                              </span>
+                            )}
+                            <span style={{ fontFamily: sg, fontWeight: 700, fontSize: 15, color: secondaryColor }}>
+                              {formatCurrency(promo?.finalPrice ?? product.price)}
+                            </span>
+                            {promo && (
+                              <span title={promo.promotion.name} style={{ fontFamily: sg, fontWeight: 800, fontSize: 11, color: '#fff', background: '#dc2626', borderRadius: 999, padding: '2px 8px' }}>
+                                🔥 {promo.badge}
+                              </span>
+                            )}
+                          </span>
+                        );
+                      })()}
                     </div>
 
                     {/* Add button */}

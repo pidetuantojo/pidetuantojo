@@ -36,6 +36,12 @@ interface EditableItem {
   unitPrice: number;
   quantity: number;
   additionals: Additional[];
+  // Se conservan de la línea original (promociones, notas del cliente)
+  productImage?: string;
+  specialInstructions?: string;
+  discount?: number;
+  promotionName?: string;
+  isGift?: boolean;
 }
 
 const DELIVERY_TYPES = [
@@ -52,6 +58,11 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
       unitPrice: item.unitPrice,
       quantity: item.quantity,
       additionals: [...item.additionals],
+      productImage: item.productImage,
+      specialInstructions: item.specialInstructions,
+      discount: item.discount,
+      promotionName: item.promotionName,
+      isGift: item.isGift,
     }))
   );
 
@@ -88,6 +99,10 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
   }, 0);
   // El valor del domicilio se edita desde la tarjeta; acá solo se conserva (o se quita si deja de ser domicilio)
   const deliveryFee = deliveryType === 'domicilio' ? order.deliveryFee ?? 0 : 0;
+  // Promociones: se conservan los descuentos de las líneas que siguen + los descuentos al total del pedido
+  const originalLineDiscounts = order.items.reduce((s, i) => s + (i.discount ?? 0), 0);
+  const orderLevelDiscount = Math.max(0, (order.discount ?? 0) - originalLineDiscounts);
+  const discount = Math.min(total, orderLevelDiscount + items.reduce((s, i) => s + (i.discount ?? 0), 0));
 
   function changeQty(index: number, delta: number) {
     setItems((prev) => {
@@ -168,14 +183,21 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
           unitPrice: item.unitPrice,
           subtotal: unitPrice * item.quantity,
           additionals: item.additionals,
+          // Firestore rechaza `undefined` dentro de arrays: solo se agregan si existen
+          ...(item.productImage ? { productImage: item.productImage } : {}),
+          ...(item.specialInstructions ? { specialInstructions: item.specialInstructions } : {}),
+          ...(item.discount ? { discount: item.discount } : {}),
+          ...(item.promotionName ? { promotionName: item.promotionName } : {}),
+          ...(item.isGift ? { isGift: true } : {}),
         };
       });
 
       await ordersService.updateData(restaurantId, order.id, {
         items: newItems,
-        // subtotal = productos · total = productos + domicilio (si deja de ser domicilio, se borra el valor)
+        // subtotal = productos · total = productos − descuentos + domicilio (si deja de ser domicilio, se borra el valor)
         subtotal: total,
-        total: total + deliveryFee,
+        ...(order.discount ? { discount: discount || undefined } : {}),
+        total: total - discount + deliveryFee,
         deliveryFee: deliveryType === 'domicilio' ? order.deliveryFee : undefined,
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
@@ -491,21 +513,27 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
         <div style={{ flexShrink: 0, borderTop: '1px solid var(--t-border)', padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           {items.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {(deliveryFee > 0 || discount > 0) && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--t-text-3)' }}>
+                  <span>Total productos</span>
+                  <span>{formatCurrency(total)}</span>
+                </div>
+              )}
+              {discount > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#059669' }}>
+                  <span title="Se conservan los descuentos de las promociones del pedido original">Descuentos de promociones</span>
+                  <span>−{formatCurrency(discount)}</span>
+                </div>
+              )}
               {deliveryFee > 0 && (
-                <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--t-text-3)' }}>
-                    <span>Total productos</span>
-                    <span>{formatCurrency(total)}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--t-text-3)' }}>
-                    <span>Valor de domicilio</span>
-                    <span>{formatCurrency(deliveryFee)}</span>
-                  </div>
-                </>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--t-text-3)' }}>
+                  <span>Valor de domicilio</span>
+                  <span>{formatCurrency(deliveryFee)}</span>
+                </div>
               )}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: 13, color: 'var(--t-text-3)', fontWeight: 600 }}>Total actualizado</span>
-                <span style={{ fontWeight: 800, fontSize: 18, color: '#FF6A1A' }}>{formatCurrency(total + deliveryFee)}</span>
+                <span style={{ fontWeight: 800, fontSize: 18, color: '#FF6A1A' }}>{formatCurrency(total - discount + deliveryFee)}</span>
               </div>
             </div>
           )}

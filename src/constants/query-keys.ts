@@ -24,6 +24,8 @@ export const QUERY_KEYS = {
 
   printer: (restaurantId: string) => ['printer', restaurantId] as const,
 
+  promotions: (restaurantId: string) => ['promotions', restaurantId] as const,
+
   leads: ['leads'] as const,
 
   plans: ['plans'] as const,

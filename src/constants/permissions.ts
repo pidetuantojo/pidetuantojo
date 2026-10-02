@@ -84,6 +84,13 @@ export const PERMISSION_MODULES = [
     ],
   },
   {
+    id: 'promotions', label: 'Promociones', kind: 'user', route: '/dashboard/promociones',
+    permissions: [
+      { key: 'promotions.view', label: 'Ver promociones', requires: ['features.promotions'] },
+      { key: 'promotions.manage', label: 'Crear, editar y pausar promociones', description: 'Incluye el programa de fidelidad', requires: ['promotions.view', 'products.view', 'categories.view'] },
+    ],
+  },
+  {
     id: 'accounting', label: 'Contabilidad', kind: 'user', route: '/dashboard/contabilidad',
     permissions: [
       { key: 'accounting.view', label: 'Ver contabilidad', description: 'Resumen de ventas y pedidos por fecha' },
@@ -162,6 +169,8 @@ export const PERMISSION_MODULES = [
       { key: 'features.payment_accounts', label: 'Cuentas de pago', description: 'Datáfono y transferencias (Nequi, Daviplata, BreB, bancos). Sin esto: solo efectivo' },
       { key: 'features.printing', label: 'Impresión de comandas', description: 'Impresora térmica y estación de impresión' },
       { key: 'features.delivery_companies', label: 'Empresas de domicilios', description: 'Registrar empresas y asignar su domiciliario' },
+      { key: 'features.promotions', label: 'Promociones', description: 'Precio tachado, descuento al total y domicilio gratis, con horarios' },
+      { key: 'features.promotions_advanced', label: 'Promociones avanzadas y fidelidad', description: 'Combos, 2x1, regalos, cupones, primer pedido y programa de fidelidad', requires: ['features.promotions'] },
     ],
   },
 ] as const satisfies readonly PermissionModule[];

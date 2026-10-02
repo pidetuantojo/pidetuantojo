@@ -110,7 +110,8 @@ service cloud.firestore {
           'openingHours', 'allowScheduledWhenClosed',
           'deliveryMode',
           'paymentMethods',
-          'deliveryMethods'
+          'deliveryMethods',
+          'loyalty'
         ])
         && guard(restaurantId, ['name', 'tagline', 'description', 'phone', 'category'], ['settings.update_info'])
         && guard(restaurantId, ['logo', 'bannerImage', 'theme', 'menuLayout'], ['settings.update_branding'])
@@ -119,7 +120,8 @@ service cloud.firestore {
         && guard(restaurantId, ['openingHours', 'allowScheduledWhenClosed'], ['settings.update_hours'])
         && guard(restaurantId, ['deliveryMode'], ['settings.update_delivery_mode'])
         && guard(restaurantId, ['paymentMethods'], ['payment_methods.manage'])
-        && guard(restaurantId, ['deliveryMethods'], ['delivery_methods.manage']);
+        && guard(restaurantId, ['deliveryMethods'], ['delivery_methods.manage'])
+        && guard(restaurantId, ['loyalty'], ['promotions.manage']);
     }
 
     match /restaurants/{restaurantId} {
@@ -223,6 +225,28 @@ service cloud.firestore {
         allow write: if hasPerm(restaurantId, 'print_station.run');
       }
 
+      // ─── Promociones ─────────────────────────────────────────────────────────
+      // El menú público NO las lee directo: el servidor las filtra (sin cupones) y las pasa a la página.
+      // usesCount lo incrementa solo el servidor (Admin SDK) al crear pedidos.
+
+      match /promotions/{promotionId} {
+        allow read: if hasPerm(restaurantId, 'promotions.view');
+        allow create: if hasPerm(restaurantId, 'promotions.manage')
+          && request.resource.data.restaurantId == restaurantId
+          && request.resource.data.usesCount == 0;
+        allow update: if hasPerm(restaurantId, 'promotions.manage')
+          && !changedKeys().hasAny(['usesCount', 'restaurantId']);
+        allow delete: if hasPerm(restaurantId, 'promotions.manage');
+      }
+
+      // ─── Clientes ────────────────────────────────────────────────────────────
+      // Teléfono, pedidos y fidelidad: los escribe SOLO el servidor (/api/orders).
+
+      match /customers/{customerId} {
+        allow read: if hasPerm(restaurantId, 'promotions.view');
+        allow write: if false;
+      }
+
       // ─── Orders ──────────────────────────────────────────────────────────────
 
       // Cada grupo de campos tiene su permiso; lo que no esté en ningún grupo exige orders.edit
@@ -230,21 +254,23 @@ service cloud.firestore {
         let printKeys = ['printStatus', 'printJobId', 'printQueuedAt', 'printError',
                          'printingStartedAt', 'printedAt', 'printCount'];
         let groupedKeys = ['updatedAt', 'statusId', 'isPaid', 'internalNote', 'assignedDriver',
-                           'deliveryFee', 'total'].concat(printKeys);
+                           'deliveryFee', 'total', 'freeDelivery'].concat(printKeys);
         return isMember(restaurantId)
           && guard(restaurantId, ['statusId'], ['orders.change_status'])
           && guard(restaurantId, ['isPaid'], ['orders.mark_paid'])
           && guard(restaurantId, ['internalNote'], ['orders.manage_notes'])
           && guard(restaurantId, ['assignedDriver'], ['orders.assign_driver'])
-          && guard(restaurantId, ['deliveryFee', 'total'], ['orders.set_delivery_fee', 'orders.edit'])
+          && guard(restaurantId, ['deliveryFee', 'total', 'freeDelivery'], ['orders.set_delivery_fee', 'orders.edit'])
           && guard(restaurantId, printKeys, ['orders.print', 'print_station.run'])
           && (changedKeys().difference(groupedKeys.toSet()).size() == 0
               || hasPerm(restaurantId, 'orders.edit'));
       }
 
       match /orders/{orderId} {
-        // Clientes (menú público) y pedidos manuales crean pedidos
-        allow create: if request.resource.data.restaurantId == restaurantId;
+        // Los pedidos del menú público los crea el servidor (/api/orders: valida precios y promociones).
+        // Desde el cliente solo se crean pedidos manuales del panel.
+        allow create: if request.resource.data.restaurantId == restaurantId
+          && hasPerm(restaurantId, 'orders.create');
         // Contabilidad y la estación de impresión también leen pedidos
         allow read: if hasAnyPerm(restaurantId, ['orders.view', 'accounting.view', 'print_station.run']);
         allow update: if isSuperAdmin() || orderUpdateAllowed();

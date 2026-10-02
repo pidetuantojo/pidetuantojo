@@ -141,7 +141,7 @@ describe('ProductModal', () => {
 
     const items = useCartStore.getState().items;
     expect(items).toHaveLength(1);
-    expect(items[0].additionals).toEqual([{ name: 'Extra queso', price: 2000 }]);
+    expect(items[0].additionals).toEqual([{ id: 'add-1', name: 'Extra queso', price: 2000 }]);
     expect(items[0].subtotal).toBe(17000); // (15000 + 2000) * 1
   });
 

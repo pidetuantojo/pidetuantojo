@@ -5,6 +5,7 @@ import { Package } from 'lucide-react';
 
 import { useCartStore } from '@/store/cart.store';
 import { formatCurrency } from '@/lib/utils';
+import type { ProductPromotion } from '@/features/promotions/engine';
 import type { Product } from '@/types';
 
 interface MenuProductCardProps {
@@ -14,13 +15,15 @@ interface MenuProductCardProps {
   accentColor: string;
   categoryName?: string;
   restaurantClosed?: boolean;
+  // Promoción vigente del producto (precio tachado, 2x1, combo)
+  promotion?: ProductPromotion | null;
   onSelect: (product: Product) => void;
 }
 
 const sg = "var(--font-sans, sans-serif)";
 const sm = "var(--font-mono, monospace)";
 
-export function MenuProductCard({ product, primaryColor, secondaryColor, accentColor, categoryName, restaurantClosed, onSelect }: MenuProductCardProps) {
+export function MenuProductCard({ product, primaryColor, secondaryColor, accentColor, categoryName, restaurantClosed, promotion, onSelect }: MenuProductCardProps) {
   const { name, description, price, image, tag, isAvailable } = product;
   const canAdd = isAvailable && !restaurantClosed;
 
@@ -78,13 +81,33 @@ export function MenuProductCard({ product, primaryColor, secondaryColor, accentC
           background: '#fff', borderRadius: 999, padding: '7px 14px',
           boxShadow: '0 4px 10px rgba(0,0,0,.14)',
         }}>
-          {formatCurrency(price)}
+          {promotion?.finalPrice !== undefined && (
+            <span style={{ marginRight: 6, fontSize: 12, fontWeight: 600, color: '#9a8f86', textDecoration: 'line-through' }}>
+              {formatCurrency(price)}
+            </span>
+          )}
+          {formatCurrency(promotion?.finalPrice ?? price)}
           {qtyInCart > 0 && (
             <span style={{ marginLeft: 6, background: primaryColor, color: '#fff', borderRadius: 999, padding: '0 6px', fontSize: 11, fontWeight: 700 }}>
               {qtyInCart}
             </span>
           )}
         </span>
+
+        {/* promoción */}
+        {promotion && (
+          <span
+            title={promotion.promotion.name}
+            style={{
+              position: 'absolute', bottom: 12, left: 12,
+              fontFamily: sg, fontWeight: 800, fontSize: 13, color: '#fff',
+              background: '#dc2626', borderRadius: 999, padding: '5px 12px',
+              boxShadow: '0 4px 10px rgba(0,0,0,.18)',
+            }}
+          >
+            🔥 {promotion.badge}
+          </span>
+        )}
 
         {/* agotado overlay */}
         {!isAvailable && (

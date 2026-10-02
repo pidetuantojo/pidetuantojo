@@ -1,11 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { cartItemCount, cartTotal, useCartStore } from '@/store/cart.store';
+import { cartItemCount, useCartStore } from '@/store/cart.store';
 import { formatCurrency } from '@/lib/utils';
-import type { Adicional, Category, DeliveryZone, Mesa, Product, Restaurant } from '@/types';
+import { getProductPromotion } from '@/features/promotions/engine';
+import { useCartPricing } from '@/features/promotions/hooks/useCartPricing';
+import { useNow } from '@/features/promotions/hooks/useNow';
+import type { Adicional, Category, DeliveryZone, Mesa, Product, Promotion, Restaurant } from '@/types';
 
+import { PromotionsBanner } from '../PromotionsBanner';
 import { CartDrawer } from '../CartDrawer';
 import { CategoryTabs } from '../CategoryTabs';
 import { ClosedScheduleBanner } from '../ClosedScheduleBanner';
@@ -40,6 +44,10 @@ interface MenuPageProps {
   deliveryZones: DeliveryZone[];
   deliveryMode: 'manual' | 'zones';
   mesas?: Mesa[];
+  // Promociones vigentes sin cupón (filtradas en el servidor)
+  promotions?: Promotion[];
+  // El plan incluye cupones
+  couponsEnabled?: boolean;
 }
 
 const sg = "var(--font-sans, sans-serif)";
@@ -66,15 +74,44 @@ function checkRestaurantOpen(openingHours?: Restaurant['openingHours']): boolean
   return c <= o ? (mins >= o || mins < c) : (mins >= o && mins < c);
 }
 
-export function MenuPage({ restaurant, categories, products, adicionales, receivedStatusId, deliveryZones, deliveryMode, mesas = [] }: MenuPageProps) {
+// Categoría virtual con los productos en promoción (primera del menú)
+const PROMO_CATEGORY_ID = '__promociones';
+
+export function MenuPage({ restaurant, categories: baseCategories, products: baseProducts, adicionales, receivedStatusId, deliveryZones, deliveryMode, mesas = [], promotions = [], couponsEnabled = false }: MenuPageProps) {
   const initCart = useCartStore((s) => s.initCart);
   const setCartOpen = useCartStore((s) => s.setCartOpen);
   const items = useCartStore((s) => s.items);
   const removeItem = useCartStore((s) => s.removeItem);
   const count = useCartStore(cartItemCount);
-  const total = useCartStore(cartTotal);
+
+  // ─── Promociones ───────────────────────────────────────────────────────────
+  const now = useNow();
+  const productPromotions = useMemo(
+    () => new Map(baseProducts.map((p) => [p.id, getProductPromotion(p, promotions, { now })])),
+    [baseProducts, promotions, now]
+  );
+  const getPromotion = useCallback((p: Product) => productPromotions.get(p.id) ?? null, [productPromotions]);
+  const { categories, products } = useMemo(() => {
+    const promoted = baseProducts.filter((p) => p.isActive && productPromotions.get(p.id));
+    if (promoted.length === 0) return { categories: baseCategories, products: baseProducts };
+    const promoCategory: Category = {
+      id: PROMO_CATEGORY_ID, restaurantId: restaurant.id, name: '🔥 Promociones',
+      sortOrder: -1, isActive: true, createdAt: '', updatedAt: '',
+    };
+    return {
+      categories: [promoCategory, ...baseCategories],
+      products: [...promoted.map((p) => ({ ...p, categoryId: PROMO_CATEGORY_ID })), ...baseProducts],
+    };
+  }, [baseCategories, baseProducts, productPromotions, restaurant.id]);
+  // Total con los descuentos por producto (el detalle completo se ve en el carrito)
+  const cartPricing = useCartPricing({ items, products: baseProducts, promotions, now, deliveryType: '' });
+  const total = cartPricing.subtotal - cartPricing.itemsDiscount;
 
   const [activeCategoryId, setActiveCategoryId] = useState(categories[0]?.id ?? '');
+  // Si la categoría de promociones desaparece (terminó el horario), volver a la primera
+  useEffect(() => {
+    if (activeCategoryId && !categories.some((c) => c.id === activeCategoryId)) setActiveCategoryId(categories[0]?.id ?? '');
+  }, [categories, activeCategoryId]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isNavOpen, setNavOpen] = useState(false);
   const [stickyVisible, setStickyVisible] = useState(false);
@@ -298,6 +335,8 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
 
           {closedModal}
 
+          <PromotionsBanner promotions={promotions} products={baseProducts} categories={baseCategories} now={now} primaryColor={pri} secondaryColor={sec} orderingBlocked={orderingBlocked} />
+
           {layout === 'cards' && (
             <>
               {categories.length > 0 && (
@@ -308,7 +347,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
                   <div style={{ textAlign: 'center', padding: '48px 0', color: '#9a8f86', fontFamily: sg }}>Sin productos en esta categoría.</div>
                 ) : (
                   visibleProducts.map((product) => (
-                    <MenuProductCard key={product.id} product={product} primaryColor={pri} secondaryColor={sec} accentColor={acc} categoryName={categoryMap.get(product.categoryId)?.name} restaurantClosed={orderingBlocked} onSelect={setSelectedProduct} />
+                    <MenuProductCard key={product.id} product={product} primaryColor={pri} secondaryColor={sec} accentColor={acc} categoryName={categoryMap.get(product.categoryId)?.name} restaurantClosed={orderingBlocked} promotion={getPromotion(product)} onSelect={setSelectedProduct} />
                   ))
                 )}
               </div>
@@ -316,7 +355,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
           )}
 
           {layout === 'list' && (
-            <MenuListLayout categories={categories} products={products} primaryColor={pri} secondaryColor={sec} restaurantClosed={orderingBlocked} onSelect={setSelectedProduct} />
+            <MenuListLayout categories={categories} products={products} primaryColor={pri} secondaryColor={sec} restaurantClosed={orderingBlocked} onSelect={setSelectedProduct} getPromotion={getPromotion} />
           )}
 
           <div style={{ padding: '0 16px' }}>
@@ -373,7 +412,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
           )}
 
           <ProductModal product={selectedProduct} adicionales={adicionales} primaryColor={pri} onClose={() => setSelectedProduct(null)} />
-          <CartDrawer primaryColor={pri} secondaryColor={sec} receivedStatusId={receivedStatusId} deliveryZones={deliveryZones} deliveryMode={deliveryMode} deliveryMethods={restaurant.deliveryMethods} openingHours={restaurant.openingHours} restaurantClosed={restaurantClosed} allowScheduledWhenClosed={canScheduleWhileClosed} paymentMethods={restaurant.paymentMethods} mesas={mesas} />
+          <CartDrawer primaryColor={pri} secondaryColor={sec} receivedStatusId={receivedStatusId} deliveryZones={deliveryZones} deliveryMode={deliveryMode} deliveryMethods={restaurant.deliveryMethods} openingHours={restaurant.openingHours} restaurantClosed={restaurantClosed} allowScheduledWhenClosed={canScheduleWhileClosed} paymentMethods={restaurant.paymentMethods} mesas={mesas} products={baseProducts} promotions={promotions} loyalty={restaurant.loyalty} couponsEnabled={couponsEnabled} />
         </div>
       </div>
     );
@@ -551,6 +590,10 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
             </div>
           )}
 
+          <div style={{ margin: '-14px -16px 12px' }}>
+            <PromotionsBanner promotions={promotions} products={baseProducts} categories={baseCategories} now={now} primaryColor={pri} secondaryColor={sec} orderingBlocked={orderingBlocked} />
+          </div>
+
           {layout === 'cards' && (
             visibleProducts.length === 0 ? (
               <div id="desktop-products" style={{ textAlign: 'center', padding: '80px 0', color: '#9a8f86', fontFamily: sg, fontSize: 15 }}>
@@ -567,6 +610,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
                     accentColor={acc}
                     categoryName={categoryMap.get(product.categoryId)?.name}
                     restaurantClosed={orderingBlocked}
+                    promotion={getPromotion(product)}
                     onSelect={setSelectedProduct}
                   />
                 ))}
@@ -583,6 +627,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
               restaurantClosed={orderingBlocked}
               onSelect={setSelectedProduct}
               activeCategoryId={activeCategoryId}
+              getPromotion={getPromotion}
             />
           )}
         </div>
@@ -609,7 +654,7 @@ export function MenuPage({ restaurant, categories, products, adicionales, receiv
       )}
 
       <ProductModal product={selectedProduct} adicionales={adicionales} primaryColor={pri} onClose={() => setSelectedProduct(null)} />
-      <CartDrawer primaryColor={pri} secondaryColor={sec} receivedStatusId={receivedStatusId} deliveryZones={deliveryZones} deliveryMode={deliveryMode} deliveryMethods={restaurant.deliveryMethods} openingHours={restaurant.openingHours} restaurantClosed={restaurantClosed} allowScheduledWhenClosed={canScheduleWhileClosed} paymentMethods={restaurant.paymentMethods} mesas={mesas} />
+      <CartDrawer primaryColor={pri} secondaryColor={sec} receivedStatusId={receivedStatusId} deliveryZones={deliveryZones} deliveryMode={deliveryMode} deliveryMethods={restaurant.deliveryMethods} openingHours={restaurant.openingHours} restaurantClosed={restaurantClosed} allowScheduledWhenClosed={canScheduleWhileClosed} paymentMethods={restaurant.paymentMethods} mesas={mesas} products={baseProducts} promotions={promotions} loyalty={restaurant.loyalty} couponsEnabled={couponsEnabled} />
     </div>
   );
 }

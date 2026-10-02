@@ -1,4 +1,4 @@
-import { TrendingUp, ShoppingBag, DollarSign, CreditCard, Package } from 'lucide-react';
+import { TrendingUp, ShoppingBag, DollarSign, CreditCard, Package, Tag } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
 
@@ -36,6 +36,65 @@ export function AccountingSummary({ stats }: AccountingSummaryProps) {
           valueColor="text-purple-600"
         />
       </div>
+
+      {/* Ventas brutas → descuentos → netas (solo si hubo promociones) */}
+      {stats.discounts > 0 && (
+        <div
+          className="grid gap-3 rounded-2xl p-5 sm:grid-cols-3"
+          style={{ border: '1px solid var(--t-border)', background: 'var(--t-surface)' }}
+        >
+          <div>
+            <p className="text-xs" style={{ color: 'var(--t-text-4)' }}>Ventas brutas (productos)</p>
+            <p className="text-xl font-black" style={{ color: 'var(--t-text-1)' }}>{formatCurrency(stats.grossSales)}</p>
+          </div>
+          <div>
+            <p className="text-xs" style={{ color: 'var(--t-text-4)' }}>Descuentos por promociones</p>
+            <p className="text-xl font-black text-emerald-600">−{formatCurrency(stats.discounts)}</p>
+          </div>
+          <div>
+            <p className="text-xs" style={{ color: 'var(--t-text-4)' }}>Ventas netas (productos)</p>
+            <p className="text-xl font-black text-orange-500">{formatCurrency(stats.netSales)}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Rendimiento de promociones */}
+      {stats.byPromotion.length > 0 && (
+        <div
+          className="rounded-2xl p-5"
+          style={{ border: '1px solid var(--t-border)', background: 'var(--t-surface)' }}
+        >
+          <div className="mb-4 flex items-center gap-2">
+            <Tag className="h-5 w-5 text-emerald-600" />
+            <h3 className="font-bold" style={{ color: 'var(--t-text-1)' }}>Rendimiento de promociones</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ color: 'var(--t-text-4)' }} className="text-left text-xs">
+                  <th className="pb-2 font-semibold">Promoción</th>
+                  <th className="pb-2 text-right font-semibold">Pedidos</th>
+                  <th className="pb-2 text-right font-semibold">Ventas</th>
+                  <th className="pb-2 text-right font-semibold">Costo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.byPromotion.map((p) => (
+                  <tr key={p.promotionId} style={{ borderTop: '1px solid var(--t-border)' }}>
+                    <td className="py-2 font-medium" style={{ color: 'var(--t-text-2)' }}>{p.name}</td>
+                    <td className="py-2 text-right font-bold" style={{ color: 'var(--t-text-1)' }}>{p.orders}</td>
+                    <td className="py-2 text-right" style={{ color: 'var(--t-text-2)' }}>{formatCurrency(p.revenue)}</td>
+                    <td className="py-2 text-right text-emerald-600">{p.cost > 0 ? `−${formatCurrency(p.cost)}` : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-3 text-xs" style={{ color: 'var(--t-text-4)' }}>
+            Costo = descuentos y domicilios regalados. Los productos de regalo no se valoran aquí.
+          </p>
+        </div>
+      )}
 
       {/* Desglose por método de pago — tarjetas */}
       {Object.keys(byPaymentMethod).length > 0 && (

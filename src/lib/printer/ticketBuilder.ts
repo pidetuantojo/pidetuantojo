@@ -34,7 +34,7 @@ function formatTime(iso: string): string {
 
 /**
  * Comanda de un pedido en ESC/POS.
- * Montos: productos = subtotal; total = subtotal + valor de domicilio.
+ * Montos: productos = subtotal; total = subtotal − descuentos + valor de domicilio.
  */
 export function buildOrderTicket(order: Order, printer: TicketPrinter, options: TicketOptions): string {
   const items = options.items ?? order.items;
@@ -71,7 +71,8 @@ export function buildOrderTicket(order: Order, printer: TicketPrinter, options: 
   // ── Items
   p.divider();
   items.forEach((item) => {
-    p.bold().lineLR(`${item.quantity} x ${item.productName}`, formatMoney(item.subtotal)).bold(false);
+    p.bold().lineLR(`${item.quantity} x ${item.productName}`, item.isGift ? 'REGALO' : formatMoney(item.subtotal)).bold(false);
+    if (item.discount) p.lineLR(`  Promo: ${item.promotionName ?? ''}`.trimEnd(), `-${formatMoney(item.discount)}`);
     item.additionals.forEach((a) => p.line(`  + ${a.name}`));
     if (item.specialInstructions?.trim()) p.line(`  * ${item.specialInstructions.trim()}`);
   });
@@ -86,16 +87,22 @@ export function buildOrderTicket(order: Order, printer: TicketPrinter, options: 
 
   // ── Totales (solo si es el ticket completo, no el de una estación)
   if (!options.station) {
-    // Misma convención que la tarjeta del pedido: total = productos + valor de domicilio
-    const { productsTotal, deliveryFee, total } = getOrderTotals(order);
+    // Misma convención que la tarjeta del pedido: total = productos − descuentos + valor de domicilio
+    const { productsTotal, discount, deliveryFee, total } = getOrderTotals(order);
     p.divider();
-    if (deliveryFee > 0) {
+    if (deliveryFee > 0 || discount > 0 || order.freeDelivery) {
       p.lineLR('Productos', formatMoney(productsTotal));
-      p.lineLR('Valor domicilio', formatMoney(deliveryFee));
+      (order.appliedPromotions ?? [])
+        .filter((promo) => promo.amount > 0 && promo.type !== 'free_delivery')
+        .forEach((promo) => p.lineLR(promo.type === 'loyalty' ? 'Premio fidelidad' : promo.name, `-${formatMoney(promo.amount)}`));
+      if (discount > 0 && !order.appliedPromotions?.length) p.lineLR('Descuentos', `-${formatMoney(discount)}`);
+      if (order.freeDelivery && deliveryFee === 0) p.lineLR('Valor domicilio', 'GRATIS');
+      else if (deliveryFee > 0) p.lineLR('Valor domicilio', formatMoney(deliveryFee));
     }
     p.bold().lineLR('TOTAL', formatMoney(total)).bold(false);
     p.line(`Pago: ${order.paymentMethod}${order.paymentAccount ? ` ${order.paymentAccount}` : ''}${order.isPaid ? ' (PAGADO)' : ''}`);
-    if (isDomicilio && !order.deliveryFee) p.line('Valor de domicilio pendiente');
+    if (isDomicilio && !order.deliveryFee && !order.freeDelivery) p.line('Valor de domicilio pendiente');
+    if (order.couponCode) p.line(`Cupon: ${order.couponCode}`);
   }
 
   p.feed(3).cut();

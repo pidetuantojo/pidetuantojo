@@ -242,6 +242,7 @@ export const ROUTE_PERMISSIONS: readonly { path: string; permission: Permission;
   { path: '/dashboard/estados', permission: 'order_statuses.view' },
   { path: '/dashboard/categorias', permission: 'categories.view' },
   { path: '/dashboard/adicionales', permission: 'addons.view' },
+  { path: '/dashboard/promociones', permission: 'promotions.view' },
   { path: '/dashboard/contabilidad', permission: 'accounting.view' },
   { path: '/dashboard/pagos', permission: 'payment_methods.view' },
   { path: '/dashboard/entrega', permission: 'delivery_methods.view' },

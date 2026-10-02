@@ -52,5 +52,10 @@ export function applyPlanFeatures<T extends Restaurant>(restaurant: T): T {
     next.paymentMethods = cash.length > 0 ? cash : CASH_ONLY;
   }
 
+  // Sin promociones avanzadas no hay programa de fidelidad
+  if (!has('features.promotions_advanced') && next.loyalty) {
+    next.loyalty = undefined;
+  }
+
   return next;
 }

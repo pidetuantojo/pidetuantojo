@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Minus, Plus, Trash2, Truck, Store, User, UtensilsCrossed, CalendarClock, CheckCircle2 } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
-import { cartItemCount, cartTotal, useCartStore } from '@/store/cart.store';
+import { cartItemCount, useCartStore } from '@/store/cart.store';
 import { buildWhatsAppMessage, buildWhatsAppUrl } from '../../helpers/whatsapp.helpers';
 import type { DeliveryType, PaymentMethod } from '../../helpers/whatsapp.helpers';
 import { checkCanOrder } from '../../helpers/canOrder.helpers';
@@ -20,10 +20,17 @@ import {
   toDateInputValue,
   validateScheduledDate,
 } from '../../helpers/schedule.helpers';
-import { ordersService } from '@/features/orders/services/orders.service';
 import { PaymentMethodIcon } from '@/features/payment-methods/components/PaymentMethodIcon';
-import { getPaymentMethodsForDelivery, getPaymentLabel, toOrderPayment } from '@/features/payment-methods/helpers/payment-methods.helpers';
-import type { DeliveryMethods, DeliveryZone, Mesa, OpeningHours, PaymentMethodConfig } from '@/types';
+import { getPaymentMethodsForDelivery, getPaymentLabel } from '@/features/payment-methods/helpers/payment-methods.helpers';
+import { normalizeCouponCode } from '@/features/promotions/engine';
+import { useCartPricing } from '@/features/promotions/hooks/useCartPricing';
+import { useNow } from '@/features/promotions/hooks/useNow';
+import { normalizePhone } from '@/lib/customers/phone';
+import type { CheckoutInput, CheckoutResponse, CustomerStatusResponse } from '@/lib/orders/checkout.schema';
+import type { DeliveryMethods, DeliveryZone, LoyaltyConfig, Mesa, OpeningHours, PaymentMethodConfig, Product, Promotion } from '@/types';
+
+import { checkoutService, CheckoutRequestError } from '../../services/checkout.service';
+import { CartPromotions, CartTotals, type CouponState } from './CartPromotions';
 
 const sg = "var(--font-sans, sans-serif)";
 
@@ -188,9 +195,16 @@ interface CartDrawerProps {
   allowScheduledWhenClosed?: boolean;
   paymentMethods?: PaymentMethodConfig[];
   mesas?: Mesa[];
+  // Promociones (vista previa; el servidor recalcula todo al confirmar)
+  products?: Product[];
+  promotions?: Promotion[];
+  loyalty?: LoyaltyConfig;
+  // El plan incluye cupones (promociones avanzadas)
+  couponsEnabled?: boolean;
 }
 
-export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, deliveryZones, deliveryMode, deliveryMethods, openingHours, restaurantClosed = false, allowScheduledWhenClosed = false, paymentMethods, mesas = [] }: CartDrawerProps) {
+// receivedStatusId: el estado inicial ahora lo asigna el servidor (se mantiene la prop por compatibilidad)
+export function CartDrawer({ primaryColor, secondaryColor, deliveryZones, deliveryMode, deliveryMethods, openingHours, restaurantClosed = false, allowScheduledWhenClosed = false, paymentMethods, mesas = [], products = [], promotions = [], loyalty, couponsEnabled = false }: CartDrawerProps) {
   const items = useCartStore((s) => s.items);
   const isCartOpen = useCartStore((s) => s.isCartOpen);
   const setCartOpen = useCartStore((s) => s.setCartOpen);
@@ -201,7 +215,6 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
   const restaurantId = useCartStore((s) => s.restaurantId);
   const restaurantPhone = useCartStore((s) => s.restaurantPhone);
   const restaurantName = useCartStore((s) => s.restaurantName);
-  const total = useCartStore(cartTotal);
   const count = useCartStore(cartItemCount);
 
   const [notaOpen, setNotaOpen] = useState<Record<string, boolean>>({});
@@ -228,6 +241,17 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
   const [locLoading, setLocLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  // Promociones
+  const [coupon, setCoupon] = useState<CouponState>({ status: 'idle' });
+  const [couponPromotion, setCouponPromotion] = useState<Promotion | null>(null);
+  const [customerStatus, setCustomerStatus] = useState<CustomerStatusResponse | null>(null);
+  const [redeemLoyalty, setRedeemLoyalty] = useState(false);
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
+  const now = useNow();
+  const usesPromotions = promotions.length > 0 || couponsEnabled || !!loyalty?.isActive;
+  // Promociones que el cliente vio aplicadas: el servidor las respeta unos minutos si vencen justo ahora
+  const [seenPromotionIds, setSeenPromotionIds] = useState<Record<string, number>>({});
 
   // Determine which delivery methods are active (default recoger+domicilio on if not configured)
   // Abierto: cada método decide si permite programar (dashboard → Entrega).
@@ -257,10 +281,68 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
   const selectedZone = isZonesMode
     ? deliveryZones.find((z) => z.id === selectedZoneId) ?? null
     : null;
-  const deliveryFee = selectedZone?.price ?? 0;
-  const orderTotal = isZonesMode && deliveryType === 'domicilio' ? total + deliveryFee : total;
+  const knownDeliveryFee = isZonesMode && deliveryType === 'domicilio' && selectedZone ? selectedZone.price : undefined;
+
+  const pricing = useCartPricing({
+    items,
+    products,
+    promotions,
+    now,
+    deliveryType,
+    deliveryFee: knownDeliveryFee,
+    couponPromotion,
+    couponCode: coupon.status === 'applied' ? coupon.code : undefined,
+    customerStatus,
+    loyalty,
+    redeemLoyalty,
+  });
+
+  // Recordar qué promociones vio aplicadas (para el período de gracia)
+  const appliedKey = pricing.applied.map((a) => a.promotionId).join(',');
+  useEffect(() => {
+    if (!appliedKey) return;
+    setSeenPromotionIds((prev) => {
+      const next = { ...prev };
+      appliedKey.split(',').forEach((id) => { next[id] = Date.now(); });
+      return next;
+    });
+  }, [appliedKey]);
+
+  // Con el celular escrito: ¿cliente nuevo? ¿cuántos sellos de fidelidad lleva?
+  const phoneKey = normalizePhone(phone);
+  useEffect(() => {
+    setCustomerStatus(null);
+    setRedeemLoyalty(false);
+    if (!usesPromotions || !restaurantId || !phoneKey || phoneKey.length < 10) return;
+    let active = true;
+    const t = setTimeout(() => {
+      checkoutService.customerStatus(restaurantId, phoneKey)
+        .then((status) => { if (active) setCustomerStatus(status); })
+        .catch(() => { /* sin datos del cliente: la vista previa asume lo básico */ });
+    }, 600);
+    return () => { active = false; clearTimeout(t); };
+  }, [phoneKey, restaurantId, usesPromotions]);
 
   if (!isCartOpen) return null;
+
+  async function applyCoupon(raw: string) {
+    const code = normalizeCouponCode(raw);
+    if (!code || !restaurantId) return;
+    setCoupon({ status: 'checking' });
+    try {
+      const promotion = await checkoutService.findCoupon(restaurantId, code);
+      setCouponPromotion(promotion);
+      setCoupon({ status: 'applied', code });
+    } catch (e) {
+      setCouponPromotion(null);
+      setCoupon({ status: 'error', message: e instanceof Error ? e.message : 'No pudimos validar el cupón.' });
+    }
+  }
+
+  function removeCoupon() {
+    setCoupon({ status: 'idle' });
+    setCouponPromotion(null);
+  }
 
   const canOrder = checkCanOrder({
     items,
@@ -305,70 +387,101 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
 
   async function handleConfirm() {
     setSubmitted(true);
-    if (!canOrder || !restaurantId || isLoading) return;
+    setSubmitError('');
+    if (!canOrder || !restaurantId || isLoading || !deliveryType) return;
 
     setIsLoading(true);
 
     const effectiveBarrio = isZonesMode && selectedZone ? selectedZone.name : barrio;
-    const effectiveDeliveryFee =
-      isZonesMode && deliveryType === 'domicilio' && selectedZone ? selectedZone.price : undefined;
-    const effectiveTotal =
-      isZonesMode && deliveryType === 'domicilio' && selectedZone
-        ? total + selectedZone.price
-        : total;
+    const couponCode = coupon.status === 'applied' ? coupon.code : undefined;
 
-    // Guardar pedido en Firestore (si falla, el mensaje se envía igual, sin número de orden)
-    let orderNumber: string | undefined;
+    // El servidor valida productos y precios y calcula promociones y totales
+    const input: CheckoutInput = {
+      restaurantId,
+      items: items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        additionalIds: item.additionals.filter((a) => a.id).map((a) => a.id!),
+        additionalNames: item.additionals.filter((a) => !a.id).map((a) => a.name),
+        specialInstructions: item.observacion?.trim() || item.specialInstructions?.trim() || '',
+        key: item.cartId,
+      })),
+      customerName: name,
+      customerPhone: phone,
+      deliveryType,
+      ...(deliveryType === 'domicilio' ? { customerAddress: address } : {}),
+      ...(deliveryType === 'domicilio' && !isZonesMode && barrio ? { barrio } : {}),
+      ...(deliveryType === 'domicilio' && selectedZone ? { deliveryZoneId: selectedZone.id } : {}),
+      ...(deliveryType === 'mesa' && selectedMesa ? { tableId: selectedMesa.id } : {}),
+      ...(scheduledDate ? { scheduledFor: scheduledDate.toISOString() } : {}),
+      ...(deliveryType === 'domicilio' && location ? { location } : {}),
+      paymentMethodId: paymentMethod,
+      ...(couponCode ? { couponCode } : {}),
+      redeemLoyalty,
+      marketingOptIn,
+      expectedPromotionIds: Object.keys(seenPromotionIds),
+    };
+
+    let created: CheckoutResponse | null = null;
     try {
-      const created = await ordersService.create({
-        restaurantId,
-        customerName: name,
-        customerPhone: phone,
-        deliveryType: deliveryType || undefined,
-        ...(deliveryType === 'domicilio' && address ? { customerAddress: address } : {}),
-        ...(deliveryType === 'domicilio' && effectiveBarrio ? { barrio: effectiveBarrio } : {}),
-        ...(effectiveDeliveryFee !== undefined ? { deliveryFee: effectiveDeliveryFee } : {}),
-        ...(deliveryType === 'mesa' && selectedMesa ? { tableId: selectedMesa.id, tableName: selectedMesa.name } : {}),
-        isScheduled: scheduledDate !== null,
-        ...(scheduledDate ? { scheduledFor: scheduledDate.toISOString() } : {}),
-        ...(location ? { location } : {}),
-        ...(selectedPayment ? toOrderPayment(selectedPayment) : { paymentMethod: '' }),
-        isPaid: false,
-        items: items.map((item) => ({
-          productId: item.productId,
-          productName: item.productName,
-          ...(item.productImage ? { productImage: item.productImage } : {}),
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          subtotal: item.subtotal,
-          additionals: item.additionals,
-          specialInstructions: item.observacion?.trim() || item.specialInstructions?.trim() || '',
-        })),
-        subtotal: total,
-        total: effectiveTotal,
-        statusId: receivedStatusId,
-      });
-      orderNumber = created?.orderNumber;
+      created = await checkoutService.submitOrder(input);
     } catch (err) {
-      console.error('[CartDrawer] Error al guardar pedido en Firestore:', err);
+      // Error del pedido (agotado, cupón vencido, promo agotada…): se avisa y NO se envía
+      if (err instanceof CheckoutRequestError && err.isBusinessError) {
+        setSubmitError(err.message);
+        setIsLoading(false);
+        return;
+      }
+      // Sin conexión o error del servidor: se envía igual por WhatsApp sin número de orden (como antes)
+      console.error('[CartDrawer] Error al guardar el pedido:', err);
     }
 
-    const message = buildWhatsAppMessage(restaurantName, items, {
-      orderNumber,
-      subtotal: total,
-      deliveryFee: effectiveDeliveryFee,
-      deliveryZoneName: isZonesMode && deliveryType === 'domicilio' ? selectedZone?.name : undefined,
+    const common = {
       customerName: name,
       customerPhone: phone,
       deliveryType,
       address,
-      barrio: effectiveBarrio,
-      tableName: selectedMesa?.name,
       scheduledLabel: scheduledDate ? formatScheduledDate(scheduledDate) : undefined,
-      paymentLabel: selectedPayment ? getPaymentLabel(selectedPayment) : '',
-      paymentAccount: selectedPayment?.account,
       location: location ?? undefined,
-    });
+    };
+    const message = created
+      ? buildWhatsAppMessage(restaurantName, created.items, {
+          ...common,
+          orderNumber: created.orderNumber,
+          subtotal: created.subtotal,
+          discount: created.discount,
+          promotions: created.appliedPromotions,
+          deliveryFee: created.deliveryFee,
+          freeDelivery: created.freeDelivery,
+          deliveryZoneName: created.deliveryZoneName,
+          barrio: created.barrio ?? effectiveBarrio,
+          tableName: created.tableName,
+          paymentLabel: created.paymentLabel,
+          paymentAccount: created.paymentAccount,
+        })
+      : buildWhatsAppMessage(
+          restaurantName,
+          [
+            ...items.map((item) => {
+              const lp = pricing.lines.find((l) => l.key === item.cartId);
+              return { ...item, discount: lp?.discount || undefined, promotionName: lp?.promotionNames.join(' + ') };
+            }),
+            ...pricing.gifts.map((g) => ({ quantity: g.quantity, productName: g.productName, subtotal: 0, additionals: [], isGift: true, promotionName: g.promotionName })),
+          ],
+          {
+            ...common,
+            subtotal: pricing.subtotal,
+            discount: pricing.discount,
+            promotions: pricing.applied,
+            deliveryFee: deliveryType === 'domicilio' ? pricing.deliveryFee : undefined,
+            freeDelivery: pricing.freeDelivery,
+            deliveryZoneName: isZonesMode && deliveryType === 'domicilio' ? selectedZone?.name : undefined,
+            barrio: effectiveBarrio,
+            tableName: selectedMesa?.name,
+            paymentLabel: selectedPayment ? getPaymentLabel(selectedPayment) : '',
+            paymentAccount: selectedPayment?.account,
+          }
+        );
     // Construir URL antes de limpiar estado, navegar al final (igual que antojo-express)
     const whatsappUrl = buildWhatsAppUrl(restaurantPhone, message);
     clearCart();
@@ -387,6 +500,11 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
     setLocation(null);
     setSubmitted(false);
     setIsLoading(false);
+    setCoupon({ status: 'idle' });
+    setCouponPromotion(null);
+    setRedeemLoyalty(false);
+    setMarketingOptIn(false);
+    setSeenPromotionIds({});
     setCartOpen(false);
     // Navegar al final, igual que en antojo-express, para no perder el gesto
     // de usuario en mobile después del await (Safari iOS, WebViews).
@@ -602,16 +720,27 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                             ))}
                           </div>
                         )}
-                        <p
-                          style={{
-                            fontWeight: 800,
-                            fontSize: 14,
-                            color: primaryColor,
-                            margin: '4px 0 0',
-                          }}
-                        >
-                          {formatCurrency(item.subtotal)}
-                        </p>
+                        {(() => {
+                          const lp = pricing.lines.find((l) => l.key === item.cartId);
+                          const lineDiscount = lp?.discount ?? 0;
+                          return (
+                            <>
+                              <p style={{ fontWeight: 800, fontSize: 14, color: primaryColor, margin: '4px 0 0', display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
+                                {lineDiscount > 0 && (
+                                  <span style={{ fontWeight: 600, fontSize: 12, color: '#9a8f86', textDecoration: 'line-through' }}>
+                                    {formatCurrency(item.subtotal)}
+                                  </span>
+                                )}
+                                {formatCurrency(item.subtotal - lineDiscount)}
+                              </p>
+                              {lineDiscount > 0 && lp && (
+                                <p style={{ margin: '2px 0 0', fontSize: 11, fontWeight: 700, color: '#059669' }}>
+                                  🏷 {lp.promotionNames.join(' + ')}
+                                </p>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
 
                       {/* Qty controls */}
@@ -722,6 +851,16 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                           : '+ Agregar observación'}
                       </button>
                     )}
+                  </div>
+                ))}
+                {pricing.gifts.map((g) => (
+                  <div key={g.promotionId} style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#ecfdf5', border: '1px dashed #6ee7b7', borderRadius: 16, padding: '10px 12px' }}>
+                    <span style={{ fontSize: 22 }}>🎁</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: '#065f46' }}>{g.quantity > 1 ? `${g.quantity} x ` : ''}{g.productName}</p>
+                      <p style={{ margin: 0, fontSize: 11, color: '#047857' }}>Regalo — {g.promotionName}</p>
+                    </div>
+                    <span style={{ fontWeight: 800, fontSize: 13, color: '#059669' }}>GRATIS</span>
                   </div>
                 ))}
               </div>
@@ -1174,6 +1313,19 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                       background: err(phone) ? '#fef2f2' : '#fff',
                     }}
                   />
+                  {usesPromotions && (
+                    <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, color: '#6b7280', lineHeight: 1.45, cursor: 'pointer', marginTop: 2 }}>
+                      <input
+                        type="checkbox"
+                        checked={marketingOptIn}
+                        onChange={(e) => setMarketingOptIn(e.target.checked)}
+                        style={{ width: 15, height: 15, marginTop: 1, accentColor: secondaryColor, flexShrink: 0 }}
+                      />
+                      <span>
+                        Quiero recibir promociones de {restaurantName || 'este restaurante'} por WhatsApp y autorizo el tratamiento de mis datos (Ley 1581 de 2012). Tu celular también identifica tus promociones y sellos.
+                      </span>
+                    </label>
+                  )}
                 </div>
               </div>
 
@@ -1234,47 +1386,36 @@ export function CartDrawer({ primaryColor, secondaryColor, receivedStatusId, del
                 )}
               </div>
 
-              {/* Subtotal */}
-              <div style={{ background: '#f9fafb', borderRadius: 16, padding: '14px 16px' }}>
-                {isZonesMode && deliveryType === 'domicilio' && selectedZone ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: 13, color: '#6b7280' }}>Subtotal</span>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: '#1B1512' }}>{formatCurrency(total)}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: 13, color: '#6b7280' }}>Domicilio ({selectedZone.name})</span>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: '#1B1512' }}>{formatCurrency(selectedZone.price)}</span>
-                    </div>
-                    <div style={{ height: 1, background: '#e5e7eb' }} />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontWeight: 800, fontSize: 15, color: '#1B1512' }}>Total</span>
-                      <span style={{ fontWeight: 800, fontSize: 22, color: secondaryColor }}>
-                        {formatCurrency(orderTotal)}
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontWeight: 800, fontSize: 15, color: '#1B1512' }}>{deliveryType === 'domicilio' ? 'Subtotal' : 'Total'}</span>
-                      <span style={{ fontWeight: 800, fontSize: 22, color: secondaryColor }}>
-                        {formatCurrency(total)}
-                      </span>
-                    </div>
-                    {deliveryType === 'domicilio' && !isZonesMode && (
-                      <p style={{ marginTop: 10, fontSize: 12, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '8px 12px', lineHeight: 1.5 }}>
-                        📦 El valor del domicilio será informado por WhatsApp.
-                      </p>
-                    )}
-                    {deliveryType === 'domicilio' && isZonesMode && !selectedZone && (
-                      <p style={{ marginTop: 10, fontSize: 12, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '8px 12px', lineHeight: 1.5 }}>
-                        📦 Elige tu zona para ver el costo de domicilio.
-                      </p>
-                    )}
-                  </>
-                )}
-              </div>
+              {/* Promociones: te faltan $X, cupón y fidelidad */}
+              {usesPromotions && (
+                <CartPromotions
+                  pricing={pricing}
+                  secondaryColor={secondaryColor}
+                  couponsEnabled={couponsEnabled}
+                  coupon={coupon}
+                  onApplyCoupon={applyCoupon}
+                  onRemoveCoupon={removeCoupon}
+                  loyalty={loyalty}
+                  loyaltyStatus={customerStatus?.loyalty ?? undefined}
+                  redeemLoyalty={redeemLoyalty}
+                  onToggleRedeem={setRedeemLoyalty}
+                />
+              )}
+
+              {/* Totales (vista previa: el servidor recalcula al confirmar) */}
+              <CartTotals
+                pricing={pricing}
+                secondaryColor={secondaryColor}
+                deliveryType={deliveryType}
+                isZonesMode={isZonesMode}
+                zoneName={selectedZone?.name}
+              />
+
+              {submitError && (
+                <div role="alert" style={{ fontSize: 13, color: '#b91c1c', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 12, padding: '10px 12px', lineHeight: 1.5 }}>
+                  {submitError}
+                </div>
+              )}
 
               {/* Confirmar */}
               <button

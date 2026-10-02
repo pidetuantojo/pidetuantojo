@@ -47,7 +47,8 @@ export function ProductModal({ product, adicionales, primaryColor, onClose }: Pr
 
   function toggleAdditional(adicional: Adicional) {
     setSinAdicionales(false);
-    const asAdditional: Additional = { name: adicional.name, price: adicional.price };
+    // El id le permite al servidor validar el precio del adicional
+    const asAdditional: Additional = { id: adicional.id, name: adicional.name, price: adicional.price };
     setSelectedAdditionals((prev) => {
       const exists = prev.some((a) => a.name === adicional.name);
       return exists ? prev.filter((a) => a.name !== adicional.name) : [...prev, asAdditional];
