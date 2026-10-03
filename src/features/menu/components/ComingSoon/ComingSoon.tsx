@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import type { Restaurant } from '@/types';
 
 interface ComingSoonProps {
@@ -41,10 +42,11 @@ export function ComingSoon({ restaurant }: ComingSoonProps) {
           marginBottom: 24,
           flexShrink: 0,
           boxShadow: '0 8px 24px -8px rgba(0,0,0,.18)',
+          position: 'relative',
         }}
       >
         {logo ? (
-          <img src={logo} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <Image src={logo} alt={name} fill sizes="100px" style={{ objectFit: 'cover' }} />
         ) : (
           <span style={{ fontSize: 42, fontWeight: 700, color: pri, fontFamily: sg }}>
             {name[0]?.toUpperCase()}

@@ -1,4 +1,5 @@
-﻿import type { Restaurant, OpeningHours } from '@/types';
+﻿import Image from 'next/image';
+import type { Restaurant, OpeningHours } from '@/types';
 import { SocialLinks } from '../SocialLinks';
 
 const sg = "var(--font-sans, sans-serif)";
@@ -236,14 +237,11 @@ export function MenuHeader({ restaurant, cartCount, onNavOpen, onCartOpen }: Men
                 display: 'grid',
                 placeItems: 'center',
                 border: '1px solid #f2ede7',
+                position: 'relative',
               }}
             >
               {logo ? (
-                <img
-                  src={logo}
-                  alt={name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
+                <Image src={logo} alt={name} fill sizes="80px" style={{ objectFit: 'cover' }} />
               ) : (
                 <span style={{ fontWeight: 700, fontSize: 36, color: pri, fontFamily: sg }}>
                   {name[0]?.toUpperCase()}

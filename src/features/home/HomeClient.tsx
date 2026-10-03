@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { Restaurant, OpeningHours } from '@/types';
 import { Select } from '@/components/ui/Select';
 import { Logo, LogoMark } from '@/components/ui/Logo';
@@ -488,7 +489,7 @@ function DesktopCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open
           {/* Logo bubble */}
           <div style={{ position: 'absolute', top: -30, right: 16, width: 62, height: 62, borderRadius: '50%', background: '#fff', overflow: 'hidden', boxShadow: '0 6px 18px -6px rgba(0,0,0,.3)', border: '2.5px solid var(--t-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {r.logo ? (
-              <img src={r.logo} alt={r.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              <Image src={r.logo} alt={r.name} fill sizes="62px" style={{ objectFit: 'cover' }} />
             ) : (
               <div style={{ width: '100%', height: '100%', background: `linear-gradient(135deg,${pri},${sec})`, display: 'grid', placeItems: 'center', fontFamily: sg, fontWeight: 700, fontSize: 22, color: '#fff' }}>
                 {r.name.charAt(0)}
@@ -575,9 +576,9 @@ function MobileCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open:
 
         {/* Logo + Name + Category */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 8px 0' }}>
-          <div style={{ width: 62, height: 62, borderRadius: '50%', flexShrink: 0, background: '#fff', overflow: 'hidden', boxShadow: '0 4px 14px -4px rgba(0,0,0,.22)', border: '1.5px solid var(--t-border-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 62, height: 62, borderRadius: '50%', flexShrink: 0, background: '#fff', overflow: 'hidden', boxShadow: '0 4px 14px -4px rgba(0,0,0,.22)', border: '1.5px solid var(--t-border-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
             {r.logo ? (
-              <img src={r.logo} alt={r.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              <Image src={r.logo} alt={r.name} fill sizes="62px" style={{ objectFit: 'cover' }} />
             ) : (
               <div style={{ width: '100%', height: '100%', background: `linear-gradient(135deg,${pri},${sec})`, display: 'grid', placeItems: 'center', fontFamily: sg, fontWeight: 700, fontSize: 22, color: '#fff' }}>
                 {r.name.charAt(0)}

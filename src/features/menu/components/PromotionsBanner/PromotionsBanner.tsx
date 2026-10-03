@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import Image from 'next/image';
 
 import { describePromotion, isScheduleActiveAt, promotionBadge } from '@/features/promotions/engine';
 import { useCartStore } from '@/store/cart.store';
@@ -134,7 +135,7 @@ export function PromotionsBanner({ promotions, products, categories, now, primar
                   }}
                 >
                   {p.image ? (
-                    <img src={p.image} alt="" style={{ width: 64, height: 64, borderRadius: 14, objectFit: 'cover', flexShrink: 0, background: '#fff' }} />
+                    <Image src={p.image} alt="" width={64} height={64} style={{ borderRadius: 14, objectFit: 'cover', flexShrink: 0, background: '#fff', display: 'block' }} />
                   ) : (
                     <div style={{ width: 64, height: 64, borderRadius: 14, flexShrink: 0, background: 'rgba(255,255,255,.18)', display: 'grid', placeItems: 'center', fontSize: 28 }}>
                       {promotionIcon(p)}

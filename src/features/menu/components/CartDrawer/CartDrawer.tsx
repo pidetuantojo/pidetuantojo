@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { X, Minus, Plus, Trash2, Truck, Store, User, UtensilsCrossed, CalendarClock, CheckCircle2 } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
@@ -681,11 +682,7 @@ export function CartDrawer({ primaryColor, secondaryColor, deliveryZones, delive
                         }}
                       >
                         {item.productImage ? (
-                          <img
-                            src={item.productImage}
-                            alt={item.productName}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          />
+                          <Image src={item.productImage} alt={item.productName} fill sizes="56px" style={{ objectFit: 'cover' }} />
                         ) : (
                           <svg
                             viewBox="0 0 24 24"

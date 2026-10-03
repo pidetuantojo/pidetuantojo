@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 
 import { cartItemCount, useCartStore } from '@/store/cart.store';
 import { formatCurrency } from '@/lib/utils';
@@ -240,7 +241,11 @@ export function MenuPage({ restaurant, categories: baseCategories, products: bas
   // ─── Footer (shared) ──────────────────────────────────────────────────────
   const footerBlock = (
     <footer style={{ padding: '32px 0 40px', background: bg, textAlign: 'center', borderTop: '1px solid rgba(0,0,0,.06)' }}>
-      {restaurant.logo && <img src={restaurant.logo} alt={restaurant.name} style={{ height: 52, width: 'auto', objectFit: 'contain', display: 'block', margin: '0 auto 12px' }} />}
+      {restaurant.logo && (
+        <div style={{ position: 'relative', height: 52, width: 160, margin: '0 auto 12px' }}>
+          <Image src={restaurant.logo} alt={restaurant.name} fill sizes="160px" style={{ objectFit: 'contain' }} />
+        </div>
+      )}
       {restaurant.description && <p style={{ fontFamily: sg, fontSize: 13, color: '#8a8177', maxWidth: 280, margin: '0 auto 16px', lineHeight: 1.5 }}>{restaurant.description}</p>}
       <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginBottom: 16 }}>
         <a href="#menu" style={{ fontFamily: sg, fontWeight: 600, fontSize: 13, color: '#8a8177', textDecoration: 'none' }}>Menú</a>
@@ -349,7 +354,11 @@ export function MenuPage({ restaurant, categories: baseCategories, products: bas
               <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.5)' }} onClick={() => setNavOpen(false)} />
               <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 280, background: bg, display: 'flex', flexDirection: 'column', boxShadow: '8px 0 32px rgba(0,0,0,.18)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px' }}>
-                  {restaurant.logo ? <img src={restaurant.logo} alt={restaurant.name} style={{ height: 44, width: 'auto', objectFit: 'contain' }} /> : <span style={{ fontFamily: sg, fontWeight: 800, fontSize: 18, color: sec }}>{restaurant.name}</span>}
+                  {restaurant.logo ? (
+                    <div style={{ position: 'relative', height: 44, width: 140 }}>
+                      <Image src={restaurant.logo} alt={restaurant.name} fill sizes="140px" style={{ objectFit: 'contain' }} />
+                    </div>
+                  ) : <span style={{ fontFamily: sg, fontWeight: 800, fontSize: 18, color: sec }}>{restaurant.name}</span>}
                   <button onClick={() => setNavOpen(false)} style={{ width: 36, height: 36, borderRadius: 10, border: 0, background: 'rgba(0,0,0,.06)', display: 'grid', placeItems: 'center', cursor: 'pointer' }}>
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke={sec} strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
                   </button>
@@ -466,9 +475,9 @@ export function MenuPage({ restaurant, categories: baseCategories, products: bas
         <div style={{ position: 'absolute', bottom: 52, left: 60, display: 'flex', alignItems: 'center', gap: 28 }}>
           {/* Logo */}
           <div style={{ width: 110, height: 110, borderRadius: '50%', background: '#fff', padding: 2, boxShadow: '0 8px 28px rgba(0,0,0,.35)', flexShrink: 0 }}>
-            <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: '#fff', display: 'grid', placeItems: 'center', border: '1px solid #f2ede7' }}>
+            <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: '#fff', display: 'grid', placeItems: 'center', border: '1px solid #f2ede7', position: 'relative' }}>
               {restaurant.logo ? (
-                <img src={restaurant.logo} alt={restaurant.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <Image src={restaurant.logo} alt={restaurant.name} fill sizes="110px" style={{ objectFit: 'cover' }} />
               ) : (
                 <span style={{ fontWeight: 700, fontSize: 46, color: pri, fontFamily: sg }}>{restaurant.name[0]?.toUpperCase()}</span>
               )}
