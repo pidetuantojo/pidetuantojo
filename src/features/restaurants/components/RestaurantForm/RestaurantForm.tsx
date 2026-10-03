@@ -171,26 +171,27 @@ function ReadOnly({ locked, children }: { locked: boolean; children: React.React
 }
 
 function AccordionSection({
-  label, open, onToggle, children, summary, locked = false,
+  label, open, onToggle, children, summary, locked = false, hasError = false,
 }: {
   label: string; open: boolean; onToggle: () => void;
   children: React.ReactNode; summary?: string;
-  // Sin permiso para editar esta sección: se ve pero no se puede cambiar
   locked?: boolean;
+  hasError?: boolean;
 }) {
+  const borderColor = hasError ? '#EA3B2E' : 'var(--t-border)';
   return (
-    <div style={{ border: '1.5px solid var(--t-border)', borderRadius: 14, overflow: 'hidden' }}>
+    <div style={{ border: `1.5px solid ${borderColor}`, borderRadius: 14, overflow: 'hidden', transition: 'border-color .2s' }}>
       <button
         type="button"
         onClick={onToggle}
         style={{
           width: '100%', display: 'flex', alignItems: 'center',
           justifyContent: 'space-between', gap: 12,
-          padding: '14px 18px', background: 'var(--t-surface)',
-          border: 'none', cursor: 'pointer',
+          padding: '14px 18px', background: hasError && !open ? '#fff5f5' : 'var(--t-surface)',
+          border: 'none', cursor: 'pointer', transition: 'background .2s',
         }}
       >
-        <span style={{ fontFamily: sg, fontWeight: 700, fontSize: 13.5, color: 'var(--t-text-1)', textAlign: 'left' }}>
+        <span style={{ fontFamily: sg, fontWeight: 700, fontSize: 13.5, color: hasError ? '#EA3B2E' : 'var(--t-text-1)', textAlign: 'left', transition: 'color .2s' }}>
           {label}
         </span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
@@ -199,12 +200,17 @@ function AccordionSection({
               SOLO LECTURA
             </span>
           )}
-          {!open && summary && (
+          {hasError && !open && (
+            <span style={{ fontFamily: sm, fontSize: 10, fontWeight: 700, letterSpacing: '.04em', color: '#EA3B2E', background: '#fee2e2', padding: '3px 9px', borderRadius: 999, whiteSpace: 'nowrap' }}>
+              Campos requeridos
+            </span>
+          )}
+          {!hasError && !open && summary && (
             <span style={{ fontFamily: sm, fontSize: 11, color: 'var(--t-text-3)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {summary}
             </span>
           )}
-          <span style={{ display: 'flex', flexShrink: 0, color: 'var(--t-text-3)', transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .2s' }}>
+          <span style={{ display: 'flex', flexShrink: 0, color: hasError ? '#EA3B2E' : 'var(--t-text-3)', transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .2s, color .2s' }}>
             <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M4 6l4 4 4-4"/>
             </svg>
@@ -212,7 +218,7 @@ function AccordionSection({
         </span>
       </button>
       {open && (
-        <div style={{ padding: '18px 18px', display: 'flex', flexDirection: 'column', gap: 16, borderTop: '1px solid var(--t-border)' }}>
+        <div style={{ padding: '18px 18px', display: 'flex', flexDirection: 'column', gap: 16, borderTop: `1px solid ${borderColor}` }}>
           <ReadOnly locked={locked}>{children}</ReadOnly>
         </div>
       )}
@@ -225,9 +231,10 @@ const SETTINGS_UPDATE_PERMISSIONS: readonly Permission[] = [
   'settings.update_social', 'settings.update_hours', 'settings.update_delivery_mode',
 ];
 
-export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange, showPlanSelector = false }: RestaurantFormProps) {
+export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange, showPlanSelector = false, variant }: RestaurantFormProps) {
+  const isMinimal = variant === 'create-minimal';
   const { data, errors, handleChange, setDayHours, validate, toCreateData, toUpdateData, isEditing, planChanged } =
-    useRestaurantForm(restaurant);
+    useRestaurantForm(restaurant, variant);
   const { can } = useAuth();
   // El super admin (selector de plan) edita todo; los usuarios del restaurante, según sus permisos
   const canEdit = (permission: Permission) => showPlanSelector || can(permission);
@@ -275,7 +282,31 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
   const updateMutation = useUpdateRestaurant();
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  const [openSections, setOpenSections] = useState<Set<string>>(() => new Set(['info']));
+  const [slugDuplError, setSlugDuplError] = useState('');
+  const [openSections, setOpenSections] = useState<Set<string>>(() =>
+    new Set(isEditing ? ['info'] : ['info', 'admin'])
+  );
+
+  // Secciones con errores de validación
+  const sectionErrors = {
+    info:     !!(errors.name || errors.slug || errors.description || errors.phone || errors.category),
+    branding: !!(errors.logo),
+    location: !!(errors.department || errors.city),
+    admin:    !!(errors.adminName || errors.adminEmail || errors.adminPassword),
+  };
+
+  // Auto-abrir secciones con errores al fallar la validación
+  useEffect(() => {
+    const toOpen = (Object.keys(sectionErrors) as (keyof typeof sectionErrors)[])
+      .filter((k) => sectionErrors[k]);
+    if (toOpen.length > 0) {
+      setOpenSections((prev) => {
+        const next = new Set(prev);
+        toOpen.forEach((k) => next.add(k));
+        return next;
+      });
+    }
+  }, [errors]); // eslint-disable-line react-hooks/exhaustive-deps
   function toggleSection(id: string) {
     setOpenSections(prev => {
       const next = new Set(prev);
@@ -288,12 +319,21 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setPlanError('');
+    setSlugDuplError('');
     const validForm = validate();
     if (showPlanSelector && !isEditing && !data.planId) {
       setPlanError('Elige el plan del restaurante');
       return;
     }
     if (!validForm) return;
+    // Validar que el slug no exista antes de crear
+    if (!isEditing) {
+      const existing = await restaurantsService.getBySlug(data.slug);
+      if (existing) {
+        setSlugDuplError('Ya existe un restaurante con este slug');
+        return;
+      }
+    }
     try {
       let restaurantId = restaurant?.id;
       if (isEditing && restaurant) {
@@ -466,6 +506,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
           onToggle={() => toggleSection('info')}
           summary={data.name || undefined}
           locked={!canEdit('settings.update_info')}
+          hasError={sectionErrors.info}
         >
           <div className="grid gap-4 sm:grid-cols-2">
             <Input
@@ -480,60 +521,66 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             <Input
               label="Slug (URL)"
               value={data.slug}
-              onChange={(e) => handleChange('slug', e.target.value)}
-              error={errors.slug}
+              onChange={(e) => { handleChange('slug', e.target.value); setSlugDuplError(''); }}
+              error={errors.slug || slugDuplError}
               placeholder="la-parrilla-de-juan"
               hint="Se auto-genera desde el nombre"
               required
               disabled={isPending || isEditing}
             />
           </div>
-          <Input
-            label="Tagline"
-            value={data.tagline}
-            onChange={(e) => handleChange('tagline', e.target.value)}
-            placeholder="Ej: granizados de mango artesanales"
-            hint="Subtítulo que aparece en el panel del administrador"
-            disabled={isPending}
-          />
-          <Textarea
-            label="Descripción"
-            value={data.description}
-            onChange={(e) => handleChange('description', e.target.value)}
-            error={errors.description}
-            placeholder="Breve descripción del restaurante..."
-            rows={3}
-            required
-            disabled={isPending}
-          />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Input
-              label="Teléfono / WhatsApp"
-              value={data.phone}
-              onChange={(e) => handleChange('phone', e.target.value)}
-              error={errors.phone}
-              placeholder="+57 300 000 0000"
-              required
-              disabled={isPending}
-            />
-            <Select
-              label="Categoría (tipo de cocina) *"
-              value={data.category}
-              onChange={(v) => handleChange('category', v)}
-              options={categoryOptions}
-              placeholder="Selecciona una categoría..."
-              error={errors.category}
-              disabled={isPending}
-            />
-          </div>
+          {!isMinimal && (
+            <>
+              <Input
+                label="Tagline"
+                value={data.tagline}
+                onChange={(e) => handleChange('tagline', e.target.value)}
+                placeholder="Ej: granizados de mango artesanales"
+                hint="Subtítulo que aparece en el panel del administrador"
+                disabled={isPending}
+              />
+              <Textarea
+                label="Descripción"
+                value={data.description}
+                onChange={(e) => handleChange('description', e.target.value)}
+                error={errors.description}
+                placeholder="Breve descripción del restaurante..."
+                rows={3}
+                required
+                disabled={isPending}
+              />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input
+                  label="Teléfono / WhatsApp"
+                  value={data.phone}
+                  onChange={(e) => handleChange('phone', e.target.value)}
+                  error={errors.phone}
+                  placeholder="+57 300 000 0000"
+                  required
+                  disabled={isPending}
+                />
+                <Select
+                  label="Categoría (tipo de cocina) *"
+                  value={data.category}
+                  onChange={(v) => handleChange('category', v)}
+                  options={categoryOptions}
+                  placeholder="Selecciona una categoría..."
+                  error={errors.category}
+                  disabled={isPending}
+                  searchable
+                />
+              </div>
+            </>
+          )}
         </AccordionSection>
 
         {/* Branding */}
-        <AccordionSection
+        {!isMinimal && <AccordionSection
           label="Branding"
           open={openSections.has('branding')}
           onToggle={() => toggleSection('branding')}
           locked={!canEdit('settings.update_branding')}
+          hasError={sectionErrors.branding}
         >
           <ImageUpload
             label="Logo del restaurante *"
@@ -554,10 +601,10 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             objectFit="contain"
             hint="Imagen horizontal (1500×500 px, ratio 3:1). Se recorta al centro, así que el contenido principal debe estar centrado. JPG para fotos."
           />
-        </AccordionSection>
+        </AccordionSection>}
 
         {/* Diseño del menú */}
-        <AccordionSection
+        {!isMinimal && <AccordionSection
           label="Diseño del menú"
           open={openSections.has('design')}
           onToggle={() => toggleSection('design')}
@@ -698,15 +745,16 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
           <ReadOnly locked={!canEdit('settings.update_branding')}>
             <PaletteSection data={data} handleChange={handleChange} isPending={isPending} />
           </ReadOnly>
-        </AccordionSection>
+        </AccordionSection>}
 
         {/* Ubicación */}
-        <AccordionSection
+        {!isMinimal && <AccordionSection
           label="Ubicación"
           open={openSections.has('location')}
           onToggle={() => toggleSection('location')}
           locked={!canEdit('settings.update_location')}
           summary={data.city && data.department ? `${data.city}, ${data.department}` : undefined}
+          hasError={sectionErrors.location}
         >
           <Input
             label="Dirección"
@@ -765,10 +813,10 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             hint="Google Maps → Compartir → Insertar mapa → puedes pegar el iframe completo o solo la URL del src"
             disabled={isPending}
           />
-        </AccordionSection>
+        </AccordionSection>}
 
         {/* Redes sociales */}
-        <AccordionSection
+        {!isMinimal && <AccordionSection
           label="Redes sociales"
           open={openSections.has('social')}
           onToggle={() => toggleSection('social')}
@@ -807,10 +855,10 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             hint="URL completa del perfil de X"
             disabled={isPending}
           />
-        </AccordionSection>
+        </AccordionSection>}
 
         {/* Horario de atención */}
-        <AccordionSection
+        {!isMinimal && <AccordionSection
           label="Horario de atención"
           open={openSections.has('hours')}
           onToggle={() => toggleSection('hours')}
@@ -951,7 +999,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             <span style={{ color: 'var(--t-text-2)', fontWeight: 700 }}>openingHours</span> (schema.org){'\n'}
             {hoursSummary}
           </div>
-        </AccordionSection>
+        </AccordionSection>}
 
         {/* Usuario administrador (solo en creación) */}
         {!isEditing && (
@@ -959,6 +1007,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             label="Usuario administrador"
             open={openSections.has('admin')}
             onToggle={() => toggleSection('admin')}
+            hasError={sectionErrors.admin}
           >
             <p className="text-xs text-[var(--t-text-3)]">
               Este usuario podrá acceder al dashboard del restaurante.
@@ -997,8 +1046,8 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
           </AccordionSection>
         )}
 
-        {/* Estado: activar/desactivar un restaurante es solo del super admin */}
-        {showPlanSelector && (
+        {/* Estado: activar/desactivar un restaurante es solo del super admin (no en creación minimal) */}
+        {showPlanSelector && !isMinimal && (
         <label className="flex cursor-pointer items-center gap-3" style={{ padding: '4px 2px' }}>
           <Checkbox
             checked={data.isActive}

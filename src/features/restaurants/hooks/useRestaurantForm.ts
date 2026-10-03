@@ -26,6 +26,18 @@ const createSchema = baseSchema.extend({
   adminPassword: z.string().min(6, 'Mínimo 6 caracteres'),
 });
 
+/** Usado solo cuando variant='create-minimal': valida únicamente los campos que el super admin llena. */
+const createMinimalSchema = z.object({
+  name: z.string().min(2, 'Mínimo 2 caracteres'),
+  slug: z
+    .string()
+    .min(2, 'Mínimo 2 caracteres')
+    .regex(/^[a-z0-9-]+$/, 'Solo minúsculas, números y guiones'),
+  adminName: z.string().min(2, 'Nombre requerido'),
+  adminEmail: z.string().email('Email inválido'),
+  adminPassword: z.string().min(6, 'Mínimo 6 caracteres'),
+});
+
 function defaultOpeningHours(): DayHoursForm[] {
   return Array.from({ length: 7 }, () => ({ on: false, open: '09:00', close: '19:00' }));
 }
@@ -62,10 +74,10 @@ const defaultValues: RestaurantFormData = {
   phone: '',
   logo: '',
   bannerImage: '',
-  primaryColor: '#FF6A1A',
-  secondaryColor: '#1B1512',
-  accentColor: '#FFE0CC',
-  bgColor: '#FBF3EF',
+  primaryColor: '#F59211',
+  secondaryColor: '#1F5130',
+  accentColor: '#FFE7C4',
+  bgColor: '#FBF3E9',
   isActive: true,
   category: '',
   address: '',
@@ -88,7 +100,7 @@ const defaultValues: RestaurantFormData = {
   adminPassword: '',
 };
 
-export function useRestaurantForm(restaurant?: Restaurant) {
+export function useRestaurantForm(restaurant?: Restaurant, variant?: 'create-minimal') {
   const isEditing = !!restaurant;
 
   const [data, setData] = useState<RestaurantFormData>(() => {
@@ -161,7 +173,11 @@ export function useRestaurantForm(restaurant?: Restaurant) {
   }
 
   function validate(): boolean {
-    const schema = isEditing ? baseSchema : createSchema;
+    const schema = isEditing
+      ? baseSchema
+      : variant === 'create-minimal'
+        ? createMinimalSchema
+        : createSchema;
     const result = schema.safeParse(data);
     if (!result.success) {
       const fieldErrors: typeof errors = {};

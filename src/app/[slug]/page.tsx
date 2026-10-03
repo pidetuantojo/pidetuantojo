@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { categoriesService } from '@/features/categories/services/categories.service';
 import { adicionalesService } from '@/features/adicionales/services/adicionales.service';
 import { MenuPage } from '@/features/menu/components/MenuPage';
+import { ComingSoon } from '@/features/menu/components/ComingSoon';
 import { productsService } from '@/features/products/services/products.service';
 import { restaurantsService } from '@/features/restaurants/services/restaurants.service';
 import { orderStatusesService } from '@/features/order-statuses/services/order-statuses.service';
@@ -12,6 +13,7 @@ import { mesasService } from '@/features/delivery-methods/services/mesas.service
 import { applyPlanFeatures } from '@/lib/permissions/planFeatures';
 import { loadActivePromotions, menuPromotions, promotionFeatures } from '@/lib/promotions/promotions.server';
 import { isRestaurantSuspended } from '@/lib/restaurants/restaurant.server';
+import { getMissingRestaurantFields } from '@/features/restaurants/helpers/getMissingRestaurantFields';
 
 // Promociones con horario, productos agotados y precios: siempre lo último (sin caché estática)
 export const dynamic = 'force-dynamic';
@@ -23,6 +25,12 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const restaurant = await restaurantsService.getBySlug(params.slug);
   if (!restaurant) return { title: 'Restaurante no encontrado' };
+  if (getMissingRestaurantFields(restaurant).length > 0) {
+    return {
+      title: `${restaurant.name} — Próximamente`,
+      robots: { index: false },
+    };
+  }
   return {
     title: restaurant.name,
     description: restaurant.description,
@@ -41,6 +49,11 @@ export default async function RestaurantMenuPage({ params }: Props) {
 
   // Lo que el plan no incluye no se ofrece en el menú (mesa, programados, zonas, cuentas de pago)
   const restaurant = applyPlanFeatures(stored);
+
+  // Configuración incompleta → pantalla "Próximamente" (ahorra lecturas a Firestore)
+  if (getMissingRestaurantFields(restaurant).length > 0) {
+    return <ComingSoon restaurant={restaurant} />;
+  }
 
   const mesaMethodActive = restaurant.deliveryMethods?.mesa?.isActive ?? false;
 

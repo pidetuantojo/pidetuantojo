@@ -50,8 +50,16 @@ export function DateRangePicker({ from, to, isActive, onApply }: Props) {
   const [selFrom, setSelFrom] = useState(from);
   const [selTo, setSelTo] = useState(to);
   const [hovered, setHovered] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function check() { setIsMobile(window.innerWidth < 640); }
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   // Sync props → internal state when picker opens
   useEffect(() => {
@@ -61,14 +69,14 @@ export function DateRangePicker({ from, to, isActive, onApply }: Props) {
     }
   }, [open, from, to]);
 
-  // Click outside → close
+  // Touch/click outside → close (pointerdown covers both mouse and touch)
   useEffect(() => {
     if (!open) return;
-    function handle(e: MouseEvent) {
+    function handle(e: PointerEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
-    document.addEventListener('mousedown', handle);
-    return () => document.removeEventListener('mousedown', handle);
+    document.addEventListener('pointerdown', handle);
+    return () => document.removeEventListener('pointerdown', handle);
   }, [open]);
 
   function prevMonth() {
@@ -124,6 +132,18 @@ export function DateRangePicker({ from, to, isActive, onApply }: Props) {
   const days = getDaysGrid(viewYear, viewMonth);
   const canApply = !!(selFrom && selTo);
 
+  const panelStyle = isMobile
+    ? {
+        position: 'fixed' as const, left: 0, right: 0, bottom: 0, zIndex: 50,
+        borderRadius: '20px 20px 0 0', paddingBottom: 'env(safe-area-inset-bottom)',
+        background: '#fff', boxShadow: '0 -8px 40px rgba(0,0,0,.18)',
+      }
+    : {
+        position: 'absolute' as const, left: 0, top: '100%', zIndex: 50,
+        marginTop: 8, width: 296, border: '1px solid #E5E7EB',
+        background: '#fff', borderRadius: 16, boxShadow: '0 20px 60px rgba(0,0,0,.12)',
+      };
+
   return (
     <div className="relative" ref={ref}>
       <button
@@ -136,10 +156,11 @@ export function DateRangePicker({ from, to, isActive, onApply }: Props) {
       </button>
 
       {open && (
-        <div
-          className="absolute left-0 top-full z-50 mt-2 rounded-2xl bg-white shadow-2xl"
-          style={{ width: 296, border: '1px solid #E5E7EB' }}
-        >
+        <>
+          {isMobile && (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.4)', zIndex: 49 }} />
+          )}
+          <div style={panelStyle}>
           {/* Month navigation */}
           <div className="flex items-center justify-between px-4 pt-4 pb-2">
             <button onClick={prevMonth} className="btn btn-ghost btn-xs btn-circle">
@@ -177,11 +198,17 @@ export function DateRangePicker({ from, to, isActive, onApply }: Props) {
                 <button
                   key={ymd}
                   onClick={() => !isFuture && handleDayClick(d)}
-                  onMouseEnter={() => selFrom && !selTo && !isFuture && setHovered(ymd)}
-                  onMouseLeave={() => setHovered(null)}
+                  onPointerEnter={(e) => {
+                    if (e.pointerType !== 'mouse') return;
+                    if (selFrom && !selTo && !isFuture) setHovered(ymd);
+                  }}
+                  onPointerLeave={(e) => {
+                    if (e.pointerType !== 'mouse') return;
+                    setHovered(null);
+                  }}
                   disabled={isFuture}
                   style={{
-                    height: 34,
+                    height: 40,
                     borderRadius: start || end ? 8 : inR ? 0 : 8,
                     background: start || end ? '#FF6A1A' : inR ? '#FFF3E8' : 'transparent',
                     color: start || end ? '#fff' : inR ? '#C2440F' : isFuture ? '#D1D5DB' : '#111827',
@@ -220,7 +247,7 @@ export function DateRangePicker({ from, to, isActive, onApply }: Props) {
               Borrar
             </button>
             {selFrom && !selTo && (
-              <span className="text-xs text-gray-400">Seleccioná la fecha fin</span>
+              <span className="text-xs text-gray-400">Selecciona la fecha fin</span>
             )}
             <button
               onClick={handleApply}
@@ -231,7 +258,8 @@ export function DateRangePicker({ from, to, isActive, onApply }: Props) {
               Aplicar
             </button>
           </div>
-        </div>
+          </div>
+        </>
       )}
     </div>
   );
