@@ -6,7 +6,8 @@ import { LEGACY_EMPLOYEE_PERMISSIONS, type Permission } from '@/constants/permis
 import { expandRequires } from '@/lib/permissions/permissions';
 import { RESTAURANT_FIELD_GROUPS, pickEditableRestaurantFields } from '@/lib/permissions/restaurantFields';
 
-const rules = readFileSync(resolve(__dirname, '../../../firestore.rules'), 'utf8');
+// Se normalizan los saltos de línea: en Windows el archivo puede quedar con CRLF
+const rules = readFileSync(resolve(__dirname, '../../../firestore.rules'), 'utf8').replace(/\r\n/g, '\n');
 
 /** Strings entre comillas simples dentro del cuerpo de la función `name` de firestore.rules. */
 function quotedInFunction(name: string): string[] {

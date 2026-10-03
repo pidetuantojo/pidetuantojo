@@ -13,6 +13,7 @@ import { ROUTES } from '@/constants/routes';
 import { canAccessPath, firstAllowedRoute } from '@/lib/permissions/permissions';
 import { getSubscriptionInfo } from '@/lib/subscription/subscription';
 import { getMissingRestaurantFields } from '@/features/restaurants/helpers/getMissingRestaurantFields';
+import { PwaRegister } from '@/features/pwa/components/PwaRegister';
 
 /**
  * Destino al que hay que mandar al usuario si no puede estar en `pathname` (null = puede quedarse).
@@ -194,6 +195,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       className="flex h-screen"
       style={{ background: 'var(--t-bg)', fontFamily: 'var(--font-sans, sans-serif)' }}
     >
+      {/* PWA "Pedidos": service worker de avisos y botón "Instalar app" */}
+      <PwaRegister />
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}

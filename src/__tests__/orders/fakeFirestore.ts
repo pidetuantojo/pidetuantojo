@@ -60,6 +60,8 @@ export class DocRef {
     const data = this.db.get(this.path);
     return { exists: !!data, id: this.id, ref: this, data: () => (data ? structuredClone(data) : undefined) };
   }
+  async set(data: Data) { this.db.set(this.path, data); }
+  async delete() { this.db.docs.delete(this.path); }
 }
 
 class Query {
