@@ -97,14 +97,14 @@ export function MenuListLayout({ categories, products, primaryColor, secondaryCo
                     }}
                   >
                     {/* Image */}
-                    <div style={{ width: 76, height: 76, borderRadius: 13, overflow: 'hidden', flexShrink: 0, border: '1px solid #f0ece7', background: '#fff', position: 'relative' }}>
+                    <div style={{ width: 96, height: 96, borderRadius: 14, overflow: 'hidden', flexShrink: 0, background: `${primaryColor}18`, position: 'relative' }}>
                       {product.image ? (
                         <Image
                           src={product.image}
                           alt={product.name}
                           fill
-                          style={{ objectFit: 'contain', padding: 6 }}
-                          sizes="76px"
+                          style={{ objectFit: 'cover' }}
+                          sizes="96px"
                         />
                       ) : (
                         <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center', background: `${primaryColor}18` }}>

@@ -45,12 +45,12 @@ export function MenuProductCard({ product, primaryColor, secondaryColor, accentC
       }}
     >
       {/* imagen */}
-      <div style={{ position: 'relative', height: 200, background: '#fff' }}>
+      <div style={{ position: 'relative', aspectRatio: '4/3', background: `${primaryColor}12` }}>
         {image ? (
-          <Image src={image} alt={name} fill style={{ objectFit: 'contain', padding: '8px' }} sizes="(max-width: 600px) 100vw, 50vw" />
+          <Image src={image} alt={name} fill style={{ objectFit: 'cover' }} sizes="(max-width: 600px) 100vw, 50vw" />
         ) : (
-          <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center', background: '#f5f0eb' }}>
-            <Package style={{ width: 40, height: 40, color: '#d0c8be' }} />
+          <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center' }}>
+            <Package style={{ width: 40, height: 40, color: `${primaryColor}60` }} />
           </div>
         )}
 

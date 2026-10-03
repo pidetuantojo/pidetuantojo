@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
+import Image from 'next/image';
 
 import { formatCurrency } from '@/lib/utils';
 import { useCartStore } from '@/store/cart.store';
@@ -99,16 +100,18 @@ export function ProductModal({ product, adicionales, primaryColor, onClose }: Pr
         animation: `${closing ? '_slideDown .28s cubic-bezier(.32,.72,0,1) forwards' : '_slideUp .3s cubic-bezier(.32,.72,0,1)'}`,
       }}>
         {/* Image header */}
-        <div style={{ position: 'relative', height: 240, flexShrink: 0, background: '#fff' }}>
+        <div style={{ position: 'relative', height: 240, flexShrink: 0, background: `${primaryColor}12` }}>
           {product.image ? (
-            <img
+            <Image
               src={product.image}
               alt={product.name}
-              style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '12px' }}
+              fill
+              priority
+              style={{ objectFit: 'cover' }}
             />
           ) : (
             <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center' }}>
-              <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#d0c8be" strokeWidth="1.5" strokeLinecap="round">
+              <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke={`${primaryColor}60`} strokeWidth="1.5" strokeLinecap="round">
                 <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
               </svg>
             </div>
@@ -119,12 +122,14 @@ export function ProductModal({ product, adicionales, primaryColor, onClose }: Pr
             onClick={close}
             style={{
               position: 'absolute', top: 14, right: 14,
-              width: 32, height: 32, borderRadius: '50%',
-              background: 'rgba(0,0,0,.35)', border: 'none',
+              width: 40, height: 40, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.92)',
+              boxShadow: '0 4px 12px rgba(0,0,0,.2)',
+              border: 'none',
               display: 'grid', placeItems: 'center', cursor: 'pointer',
             }}
           >
-            <X size={16} color="#fff" />
+            <X size={18} color="#333" />
           </button>
         </div>
 

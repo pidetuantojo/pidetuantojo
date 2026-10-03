@@ -7,4 +7,5 @@ export interface ImageUploadProps {
   aspectRatio?: 'square' | 'wide' | 'banner';
   objectFit?: 'cover' | 'contain';
   hint?: string;
+  cropEnabled?: boolean;
 }

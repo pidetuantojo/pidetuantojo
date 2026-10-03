@@ -149,6 +149,7 @@ export function ProductForm({
           disabled={isPending}
           aspectRatio="wide"
           objectFit="contain"
+          cropEnabled
         />
 
         {/* Adicionales */}
