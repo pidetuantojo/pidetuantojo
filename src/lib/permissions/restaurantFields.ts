@@ -12,7 +12,7 @@ export const RESTAURANT_FIELD_GROUPS = {
   'settings.update_info': ['name', 'tagline', 'description', 'phone', 'category'],
   'settings.update_branding': ['logo', 'bannerImage', 'theme', 'menuLayout'],
   'settings.update_location': ['address', 'department', 'city', 'mapUrl', 'mapEmbed'],
-  'settings.update_social': ['instagram', 'facebook'],
+  'settings.update_social': ['instagram', 'facebook', 'tiktok', 'twitter'],
   'settings.update_hours': ['openingHours', 'allowScheduledWhenClosed'],
   'settings.update_delivery_mode': ['deliveryMode'],
   'payment_methods.manage': ['paymentMethods'],

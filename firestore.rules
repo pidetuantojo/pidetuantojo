@@ -116,7 +116,7 @@ service cloud.firestore {
         && guard(restaurantId, ['name', 'tagline', 'description', 'phone', 'category'], ['settings.update_info'])
         && guard(restaurantId, ['logo', 'bannerImage', 'theme', 'menuLayout'], ['settings.update_branding'])
         && guard(restaurantId, ['address', 'department', 'city', 'mapUrl', 'mapEmbed'], ['settings.update_location'])
-        && guard(restaurantId, ['instagram', 'facebook'], ['settings.update_social'])
+        && guard(restaurantId, ['instagram', 'facebook', 'tiktok', 'twitter'], ['settings.update_social'])
         && guard(restaurantId, ['openingHours', 'allowScheduledWhenClosed'], ['settings.update_hours'])
         && guard(restaurantId, ['deliveryMode'], ['settings.update_delivery_mode'])
         && guard(restaurantId, ['paymentMethods'], ['payment_methods.manage'])
