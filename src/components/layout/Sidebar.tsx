@@ -190,6 +190,7 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
     background: active ? 'linear-gradient(135deg, rgba(255,138,43,.22), rgba(234,59,46,.14))' : 'transparent',
     color: active ? '#fff' : 'var(--t-sb-muted)',
     cursor: 'pointer', border: 'none', width: '100%', fontFamily: sg,
+    whiteSpace: 'nowrap', overflow: 'hidden',
   });
 
   return (
@@ -263,7 +264,7 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
         )}
 
         {/* Nav */}
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, overflowY: 'auto', overflowX: 'visible' }}>
+        <nav className="sb-scroll" style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, overflowY: 'auto', overflowX: 'visible' }}>
           {navItems.map((item) => {
             if (item.type === 'link') {
               const active = isActive(item.href);
@@ -289,9 +290,9 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
                     justifyContent: collapsed ? 'center' : 'space-between',
                   }}
                 >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: collapsed ? 0 : 12 }}>
-                    <span style={{ color: groupActive ? '#FF6A1A' : 'inherit', display: 'flex' }}>{item.icon}</span>
-                    {!collapsed && <span style={{ color: groupActive ? '#fff' : 'var(--t-sb-muted)' }}>{item.label}</span>}
+                  <span style={{ display: 'flex', alignItems: 'center', gap: collapsed ? 0 : 12, minWidth: 0, overflow: 'hidden' }}>
+                    <span style={{ color: groupActive ? '#FF6A1A' : 'inherit', display: 'flex', flexShrink: 0 }}>{item.icon}</span>
+                    {!collapsed && <span style={{ color: groupActive ? '#fff' : 'var(--t-sb-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>}
                   </span>
                   {!collapsed && (
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"

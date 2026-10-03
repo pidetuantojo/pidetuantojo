@@ -71,6 +71,7 @@ export function ProductForm({
             error={errors.categoryId}
             placeholder="Selecciona una categoría"
             options={categories.map((cat) => ({ value: cat.id, label: cat.name }))}
+            compact
           />
 
           <Input
@@ -126,6 +127,7 @@ export function ProductForm({
             value={data.tag ?? ''}
             onChange={(v) => handleChange('tag', v)}
             disabled={isPending}
+            compact
             placeholder="Sin tag especial"
             options={[
               { value: '',                        label: 'Sin tag especial' },

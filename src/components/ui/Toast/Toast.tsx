@@ -35,7 +35,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
         minWidth: 280,
         maxWidth: 360,
         fontFamily: 'var(--font-sans, sans-serif)',
-        animation: 'toast-in 0.2s ease',
+        animation: 'toast-in 0.22s cubic-bezier(0.16,1,0.3,1)',
       }}
     >
       <span style={{
@@ -68,16 +68,18 @@ export function Toaster() {
     <>
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes toast-in {
-          from { opacity: 0; transform: translateX(16px); }
-          to   { opacity: 1; transform: translateX(0); }
+          from { opacity: 0; transform: translateY(12px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
       `}} />
       <div style={{
         position: 'fixed',
-        top: 20,
-        right: 20,
+        bottom: 28,
+        left: '50%',
+        transform: 'translateX(-50%)',
         display: 'flex',
         flexDirection: 'column',
+        alignItems: 'center',
         gap: 8,
         zIndex: 9999,
         pointerEvents: 'none',

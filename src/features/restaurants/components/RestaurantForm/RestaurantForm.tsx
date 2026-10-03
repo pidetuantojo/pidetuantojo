@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { Select } from '@/components/ui/Select';
+import { TimeSelect } from '@/components/ui/TimeSelect';
 import { COLOMBIA_LOCATIONS, RESTAURANT_CATEGORIES } from '@/constants/colombia-locations';
 import { ROUTES } from '@/constants/routes';
 import type { Permission } from '@/constants/permissions';
@@ -568,6 +569,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
                   error={errors.category}
                   disabled={isPending}
                   searchable
+                  compact
                 />
               </div>
             </>
@@ -773,6 +775,8 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
               hint="Define en qué departamento apareces"
               error={errors.department}
               disabled={isPending}
+              compact
+              searchable
             />
             <Select
               label="Ciudad *"
@@ -783,6 +787,8 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
               hint="Se filtra según el departamento"
               error={errors.city}
               disabled={isPending || !data.department}
+              compact
+              searchable
             />
           </div>
           {data.department && data.city && (
@@ -916,29 +922,17 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
                   </button>
 
                   {day.on ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                      <input
-                        type="time"
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <TimeSelect
                         value={day.open}
-                        onChange={(e) => setDayHours(dayIndex, { open: e.target.value })}
+                        onChange={(v) => setDayHours(dayIndex, { open: v })}
                         disabled={isPending}
-                        style={{
-                          fontFamily: sm, fontSize: 13, color: 'var(--t-text-1)',
-                          border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)',
-                          borderRadius: 9, padding: '7px 10px', outline: 'none',
-                        }}
                       />
                       <span style={{ fontFamily: sm, fontSize: 13, color: 'var(--t-text-4)' }}>–</span>
-                      <input
-                        type="time"
+                      <TimeSelect
                         value={day.close}
-                        onChange={(e) => setDayHours(dayIndex, { close: e.target.value })}
+                        onChange={(v) => setDayHours(dayIndex, { close: v })}
                         disabled={isPending}
-                        style={{
-                          fontFamily: sm, fontSize: 13, color: 'var(--t-text-1)',
-                          border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)',
-                          borderRadius: 9, padding: '7px 10px', outline: 'none',
-                        }}
                       />
                     </div>
                   ) : (

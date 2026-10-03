@@ -21,6 +21,7 @@ interface SelectProps {
   disabled?: boolean;
   style?: React.CSSProperties;
   searchable?: boolean;
+  compact?: boolean;
 }
 
 interface DropPos {
@@ -41,6 +42,7 @@ export function Select({
   disabled,
   style,
   searchable,
+  compact,
 }: SelectProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -224,7 +226,7 @@ export function Select({
       {label && (
         <label
           htmlFor={id}
-          style={{ fontWeight: 500, fontSize: 13, color: 'var(--t-text-2)', display: 'block', marginBottom: 6 }}
+          style={{ fontWeight: 500, fontSize: 14, color: 'var(--t-text-2)', display: 'block', marginBottom: 4 }}
         >
           {label}
         </label>
@@ -249,7 +251,7 @@ export function Select({
             border: `1.5px solid ${open ? '#FF6A1A' : error ? '#EA3B2E' : 'var(--t-input-border)'}`,
             background: disabled ? 'var(--t-surface-2)' : 'var(--t-input-bg)',
             borderRadius: 12,
-            padding: '11px 14px',
+            padding: compact ? '8px 14px' : '11px 14px',
             outline: 'none',
             cursor: disabled ? 'not-allowed' : 'pointer',
             boxShadow: open ? '0 0 0 4px rgba(255,106,26,.13)' : 'none',

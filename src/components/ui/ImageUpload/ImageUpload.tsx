@@ -71,7 +71,7 @@ export function ImageUpload({
             className={cn('relative overflow-hidden rounded-lg', heightClass)}
             style={{ border: '1px solid var(--t-border)', background: 'var(--t-surface-2)' }}
           >
-            <Image src={value} alt="Imagen subida" fill className={cn(objectFit === 'contain' ? 'object-contain p-4' : 'object-cover')} />
+            <Image src={value} alt="Imagen subida" fill className={cn(objectFit === 'contain' ? 'object-contain' : 'object-cover')} />
 
             {/* botón ver imagen */}
             <button

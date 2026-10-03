@@ -219,7 +219,7 @@ export function MenuHeader({ restaurant, cartCount, onNavOpen, onCartOpen }: Men
               height: 120,
               borderRadius: '50%',
               background: '#fff',
-              padding: 6,
+              padding: 2,
               boxShadow: '0 10px 26px -8px rgba(0,0,0,.3)',
               flexShrink: 0,
               position: 'relative',

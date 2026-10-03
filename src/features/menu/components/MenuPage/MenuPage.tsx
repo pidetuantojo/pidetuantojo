@@ -307,7 +307,7 @@ export function MenuPage({ restaurant, categories: baseCategories, products: bas
           {layout === 'cards' && (
             <>
               {categories.length > 0 && (
-                <CategoryTabs categories={categories} activeId={activeCategoryId} primaryColor={pri} secondaryColor={sec} onSelect={setActiveCategoryId} />
+                <CategoryTabs categories={categories} activeId={activeCategoryId} primaryColor={pri} secondaryColor={sec} bgColor={bg} onSelect={setActiveCategoryId} />
               )}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '12px 16px 24px' }}>
                 {visibleProducts.length === 0 ? (
@@ -465,7 +465,7 @@ export function MenuPage({ restaurant, categories: baseCategories, products: bas
         {/* Info overlay */}
         <div style={{ position: 'absolute', bottom: 52, left: 60, display: 'flex', alignItems: 'center', gap: 28 }}>
           {/* Logo */}
-          <div style={{ width: 110, height: 110, borderRadius: '50%', background: '#fff', padding: 5, boxShadow: '0 8px 28px rgba(0,0,0,.35)', flexShrink: 0 }}>
+          <div style={{ width: 110, height: 110, borderRadius: '50%', background: '#fff', padding: 2, boxShadow: '0 8px 28px rgba(0,0,0,.35)', flexShrink: 0 }}>
             <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: '#fff', display: 'grid', placeItems: 'center', border: '1px solid #f2ede7' }}>
               {restaurant.logo ? (
                 <img src={restaurant.logo} alt={restaurant.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />

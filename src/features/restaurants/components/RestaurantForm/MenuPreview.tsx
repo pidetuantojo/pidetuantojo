@@ -130,10 +130,10 @@ export function MenuPreview({ pri, sec, acc, bg, name, layout = 'cards', logo, b
         {/* Hero card */}
         <div style={{ position: 'relative', zIndex: 5, margin: '-44px 10px 0', background: '#fff', borderRadius: 18, padding: '0 16px 16px', boxShadow: '0 14px 30px -16px rgba(0,0,0,.4)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-            <div style={{ marginTop: -37, width: 74, height: 74, borderRadius: '50%', background: '#fff', padding: 4, boxShadow: '0 8px 20px -8px rgba(0,0,0,.28)', flexShrink: 0, position: 'relative', zIndex: 10 }}>
+            <div style={{ marginTop: -37, width: 74, height: 74, borderRadius: '50%', background: '#fff', padding: 2, boxShadow: '0 8px 20px -8px rgba(0,0,0,.28)', flexShrink: 0, position: 'relative', zIndex: 10 }}>
               <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', background: '#fff', display: 'grid', placeItems: 'center', border: '1px solid #f2ede7' }}>
                 {logo ? (
-                  <img src={logo} alt={name} style={{ width: '65%', height: '65%', objectFit: 'contain' }} />
+                  <img src={logo} alt={name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 ) : (
                   <span style={{ fontWeight: 700, fontSize: 22, color: pri, fontFamily: sg }}>{name?.[0]?.toUpperCase() ?? 'R'}</span>
                 )}

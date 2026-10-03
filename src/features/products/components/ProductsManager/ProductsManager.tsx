@@ -99,9 +99,10 @@ export function ProductsManager() {
     const target = sorted[targetIndex];
     setMovingId(current.id);
     try {
+      // Usar posición en el array como sortOrder para evitar duplicados en Firestore
       await Promise.all([
-        productsService.update(restaurantId, current.id, { sortOrder: target.sortOrder }),
-        productsService.update(restaurantId, target.id, { sortOrder: current.sortOrder }),
+        productsService.update(restaurantId, current.id, { sortOrder: targetIndex + 1 }),
+        productsService.update(restaurantId, target.id, { sortOrder: index + 1 }),
       ]);
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.products(restaurantId) });
       showToast('Orden actualizado');
@@ -164,6 +165,7 @@ export function ProductsManager() {
           onChange={setFilterCategory}
           placeholder="Todas las categorías"
           style={{ width: 220, flexShrink: 0 }}
+          compact
           options={[
             { value: '', label: 'Todas las categorías' },
             ...categories.map((cat) => ({ value: cat.id, label: cat.name })),

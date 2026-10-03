@@ -292,7 +292,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           >
             <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>🚧</span>
             <span style={{ flex: 1, lineHeight: 1.5 }}>
-              <strong>Tu menú público muestra "Próximamente"</strong> porque falta configurar:{' '}
+              <strong>Tu menú público muestra &ldquo;Próximamente&rdquo;</strong> porque falta configurar:{' '}
               {missingFields.map((f, i) => (
                 <span key={f.key}>
                   {i > 0 && ', '}
