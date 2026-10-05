@@ -21,6 +21,7 @@ import {
   toDateInputValue,
   validateScheduledDate,
 } from '../../helpers/schedule.helpers';
+import { SchedulePicker } from '../SchedulePicker';
 import { PaymentMethodIcon } from '@/features/payment-methods/components/PaymentMethodIcon';
 import { getPaymentMethodsForDelivery, getPaymentLabel } from '@/features/payment-methods/helpers/payment-methods.helpers';
 import { normalizeCouponCode } from '@/features/promotions/engine';
@@ -1152,26 +1153,7 @@ export function CartDrawer({ primaryColor, secondaryColor, deliveryZones, delive
                 {scheduleAllowed && (() => {
                   const now = new Date();
                   const { max } = getScheduleBounds(now);
-                  const todayHours = getDaySchedule(openingHours, now);
-                  const pickedDay = parseScheduleInput(scheduleDate, '00:00');
-                  const pickedHours = pickedDay ? getDaySchedule(openingHours, pickedDay) : null;
-                  const pickedIsToday = scheduleDate === toDateInputValue(now);
                   const showSchedErr = scheduleError !== null && (submitted || (scheduleDate !== '' && scheduleTime !== ''));
-                  const fieldStyle = (hasErr: boolean): React.CSSProperties => ({
-                    width: '100%',
-                    border: `1.5px solid ${hasErr ? '#fca5a5' : '#e5e7eb'}`,
-                    borderRadius: 12,
-                    padding: '10px 12px',
-                    fontSize: 13,
-                    fontFamily: sg,
-                    color: '#1B1512',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                    background: hasErr ? '#fef2f2' : '#fff',
-                    minWidth: 0,
-                  });
-                  const labelStyle: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, color: '#6b7280', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '.05em' };
-
                   return (
                     <div style={{ marginTop: 12, background: '#f9fafb', borderRadius: 14, padding: '12px 14px', border: '1.5px solid #e5e7eb' }}>
                       <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 800, color: '#1B1512', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -1196,48 +1178,15 @@ export function CartDrawer({ primaryColor, secondaryColor, deliveryZones, delive
 
                       {(isScheduled || scheduleForced) && (
                         <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                          <p style={{ margin: 0, fontSize: 12, color: '#6b7280', lineHeight: 1.5 }}>
-                            Tu pedido se preparará para la fecha y hora que elijas. Mínimo {SCHEDULE_MIN_MINUTES} minutos en el futuro y máximo {SCHEDULE_MAX_DAYS} días adelante.
-                          </p>
-
-                          {hasOpeningHours(openingHours) && (
-                            <div style={{ fontSize: 12, color: '#374151', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '8px 10px', lineHeight: 1.6 }}>
-                              <div>
-                                <strong>Horario de hoy:</strong>{' '}
-                                {todayHours ? `${fmtHour(todayHours.open)} – ${fmtHour(todayHours.close)}` : 'Cerrado'}
-                              </div>
-                              {pickedDay && !pickedIsToday && (
-                                <div>
-                                  <strong>Horario del día elegido:</strong>{' '}
-                                  {pickedHours ? `${fmtHour(pickedHours.open)} – ${fmtHour(pickedHours.close)}` : 'Cerrado'}
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 8 }}>
-                            <div>
-                              <label style={labelStyle}>Fecha</label>
-                              <input
-                                type="date"
-                                value={scheduleDate}
-                                min={toDateInputValue(now)}
-                                max={toDateInputValue(max)}
-                                onChange={(e) => setScheduleDate(e.target.value)}
-                                style={fieldStyle(submitted && scheduleDate === '')}
-                              />
-                            </div>
-                            <div>
-                              <label style={labelStyle}>Hora</label>
-                              <input
-                                type="time"
-                                value={scheduleTime}
-                                step={300}
-                                onChange={(e) => setScheduleTime(e.target.value)}
-                                style={fieldStyle(submitted && scheduleTime === '')}
-                              />
-                            </div>
-                          </div>
+                          <SchedulePicker
+                            date={scheduleDate}
+                            time={scheduleTime}
+                            onDateChange={setScheduleDate}
+                            onTimeChange={setScheduleTime}
+                            openingHours={openingHours}
+                            primaryColor={primaryColor}
+                            secondaryColor={secondaryColor}
+                          />
 
                           {showSchedErr && (
                             <p style={{ margin: 0, fontSize: 11, color: '#ef4444' }}>{scheduleError}</p>

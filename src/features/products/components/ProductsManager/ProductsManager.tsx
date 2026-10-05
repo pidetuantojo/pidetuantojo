@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Search, Package, LayoutGrid, List } from 'lucide-react';
+import { Plus, Search, Package, LayoutGrid, List, FileUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
 import { useAuth } from '@/features/auth';
 import { useCategories } from '@/features/categories/hooks/useCategories';
+import { useRestaurant } from '@/features/restaurants/hooks/useRestaurants';
 import { QUERY_KEYS } from '@/constants/query-keys';
 import { useToastStore } from '@/store/toast.store';
 import { useConfirmStore } from '@/store/confirm.store';
@@ -19,6 +20,7 @@ import { useToggleProductAvailable, useDeleteProduct } from '../../hooks/useProd
 import { productsService } from '../../services/products.service';
 import { ProductCard } from '../ProductCard';
 import { ProductsTable } from '../ProductsTable';
+import { ProductsImport } from '../ProductsImport';
 
 type View = 'cards' | 'table';
 
@@ -28,6 +30,8 @@ export function ProductsManager() {
   const canUpdate = can('products.update');
   const restaurantId = user?.restaurantId ?? '';
   const queryClient = useQueryClient();
+  const { data: restaurant } = useRestaurant(restaurantId || undefined);
+  const [showImport, setShowImport] = useState(false);
 
   const { data: products = [], isLoading: loadingProducts } = useProducts(restaurantId);
   const { data: categories = [], isLoading: loadingCategories } = useCategories(restaurantId);
@@ -126,6 +130,7 @@ export function ProductsManager() {
   }
 
   return (
+    <>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -136,10 +141,16 @@ export function ProductsManager() {
           </p>
         </div>
         {can('products.create') && (
-          <Button onClick={handleAdd}>
-            <Plus className="h-4 w-4" />
-            Nuevo producto
-          </Button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button variant="secondary" onClick={() => setShowImport(true)}>
+              <FileUp className="h-4 w-4" />
+              Importar Excel
+            </Button>
+            <Button onClick={handleAdd}>
+              <Plus className="h-4 w-4" />
+              Nuevo producto
+            </Button>
+          </div>
         )}
       </div>
 
@@ -251,5 +262,14 @@ export function ProductsManager() {
       )}
 
     </div>
+
+      {showImport && (
+        <ProductsImport
+          restaurantId={restaurantId}
+          restaurantSlug={restaurant?.slug ?? restaurantId}
+          onClose={() => setShowImport(false)}
+        />
+      )}
+    </>
   );
 }

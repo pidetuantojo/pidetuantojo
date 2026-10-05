@@ -9,6 +9,7 @@ import {
   query,
   orderBy,
   where,
+  writeBatch,
 } from 'firebase/firestore';
 
 import { db } from '@/lib/firebase/config';
@@ -68,5 +69,30 @@ export const productsService = {
 
   async delete(restaurantId: string, id: string): Promise<void> {
     await deleteDoc(doc(productsRef(restaurantId), id));
+  },
+
+  /** Crea múltiples productos en lotes de 450 (límite Firestore: 500). */
+  async createMany(
+    restaurantId: string,
+    products: Omit<import('@/types').CreateProductData, 'restaurantId'>[],
+    onProgress?: (done: number, total: number) => void,
+  ): Promise<number> {
+    const BATCH_SIZE = 450;
+    const now = new Date().toISOString();
+    const ref = productsRef(restaurantId);
+    let created = 0;
+
+    for (let i = 0; i < products.length; i += BATCH_SIZE) {
+      const chunk = products.slice(i, i + BATCH_SIZE);
+      const batch = writeBatch(db);
+      for (const p of chunk) {
+        const d = doc(ref);
+        batch.set(d, { ...p, restaurantId, id: d.id, createdAt: now, updatedAt: now });
+      }
+      await batch.commit();
+      created += chunk.length;
+      onProgress?.(created, products.length);
+    }
+    return created;
   },
 };
