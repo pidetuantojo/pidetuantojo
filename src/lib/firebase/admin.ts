@@ -1,6 +1,7 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
+import { getMessaging } from 'firebase-admin/messaging';
 
 if (!getApps().length) {
   initializeApp({
@@ -14,3 +15,5 @@ if (!getApps().length) {
 
 export const adminAuth = getAuth();
 export const adminDb = getFirestore();
+// Avisos push de pedidos nuevos (Firebase Cloud Messaging)
+export const adminMessaging = getMessaging();

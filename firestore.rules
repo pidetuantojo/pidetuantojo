@@ -288,6 +288,13 @@ service cloud.firestore {
       allow write: if isSuperAdmin();
     }
 
+    // ─── Avisos push (PWA de pedidos) ───────────────────────────────────────────
+    // Tokens de Firebase Cloud Messaging por dispositivo: solo el servidor (/api/push/*, /api/orders).
+
+    match /pushTokens/{tokenId} {
+      allow read, write: if false;
+    }
+
     // ─── Restaurant Leads ───────────────────────────────────────────────────────
     // Inscripciones de restaurantes desde la página pública (/registrar-local).
     // Cualquier visitante puede crear; solo el super admin puede leer y actualizar.

@@ -40,6 +40,7 @@ import type { Order } from '@/types';
 import { useOrders } from '../../hooks/useOrders';
 import { useUpdateOrderStatus } from '../../hooks/useUpdateOrderStatus';
 import { useVoiceNotifications } from '../../hooks/useVoiceNotifications';
+import { PwaControls } from '@/features/pwa/components/PwaControls';
 import { ordersService } from '../../services/orders.service';
 import { useToastStore } from '@/store/toast.store';
 import { OrderCard } from '../OrderCard';
@@ -382,6 +383,20 @@ export function OrdersManager() {
     prevStatusRef.current = new Map(orders.map((o) => [o.id, o.statusId]));
   }, [orders, isLoading, statuses, announce]);
 
+  // Al tocar el aviso push se llega con ?pedido={id}: se abre el detalle de ese pedido una sola vez
+  const openedFromPushRef = useRef(false);
+  useEffect(() => {
+    if (isLoading || openedFromPushRef.current) return;
+    const url = new URL(window.location.href);
+    const orderId = url.searchParams.get('pedido');
+    if (!orderId) return;
+    openedFromPushRef.current = true;
+    const order = orders.find((o) => o.id === orderId);
+    if (order) setSelectedOrder(order);
+    url.searchParams.delete('pedido');
+    window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+  }, [isLoading, orders]);
+
   const removeToast = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
@@ -568,6 +583,8 @@ export function OrdersManager() {
             {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
             <span className="hidden sm:inline">{voiceEnabled ? 'Voz activa' : 'Voz off'}</span>
           </button>
+          {/* PWA: instalar la app y avisos con la app cerrada */}
+          <PwaControls />
           <button
             onClick={() => {
               knownIdsRef.current = null;
