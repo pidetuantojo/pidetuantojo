@@ -10,6 +10,9 @@ export const ROUTES = {
     plans: '/admin/planes',
     planNew: '/admin/planes/nuevo',
     plan: (id: string) => `/admin/planes/${id}`,
+    categorias: '/admin/categorias',
+    categoriaNueva: '/admin/categorias/nueva',
+    categoria: (id: string) => `/admin/categorias/${id}`,
   },
   // Restaurant dashboard
   dashboard: {

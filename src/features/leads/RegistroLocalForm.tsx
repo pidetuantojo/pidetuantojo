@@ -3,7 +3,8 @@
 import { useState, CSSProperties } from 'react';
 import Link from 'next/link';
 
-import { COLOMBIA_LOCATIONS, RESTAURANT_CATEGORIES } from '@/constants/colombia-locations';
+import { COLOMBIA_LOCATIONS } from '@/constants/colombia-locations';
+import { useRestaurantCategories } from '@/features/restaurant-categories/hooks/useRestaurantCategories';
 import { Select } from '@/components/ui/Select';
 import { leadsService } from './leads.service';
 import { Logo, LogoMark } from '@/components/ui/Logo';
@@ -79,6 +80,7 @@ const EMPTY_FORM: FormData = {
 
 export function RegistroLocalForm() {
   const { theme, toggle: toggleTheme } = useTheme();
+  const { data: restaurantCategories = [] } = useRestaurantCategories();
   const [step, setStep] = useState<'form' | 'success'>('form');
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [autoriza, setAutoriza] = useState(false);
@@ -393,7 +395,7 @@ export function RegistroLocalForm() {
                       onChange={(v) => set('tipoNegocio', v)}
                       placeholder="Selecciona una opción"
                       error={errors.tipoNegocio}
-                      options={RESTAURANT_CATEGORIES.map((c) => ({ value: c, label: c }))}
+                      options={restaurantCategories.filter((c) => c.isActive).map((c) => ({ value: c.name, label: `${c.icon ? c.icon + ' ' : ''}${c.name}` }))}
                     />
                   </div>
 

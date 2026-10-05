@@ -1,0 +1,1 @@
+export { RestaurantCategoriesManager } from './RestaurantCategoriesManager';

@@ -41,6 +41,22 @@ export interface Plan {
 
 export type SavePlanData = Pick<Plan, 'name' | 'description' | 'price' | 'billingPeriod' | 'permissions' | 'isActive' | 'sortOrder' | 'limits'>;
 
+// ===== CATEGORÍAS DE RESTAURANTE =====
+
+/** restaurantCategories/{id} — administradas solo por el super admin. */
+export interface RestaurantCategory {
+  id: string;
+  name: string;
+  slug: string;
+  icon?: string;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SaveRestaurantCategoryData = Pick<RestaurantCategory, 'name' | 'slug' | 'sortOrder' | 'isActive'> & { icon?: string };
+
 // ===== RESTAURANTE =====
 
 export interface RestaurantTheme {
@@ -105,7 +121,9 @@ export interface Restaurant {
   logo: string;
   bannerImage?: string;
   theme: RestaurantTheme;
-  // Categoría (tipo de cocina)
+  // Categorías (IDs de restaurantCategories — 1 a 3)
+  categoryIds?: string[];
+  /** @deprecated usar categoryIds. Se mantiene para migración. */
   category?: string;
   // Ubicación
   address?: string;

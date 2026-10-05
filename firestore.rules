@@ -103,7 +103,7 @@ service cloud.firestore {
       return isMember(restaurantId)
         && changedKeys().hasOnly([
           'updatedAt',
-          'name', 'tagline', 'description', 'phone', 'category',
+          'name', 'tagline', 'description', 'phone', 'categoryIds',
           'logo', 'bannerImage', 'theme', 'menuLayout',
           'address', 'department', 'city', 'mapUrl', 'mapEmbed',
           'instagram', 'facebook', 'tiktok', 'twitter',
@@ -113,7 +113,7 @@ service cloud.firestore {
           'deliveryMethods',
           'loyalty'
         ])
-        && guard(restaurantId, ['name', 'tagline', 'description', 'phone', 'category'], ['settings.update_info'])
+        && guard(restaurantId, ['name', 'tagline', 'description', 'phone', 'categoryIds'], ['settings.update_info'])
         && guard(restaurantId, ['logo', 'bannerImage', 'theme', 'menuLayout'], ['settings.update_branding'])
         && guard(restaurantId, ['address', 'department', 'city', 'mapUrl', 'mapEmbed'], ['settings.update_location'])
         && guard(restaurantId, ['instagram', 'facebook', 'tiktok', 'twitter'], ['settings.update_social'])
@@ -277,6 +277,15 @@ service cloud.firestore {
         // Nadie elimina pedidos — solo se cambia el estado
         allow delete: if isSuperAdmin();
       }
+    }
+
+    // ─── Restaurant Categories ──────────────────────────────────────────────────
+    // Categorías globales de restaurante (comida, café, postres…). Lectura pública,
+    // escritura exclusiva del super admin.
+
+    match /restaurantCategories/{categoryId} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
     }
 
     // ─── Restaurant Leads ───────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 import { adminDb } from '@/lib/firebase/admin';
-import type { Restaurant, Plan } from '@/types';
+import type { Restaurant, Plan, RestaurantCategory } from '@/types';
 import { HomeClient } from '@/features/home/HomeClient';
 import { getSubscriptionInfo } from '@/lib/subscription/subscription';
 
@@ -36,7 +36,15 @@ async function getVisibleRestaurants(): Promise<Restaurant[]> {
   });
 }
 
+async function getRestaurantCategories(): Promise<RestaurantCategory[]> {
+  const snap = await adminDb.collection('restaurantCategories').orderBy('sortOrder', 'asc').get();
+  return snap.docs.map((d) => ({ ...d.data(), id: d.id } as RestaurantCategory));
+}
+
 export default async function HomePage() {
-  const restaurants = await getVisibleRestaurants();
-  return <HomeClient restaurants={restaurants} />;
+  const [restaurants, restaurantCategories] = await Promise.all([
+    getVisibleRestaurants(),
+    getRestaurantCategories(),
+  ]);
+  return <HomeClient restaurants={restaurants} restaurantCategories={restaurantCategories} />;
 }

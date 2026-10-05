@@ -17,8 +17,8 @@ export interface RestaurantFormData {
   accentColor: string;
   bgColor: string;
   isActive: boolean;
-  // Categoría
-  category: string;
+  // Categorías (IDs de restaurantCategories — 1 a 3)
+  categoryIds: string[];
   // Ubicación
   address: string;
   department: string;

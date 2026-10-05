@@ -8,8 +8,10 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { Select } from '@/components/ui/Select';
+import { MultiSelect } from '@/components/ui/MultiSelect';
 import { TimeSelect } from '@/components/ui/TimeSelect';
-import { COLOMBIA_LOCATIONS, RESTAURANT_CATEGORIES } from '@/constants/colombia-locations';
+import { COLOMBIA_LOCATIONS } from '@/constants/colombia-locations';
+import { useRestaurantCategories } from '@/features/restaurant-categories/hooks/useRestaurantCategories';
 import { ROUTES } from '@/constants/routes';
 import type { Permission } from '@/constants/permissions';
 import { useAuth } from '@/features/auth';
@@ -290,7 +292,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
 
   // Secciones con errores de validación
   const sectionErrors = {
-    info:     !!(errors.name || errors.slug || errors.description || errors.phone || errors.category),
+    info:     !!(errors.name || errors.slug || errors.description || errors.phone || errors.categoryIds),
     branding: !!(errors.logo),
     location: !!(errors.department || errors.city),
     admin:    !!(errors.adminName || errors.adminEmail || errors.adminPassword),
@@ -366,7 +368,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
     ? (COLOMBIA_LOCATIONS[data.department] ?? []).map((c) => ({ value: c, label: c }))
     : [];
 
-  const categoryOptions = RESTAURANT_CATEGORIES.map((c) => ({ value: c, label: c }));
+  const { data: restaurantCategories = [] } = useRestaurantCategories();
 
   const statusNow = getStatusNow(data.openingHours);
 
@@ -560,15 +562,15 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
                   required
                   disabled={isPending}
                 />
-                <Select
-                  label="Categoría (tipo de cocina) *"
-                  value={data.category}
-                  onChange={(v) => handleChange('category', v)}
-                  options={categoryOptions}
-                  placeholder="Selecciona una categoría..."
-                  error={errors.category}
+                <MultiSelect
+                  label="Categorías (tipo de cocina) *"
+                  values={data.categoryIds}
+                  onChange={(v) => handleChange('categoryIds', v)}
+                  options={restaurantCategories.filter((c) => c.isActive).map((c) => ({ value: c.id, label: `${c.icon ? c.icon + ' ' : ''}${c.name}` }))}
+                  placeholder="Seleccioná hasta 3 categorías..."
+                  error={errors.categoryIds}
                   disabled={isPending}
-                  searchable
+                  max={3}
                   compact
                 />
               </div>

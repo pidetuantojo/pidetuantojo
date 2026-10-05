@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import type { Restaurant, OpeningHours } from '@/types';
+import type { Restaurant, OpeningHours, RestaurantCategory } from '@/types';
 import { Select } from '@/components/ui/Select';
 import { Logo, LogoMark } from '@/components/ui/Logo';
 import { useTheme } from '@/components/providers/ThemeProvider';
@@ -52,6 +52,7 @@ function getStatus(openingHours?: OpeningHours): { open: boolean; label: string 
 
 interface HomeClientProps {
   restaurants: Restaurant[];
+  restaurantCategories: RestaurantCategory[];
 }
 
 const sg = "var(--font-sans, sans-serif)";
@@ -59,7 +60,7 @@ const sm = "var(--font-mono, monospace)";
 
 // ─── component ───────────────────────────────────────────────────────────────
 
-export function HomeClient({ restaurants }: HomeClientProps) {
+export function HomeClient({ restaurants, restaurantCategories }: HomeClientProps) {
   const { theme, toggle: toggleTheme } = useTheme();
   const [dep, setDep] = useState('');
   const [city, setCity] = useState('');
@@ -85,10 +86,21 @@ export function HomeClient({ restaurants }: HomeClientProps) {
     return [{ value: '', label: 'Todas las ciudades' }, ...cities.map((c) => ({ value: c, label: c }))];
   }, [restaurants, dep]);
 
+  // Mapa id → nombre para los badges en las cards
+  const catMap = useMemo(
+    () => Object.fromEntries(restaurantCategories.map((c) => [c.id, c])),
+    [restaurantCategories],
+  );
+
   const catOptions = useMemo(() => {
-    const cats = Array.from(new Set(restaurants.map((r) => r.category).filter(Boolean) as string[])).sort();
-    return [{ value: '', label: 'Todas las categorías' }, ...cats.map((c) => ({ value: c, label: c }))];
-  }, [restaurants]);
+    // Solo las categorías activas que al menos un restaurante usa
+    const usedIds = new Set(restaurants.flatMap((r) => r.categoryIds ?? []));
+    const active = restaurantCategories.filter((c) => c.isActive && usedIds.has(c.id));
+    return [
+      { value: '', label: 'Todas las categorías' },
+      ...active.map((c) => ({ value: c.id, label: `${c.icon ? c.icon + ' ' : ''}${c.name}` })),
+    ];
+  }, [restaurants, restaurantCategories]);
 
   function handleDepChange(val: string) {
     setDep(val);
@@ -103,9 +115,10 @@ export function HomeClient({ restaurants }: HomeClientProps) {
       .filter(({ r, st }) => {
         if (dep && r.department !== dep) return false;
         if (city && r.city !== city) return false;
-        if (cat && r.category !== cat) return false;
+        if (cat && !(r.categoryIds ?? []).includes(cat)) return false;
         if (onlyOpen && !st.open) return false;
-        if (qLow && ![r.name, r.tagline ?? '', r.category ?? '', r.description].join(' ').toLowerCase().includes(qLow)) return false;
+        const catNames = (r.categoryIds ?? []).map((id) => catMap[id]?.name ?? '').join(' ');
+        if (qLow && ![r.name, r.tagline ?? '', catNames, r.description].join(' ').toLowerCase().includes(qLow)) return false;
         return true;
       })
       .sort((a, b) => (b.st.open ? 1 : 0) - (a.st.open ? 1 : 0));
@@ -271,7 +284,7 @@ export function HomeClient({ restaurants }: HomeClientProps) {
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
               {filtered.map(({ r, st }) => (
-                <DesktopCard key={r.id} restaurant={r} st={st} />
+                <DesktopCard key={r.id} restaurant={r} st={st} catMap={catMap} />
               ))}
             </div>
           )}
@@ -429,7 +442,7 @@ export function HomeClient({ restaurants }: HomeClientProps) {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                 {filtered.map(({ r, st }) => (
-                  <MobileCard key={r.id} restaurant={r} st={st} />
+                  <MobileCard key={r.id} restaurant={r} st={st} catMap={catMap} />
                 ))}
               </div>
             )}
@@ -443,7 +456,7 @@ export function HomeClient({ restaurants }: HomeClientProps) {
 
 // ─── Desktop Card ─────────────────────────────────────────────────────────────
 
-function DesktopCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open: boolean; label: string } }) {
+function DesktopCard({ restaurant: r, st, catMap }: { restaurant: Restaurant; st: { open: boolean; label: string }; catMap: Record<string, RestaurantCategory> }) {
   const sg = "var(--font-sans, sans-serif)";
   const sm = "var(--font-mono, monospace)";
   const pri = r.theme.primaryColor;
@@ -477,9 +490,9 @@ function DesktopCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open
           }}>
             {st.open ? 'ABIERTO' : 'CERRADO'}
           </span>
-          {r.category && (
+          {(r.categoryIds ?? []).length > 0 && (
             <span style={{ position: 'absolute', bottom: 12, left: 12, fontFamily: sm, fontSize: 10, fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,.42)', border: '1px solid rgba(255,255,255,.28)', backdropFilter: 'blur(6px)', borderRadius: 999, padding: '5px 11px' }}>
-              {r.category}
+              {(r.categoryIds ?? []).map((id) => catMap[id]?.name).filter(Boolean).join(' · ')}
             </span>
           )}
         </div>
@@ -528,7 +541,7 @@ function DesktopCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open
 
 // ─── Mobile Card ──────────────────────────────────────────────────────────────
 
-function MobileCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open: boolean; label: string } }) {
+function MobileCard({ restaurant: r, st, catMap }: { restaurant: Restaurant; st: { open: boolean; label: string }; catMap: Record<string, RestaurantCategory> }) {
   const sg = "var(--font-sans, sans-serif)";
   const sm = "var(--font-mono, monospace)";
   const pri = r.theme.primaryColor;
@@ -589,8 +602,10 @@ function MobileCard({ restaurant: r, st }: { restaurant: Restaurant; st: { open:
             <h4 style={{ fontFamily: sg, fontWeight: 700, fontSize: 18, letterSpacing: '-.01em', color: 'var(--t-text-1)', margin: 0, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {r.name}
             </h4>
-            {r.category && (
-              <div style={{ fontFamily: sg, fontSize: 13, color: 'var(--t-text-3)', marginTop: 2 }}>{r.category}</div>
+            {(r.categoryIds ?? []).length > 0 && (
+              <div style={{ fontFamily: sg, fontSize: 13, color: 'var(--t-text-3)', marginTop: 2 }}>
+                {(r.categoryIds ?? []).map((id) => catMap[id]?.name).filter(Boolean).join(' · ')}
+              </div>
             )}
           </div>
         </div>
