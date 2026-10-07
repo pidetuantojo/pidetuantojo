@@ -183,3 +183,4 @@ fly secrets set API_KEY=nueva-clave-secreta -a pidetuantojo-wa
 ```
 
 Después de cambiar `API_KEY` en Fly.io, también hay que actualizar `WHATSAPP_API_KEY` en las variables de entorno de Vercel para que los valores coincidan.
+
