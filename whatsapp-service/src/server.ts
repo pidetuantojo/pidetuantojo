@@ -1,6 +1,24 @@
 import express from 'express';
+import fs from 'fs';
+import path from 'path';
 import QRCode from 'qrcode';
 import { sessionManager } from './sessionManager';
+
+const SESSIONS_DIR = process.env.SESSIONS_DIR ?? path.join(process.cwd(), 'sessions');
+
+// Al arrancar, restaurar todas las sesiones que tengan credenciales guardadas en disco
+function restoreSessions(): void {
+  if (!fs.existsSync(SESSIONS_DIR)) return;
+  const entries = fs.readdirSync(SESSIONS_DIR, { withFileTypes: true });
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const restaurantId = entry.name;
+    const credsFile = path.join(SESSIONS_DIR, restaurantId, 'creds.json');
+    if (!fs.existsSync(credsFile)) continue;
+    console.log(`[startup] Restaurando sesión: ${restaurantId}`);
+    sessionManager.getOrCreate(restaurantId).init().catch(() => {});
+  }
+}
 
 const app = express();
 app.use(express.json());
@@ -100,4 +118,5 @@ app.post('/notify', async (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`WhatsApp service corriendo en puerto ${PORT}`);
+  restoreSessions();
 });
