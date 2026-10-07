@@ -10,13 +10,8 @@ import { buildWhatsAppMessage, buildWhatsAppUrl } from '../../helpers/whatsapp.h
 import type { DeliveryType, PaymentMethod } from '../../helpers/whatsapp.helpers';
 import { checkCanOrder } from '../../helpers/canOrder.helpers';
 import {
-  SCHEDULE_MAX_DAYS,
-  SCHEDULE_MIN_MINUTES,
-  fmtHour,
   formatScheduledDate,
-  getDaySchedule,
   getScheduleBounds,
-  hasOpeningHours,
   parseScheduleInput,
   toDateInputValue,
   validateScheduledDate,
@@ -1152,7 +1147,7 @@ export function CartDrawer({ primaryColor, secondaryColor, deliveryZones, delive
                 {/* Programar pedido */}
                 {scheduleAllowed && (() => {
                   const now = new Date();
-                  const { max } = getScheduleBounds(now);
+                  getScheduleBounds(now);
                   const showSchedErr = scheduleError !== null && (submitted || (scheduleDate !== '' && scheduleTime !== ''));
                   return (
                     <div style={{ marginTop: 12, background: '#f9fafb', borderRadius: 14, padding: '12px 14px', border: '1.5px solid #e5e7eb' }}>
