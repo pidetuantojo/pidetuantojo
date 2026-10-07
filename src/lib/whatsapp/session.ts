@@ -64,6 +64,7 @@ class WhatsAppSession {
     this._lastError = null;
 
     const sessionDir = path.join(process.cwd(), '.whatsapp-sessions');
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
 
     // ¿Había credenciales guardadas? Si sí y falla → sesión inválida (no red)
@@ -86,7 +87,7 @@ class WhatsAppSession {
       }
 
       if (connection === 'close') {
-        const statusCode = (lastDisconnect?.error as any)?.output?.statusCode;
+        const statusCode = (lastDisconnect?.error as { output?: { statusCode?: number } })?.output?.statusCode;
         const isLoggedOut = statusCode === DisconnectReason.loggedOut;
 
         this._status = 'disconnected';

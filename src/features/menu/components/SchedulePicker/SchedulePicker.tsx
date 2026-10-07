@@ -16,11 +16,6 @@ import {
 
 function pad(n: number) { return String(n).padStart(2, '0'); }
 
-function toMinutes(hhmm: string) {
-  const [h, m] = hhmm.split(':').map(Number);
-  return h * 60 + m;
-}
-
 function sameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() &&
     a.getMonth() === b.getMonth() &&
@@ -84,7 +79,7 @@ interface Props {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function SchedulePicker({ date, time, onDateChange, onTimeChange, openingHours, primaryColor, secondaryColor }: Props) {
+export function SchedulePicker({ date, time, onDateChange, onTimeChange, openingHours, primaryColor }: Props) {
   const now = new Date();
   const { min: minDate, max: maxDate } = getScheduleBounds(now);
 
