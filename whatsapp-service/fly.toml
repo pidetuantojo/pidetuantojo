@@ -1,0 +1,28 @@
+# fly.toml app configuration file generated for pidetuantojo-wa on 2026-10-06T22:49:37-05:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'pidetuantojo-wa'
+primary_region = 'dfw'
+
+[build]
+[env]
+  PORT = '3001'
+  SESSIONS_DIR = '/data/sessions'
+
+[[mounts]]
+  source = 'sessions_data'
+  destination = '/data'
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = 'off'
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  memory = '256mb'
+  cpus = 1
+  memory_mb = 256

@@ -1,0 +1,23 @@
+name: Deploy WhatsApp Service
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'whatsapp-service/**'
+
+jobs:
+  deploy:
+    name: Deploy to Fly.io
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy
+        working-directory: whatsapp-service
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

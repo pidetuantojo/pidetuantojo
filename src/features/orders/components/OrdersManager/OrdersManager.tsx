@@ -479,7 +479,18 @@ export function OrdersManager() {
   }
 
   async function handleAdvance(orderId: string, nextStatusId: string) {
-    await updateStatus(orderId, nextStatusId);
+    const order = filteredOrders.find((o) => o.id === orderId);
+    const newStatus = statuses.find((s) => s.id === nextStatusId);
+    await updateStatus(orderId, nextStatusId, order && newStatus ? {
+      customerPhone: order.customerPhone,
+      customerName: order.customerName,
+      orderNumber: order.orderNumber,
+      statusName: newStatus.name,
+      statusCode: newStatus.code,
+      items: order.items.map((i) => ({ productName: i.productName, quantity: i.quantity })),
+      paymentMethod: order.paymentMethod,
+      total: order.total,
+    } : undefined);
   }
 
   async function handleDeleteConfirm(orderId: string, reason: string) {
@@ -513,7 +524,17 @@ export function OrdersManager() {
     if (order.statusId === newStatusId) return;
 
     try {
-      await updateStatus(order.id, newStatusId);
+      const newStatus = statuses.find((s) => s.id === newStatusId);
+      await updateStatus(order.id, newStatusId, newStatus ? {
+        customerPhone: order.customerPhone,
+        customerName: order.customerName,
+        orderNumber: order.orderNumber,
+        statusName: newStatus.name,
+        statusCode: newStatus.code,
+        items: order.items.map((i) => ({ productName: i.productName, quantity: i.quantity })),
+        paymentMethod: order.paymentMethod,
+        total: order.total,
+      } : undefined);
     } catch {
       setDragError('No se pudo mover el pedido. Intenta de nuevo.');
       setTimeout(() => setDragError(null), 3000);

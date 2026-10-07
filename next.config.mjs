@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    // Baileys necesita correr en Node.js nativo — no bundlear con webpack
+    serverComponentsExternalPackages: ['@whiskeysockets/baileys'],
+  },
   webpack: (config, { webpack }) => {
     // qz-tray hace un require('lna') opcional dentro de try/catch; no es dependencia real.
     // IgnorePlugin hace que el require lance en runtime (qz-tray lo atrapa y conecta sin LNA).

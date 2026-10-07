@@ -32,6 +32,7 @@ export const ROUTES = {
     impresoras: '/dashboard/configuracion/impresoras',
     estacionImpresion: '/dashboard/estacion-impresion',
     equipo: '/dashboard/equipo',
+    whatsapp: '/dashboard/whatsapp',
     // legacy — keep for redirects only
     menu: '/dashboard/menu',
     domicilios: '/dashboard/domicilios',

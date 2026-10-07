@@ -61,7 +61,17 @@ export function OrderDetailModal({
   async function handleStatusUpdate(statusId: string) {
     if (!order || !canChangeStatus || statusId === order.statusId) return;
     setSelectedStatusId(statusId);
-    await updateStatus(order.id, statusId);
+    const newStatus = statuses.find((s) => s.id === statusId);
+    await updateStatus(order.id, statusId, {
+      customerPhone: order.customerPhone,
+      customerName: order.customerName,
+      orderNumber: order.orderNumber,
+      statusName: newStatus?.name ?? '',
+      statusCode: newStatus?.code,
+      items: order.items.map((i) => ({ productName: i.productName, quantity: i.quantity })),
+      paymentMethod: order.paymentMethod,
+      total: order.total,
+    });
   }
 
   function handleWhatsApp() {
