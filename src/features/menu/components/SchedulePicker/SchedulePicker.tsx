@@ -100,16 +100,32 @@ export function SchedulePicker({ date, time, onDateChange, onTimeChange, opening
     [selectedDate, minDate, maxDate, openingHours],
   );
 
-  // Agrupar slots por hora para mostrarlos en columnas
-  const slotsByHour = useMemo(() => {
-    const map: Record<string, string[]> = {};
-    for (const s of timeSlots) {
-      const h = s.split(':')[0];
-      if (!map[h]) map[h] = [];
-      map[h].push(s);
-    }
-    return map;
+  // Horas disponibles (sin duplicados, en orden)
+  const availableHours = useMemo(() => {
+    const seen = new Set<string>();
+    return timeSlots
+      .map((s) => s.split(':')[0])
+      .filter((h) => (seen.has(h) ? false : (seen.add(h), true)));
   }, [timeSlots]);
+
+  const selectedHour = time ? time.split(':')[0] : '';
+  const selectedMinute = time ? time.split(':')[1] : '';
+
+  // Minutos válidos para la hora seleccionada
+  const minutesForHour = useMemo(
+    () => timeSlots.filter((s) => s.startsWith(selectedHour + ':')).map((s) => s.split(':')[1]),
+    [timeSlots, selectedHour],
+  );
+
+  function handleHourChange(h: string) {
+    // Auto-seleccionar el primer minuto disponible para esa hora
+    const firstMin = timeSlots.find((s) => s.startsWith(h + ':'))?.split(':')[1] ?? '';
+    onTimeChange(firstMin ? `${h}:${firstMin}` : '');
+  }
+
+  function handleMinuteChange(m: string) {
+    onTimeChange(`${selectedHour}:${m}`);
+  }
 
   function prevMonth() {
     if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11); }
@@ -140,10 +156,6 @@ export function SchedulePicker({ date, time, onDateChange, onTimeChange, opening
   const noSlotsMsg = selectedDate && !hasSlots
     ? 'No hay horarios disponibles para este día.'
     : null;
-
-  // Colores derivados
-  const priLight = `${primaryColor}18`;
-  const priMid   = `${primaryColor}28`;
 
   // Paleta para fondo claro
   const textMain     = '#1a1a1a';
@@ -228,7 +240,7 @@ export function SchedulePicker({ date, time, onDateChange, onTimeChange, opening
         </div>
       </div>
 
-      {/* ── Slots de hora ── */}
+      {/* ── Selector de hora ── */}
       {selectedDate && (
         <div>
           <p style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 700, color: textMain }}>
@@ -238,42 +250,50 @@ export function SchedulePicker({ date, time, onDateChange, onTimeChange, opening
           {noSlotsMsg ? (
             <p style={{ margin: 0, fontSize: 13, color: textMuted, fontStyle: 'italic' }}>{noSlotsMsg}</p>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {Object.entries(slotsByHour).map(([hour, slots]) => (
-                <div key={hour} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: textMuted, width: 28, flexShrink: 0, textAlign: 'right', letterSpacing: '.03em' }}>
-                    {hour}h
-                  </span>
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    {slots.map((slot) => {
-                      const isSelected = slot === time;
-                      return (
-                        <button
-                          key={slot}
-                          type="button"
-                          onClick={() => onTimeChange(slot)}
-                          style={{
-                            padding: '7px 12px',
-                            borderRadius: 999,
-                            border: `1.5px solid ${isSelected ? primaryColor : borderColor}`,
-                            background: isSelected ? primaryColor : priLight,
-                            color: isSelected ? '#fff' : textMain,
-                            fontSize: 13,
-                            fontWeight: isSelected ? 700 : 400,
-                            cursor: 'pointer',
-                            transition: 'background .12s, border-color .12s',
-                            minWidth: 60,
-                          }}
-                          onPointerEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.background = priMid; }}
-                          onPointerLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.background = priLight; }}
-                        >
-                          {slot}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {/* Select hora */}
+              <select
+                value={selectedHour}
+                onChange={(e) => handleHourChange(e.target.value)}
+                style={{
+                  flex: 1, fontSize: 14, fontWeight: 500, color: selectedHour ? textMain : textMuted,
+                  border: `1.5px solid ${selectedHour ? primaryColor : borderColor}`,
+                  borderRadius: 10, padding: '10px 12px', background: bgCard,
+                  outline: 'none', cursor: 'pointer', appearance: 'none',
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center',
+                  paddingRight: 32, transition: 'border-color .15s',
+                }}
+              >
+                <option value="">Hora</option>
+                {availableHours.map((h) => (
+                  <option key={h} value={h}>{h}h</option>
+                ))}
+              </select>
+
+              <span style={{ fontSize: 18, fontWeight: 700, color: textMuted, flexShrink: 0 }}>:</span>
+
+              {/* Select minutos */}
+              <select
+                value={selectedMinute}
+                disabled={!selectedHour}
+                onChange={(e) => handleMinuteChange(e.target.value)}
+                style={{
+                  flex: 1, fontSize: 14, fontWeight: 500, color: selectedMinute ? textMain : textMuted,
+                  border: `1.5px solid ${selectedMinute ? primaryColor : borderColor}`,
+                  borderRadius: 10, padding: '10px 12px', background: bgCard,
+                  outline: 'none', cursor: selectedHour ? 'pointer' : 'default',
+                  appearance: 'none', opacity: selectedHour ? 1 : 0.45,
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center',
+                  paddingRight: 32, transition: 'border-color .15s, opacity .15s',
+                }}
+              >
+                <option value="">Min</option>
+                {minutesForHour.map((m) => (
+                  <option key={m} value={m}>:{m}</option>
+                ))}
+              </select>
             </div>
           )}
         </div>

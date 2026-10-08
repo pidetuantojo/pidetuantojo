@@ -1,9 +1,19 @@
 import { useState } from 'react';
 
 import { ordersService } from '../services/orders.service';
+import { getWaTemplates, applyTemplate, DEFAULT_TEMPLATES } from '@/lib/whatsapp/templates';
+import type { WaEventCode } from '@/lib/whatsapp/templates';
+
+// Mapa de statusCode → eventCode de plantilla
+const STATUS_TO_EVENT: Record<string, WaEventCode> = {
+  confirmed:  'pedido_confirmado',
+  on_the_way: 'pedido_en_camino',
+  delivered:  'pedido_entregado',
+  received:   'pedido_nuevo',
+};
 
 // Códigos de estado que disparan notificación WA al cliente
-const WA_NOTIFY_STATUS_CODES = ['confirmed'];
+const WA_NOTIFY_STATUS_CODES = Object.keys(STATUS_TO_EVENT);
 
 export interface WaNotifyItem {
   productName: string;
@@ -21,38 +31,23 @@ export interface WaNotifyData {
   total?: number;
 }
 
-function formatCOP(amount: number): string {
-  return `$${amount.toLocaleString('es-CO')}`;
-}
-
-function buildMessage(data: WaNotifyData): string {
-  const lines: string[] = [];
-
-  lines.push(`Hola ${data.customerName}! 👋`);
-  lines.push(`Tu pedido *#${data.orderNumber}* fue *${data.statusName}* ✅`);
-
-  if (data.items?.length) {
-    lines.push('');
-    lines.push('*🛒 Productos:*');
-    data.items.forEach((item) => {
-      lines.push(`  • ${item.quantity}x ${item.productName}`);
-    });
+async function buildMessage(restaurantId: string, data: WaNotifyData): Promise<string> {
+  const eventCode: WaEventCode = STATUS_TO_EVENT[data.statusCode ?? ''] ?? 'pedido_confirmado';
+  try {
+    const templates = await getWaTemplates(restaurantId);
+    return applyTemplate(templates[eventCode], data);
+  } catch {
+    // Si falla Firestore, usar plantilla por defecto
+    return applyTemplate(DEFAULT_TEMPLATES[eventCode], data);
   }
-
-  if (data.total !== undefined || data.paymentMethod) {
-    lines.push('');
-    if (data.total !== undefined) lines.push(`*💰 Total:* ${formatCOP(data.total)}`);
-    if (data.paymentMethod) lines.push(`*💳 Pago:* ${data.paymentMethod}`);
-  }
-
-  return lines.join('\n');
 }
 
 async function sendWaNotification(restaurantId: string, data: WaNotifyData): Promise<void> {
+  const message = await buildMessage(restaurantId, data);
   await fetch('/api/whatsapp/notify', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ restaurantId, phone: data.customerPhone, message: buildMessage(data) }),
+    body: JSON.stringify({ restaurantId, phone: data.customerPhone, message }),
   });
 }
 

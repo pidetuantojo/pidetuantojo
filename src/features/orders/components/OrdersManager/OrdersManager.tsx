@@ -363,7 +363,7 @@ export function OrdersManager() {
         setToasts((prev) => [...prev, { id, orderNumber: o.orderNumber }]);
       });
       if (newOrders.length === 1) {
-        announce(`Nuevo pedido de ${newOrders[0].customerName}`);
+        announce(`Nuevo pedido ${newOrders[0].orderNumber}`);
       } else {
         announce(`${newOrders.length} pedidos nuevos`);
       }
@@ -375,7 +375,7 @@ export function OrdersManager() {
       const prev = prevStatusRef.current.get(order.id);
       if (prev !== undefined && prev !== order.statusId) {
         const statusName = statuses.find((s) => s.id === order.statusId)?.name;
-        if (statusName) announce(`Pedido de ${order.customerName}: ${statusName}`);
+        if (statusName) announce(`Pedido ${order.orderNumber}: ${statusName}`);
       }
     });
 

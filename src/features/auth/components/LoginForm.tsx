@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { ROUTES } from '@/constants/routes';
 import { firstAllowedRoute } from '@/lib/permissions/permissions';
@@ -20,6 +21,7 @@ export function LoginForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showLoader, setShowLoader] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +32,7 @@ export function LoginForm() {
       setShowLoader(true);
     } catch {
       setError('Correo o contraseña incorrectos');
+      setShowPassword(false);
     } finally {
       setLoading(false);
     }
@@ -183,16 +186,27 @@ export function LoginForm() {
                   ¿La olvidaste?
                 </button>
               </div>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="••••••••"
-                style={{ fontFamily: sg, fontSize: 15, color: 'var(--t-text-1)', width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 12, padding: '14px 16px', outline: 'none', transition: 'border-color .15s, box-shadow .15s' }}
-                onFocus={(e) => { e.target.style.borderColor = '#FF6A1A'; e.target.style.boxShadow = '0 0 0 4px rgba(255,106,26,.13)'; }}
-                onBlur={(e) => { e.target.style.borderColor = 'var(--t-input-border)'; e.target.style.boxShadow = 'none'; }}
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                  style={{ fontFamily: sg, fontSize: 15, color: 'var(--t-text-1)', width: '100%', border: '1.5px solid var(--t-input-border)', background: 'var(--t-input-bg)', borderRadius: 12, padding: '14px 46px 14px 16px', outline: 'none', transition: 'border-color .15s, box-shadow .15s' }}
+                  onFocus={(e) => { e.target.style.borderColor = '#FF6A1A'; e.target.style.boxShadow = '0 0 0 4px rgba(255,106,26,.13)'; }}
+                  onBlur={(e) => { e.target.style.borderColor = 'var(--t-input-border)'; e.target.style.boxShadow = 'none'; }}
+                />
+                <button
+                  type="button"
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  aria-pressed={showPassword}
+                  onClick={() => setShowPassword((v) => !v)}
+                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--t-text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 40, minHeight: 40, borderRadius: 8 }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             <label className="flex items-center gap-2 cursor-pointer" style={{ marginBottom: 24 }}>

@@ -247,6 +247,15 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      // ─── Settings (waTemplates, etc.) ────────────────────────────────────────
+
+      match /settings/{settingId} {
+        // Todos los miembros leen (ej: useUpdateOrderStatus necesita las plantillas)
+        allow read: if isMember(restaurantId);
+        // Solo admin puede escribir configuraciones
+        allow write: if hasPerm(restaurantId, 'settings.update_info');
+      }
+
       // ─── Orders ──────────────────────────────────────────────────────────────
 
       // Cada grupo de campos tiene su permiso; lo que no esté en ningún grupo exige orders.edit

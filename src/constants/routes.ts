@@ -33,6 +33,11 @@ export const ROUTES = {
     estacionImpresion: '/dashboard/estacion-impresion',
     equipo: '/dashboard/equipo',
     whatsapp: '/dashboard/whatsapp',
+    notificaciones: {
+      root: '/dashboard/notificaciones',
+      plantillas: '/dashboard/notificaciones/plantillas',
+      whatsapp: '/dashboard/notificaciones/whatsapp',
+    },
     // legacy — keep for redirects only
     menu: '/dashboard/menu',
     domicilios: '/dashboard/domicilios',
