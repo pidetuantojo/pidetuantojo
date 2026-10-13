@@ -89,6 +89,8 @@ export function ProductModal({ product, adicionales, primaryColor, onClose }: Pr
         @keyframes _fadeOut { from { opacity: 1 } to { opacity: 0 } }
         @keyframes _slideUp   { from { transform: translateY(100%) } to { transform: translateY(0) } }
         @keyframes _slideDown { from { transform: translateY(0) } to { transform: translateY(100%) } }
+        /* dvh respeta la barra de Safari en iOS; vh queda como fallback */
+        ._pm-sheet { max-height: 92vh; max-height: 92dvh; }
       `}</style>
 
       {/* Backdrop */}
@@ -98,14 +100,33 @@ export function ProductModal({ product, adicionales, primaryColor, onClose }: Pr
       />
 
       {/* Sheet */}
-      <div style={{
+      <div className="_pm-sheet" style={{
         position: 'relative', width: '100%', maxWidth: 480,
-        maxHeight: '92vh', display: 'flex', flexDirection: 'column',
+        display: 'flex', flexDirection: 'column',
         background: '#fff', borderRadius: '24px 24px 0 0',
         overflow: 'hidden',
         boxShadow: '0 -8px 40px rgba(0,0,0,.18)',
         animation: `${closing ? '_slideDown .28s cubic-bezier(.32,.72,0,1) forwards' : '_slideUp .3s cubic-bezier(.32,.72,0,1)'}`,
       }}>
+        {/* Close button (fijo sobre el sheet, no se va con el scroll) */}
+        <button
+          onClick={close}
+          aria-label="Cerrar"
+          style={{
+            position: 'absolute', top: 14, right: 14, zIndex: 2,
+            width: 40, height: 40, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.92)',
+            boxShadow: '0 4px 12px rgba(0,0,0,.2)',
+            border: 'none',
+            display: 'grid', placeItems: 'center', cursor: 'pointer',
+          }}
+        >
+          <X size={18} color="#333" />
+        </button>
+
+        {/* Scrollable content (incluye la imagen para que no robe altura en pantallas cortas) */}
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}>
+
         {/* Image header */}
         <div style={{ position: 'relative', height: 240, flexShrink: 0, background: `${primaryColor}12`, borderBottom: '8px solid #fff' }}>
           {product.image ? (
@@ -123,25 +144,9 @@ export function ProductModal({ product, adicionales, primaryColor, onClose }: Pr
               </svg>
             </div>
           )}
-
-          {/* Close button */}
-          <button
-            onClick={close}
-            style={{
-              position: 'absolute', top: 14, right: 14,
-              width: 40, height: 40, borderRadius: '50%',
-              background: 'rgba(255,255,255,0.92)',
-              boxShadow: '0 4px 12px rgba(0,0,0,.2)',
-              border: 'none',
-              display: 'grid', placeItems: 'center', cursor: 'pointer',
-            }}
-          >
-            <X size={18} color="#333" />
-          </button>
         </div>
 
-        {/* Scrollable content */}
-        <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', padding: '20px 16px' }}>
+        <div style={{ padding: '20px 16px' }}>
 
           {/* Name + price + description */}
           <div style={{ marginBottom: 20 }}>
@@ -280,9 +285,10 @@ export function ProductModal({ product, adicionales, primaryColor, onClose }: Pr
             />
           </div>
         </div>
+        </div>
 
         {/* Footer */}
-        <div style={{ flexShrink: 0, padding: '12px 16px 20px', borderTop: '1px solid #f3f4f6', background: '#fff', display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ flexShrink: 0, padding: '12px 16px max(20px, env(safe-area-inset-bottom))', borderTop: '1px solid #f3f4f6', background: '#fff', display: 'flex', gap: 10, alignItems: 'center' }}>
           {/* Quantity selector */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 0, border: '1.5px solid #e5e7eb', borderRadius: 999, overflow: 'hidden', flexShrink: 0 }}>
             <button
