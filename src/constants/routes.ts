@@ -38,6 +38,8 @@ export const ROUTES = {
       plantillas: '/dashboard/notificaciones/plantillas',
       whatsapp: '/dashboard/notificaciones/whatsapp',
     },
+    ayuda: '/dashboard/ayuda',
+    ayudaGuia: (section: string, guide: string) => `/dashboard/ayuda/${section}/${guide}`,
     // legacy — keep for redirects only
     menu: '/dashboard/menu',
     domicilios: '/dashboard/domicilios',

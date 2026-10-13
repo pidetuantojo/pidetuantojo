@@ -1,3 +1,8 @@
+import createMDX from '@next/mdx';
+
+// MDX: guías del centro de ayuda (src/features/help/content)
+const withMDX = createMDX();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
@@ -31,4 +36,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withMDX(nextConfig);
