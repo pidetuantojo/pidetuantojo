@@ -39,6 +39,13 @@ export function ProductModal({ product, adicionales, primaryColor, onClose }: Pr
     setQuantity(1);
   }, [product?.id]);
 
+  useEffect(() => {
+    if (!product) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [product?.id]);
+
   if (!product) return null;
 
   const productAdicionales = adicionales.filter((a) => product.adicionalIds?.includes(a.id));
@@ -134,7 +141,7 @@ export function ProductModal({ product, adicionales, primaryColor, onClose }: Pr
         </div>
 
         {/* Scrollable content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', padding: '20px 16px' }}>
 
           {/* Name + price + description */}
           <div style={{ marginBottom: 20 }}>
