@@ -107,7 +107,7 @@ export function ProductModal({ product, adicionales, primaryColor, onClose }: Pr
         animation: `${closing ? '_slideDown .28s cubic-bezier(.32,.72,0,1) forwards' : '_slideUp .3s cubic-bezier(.32,.72,0,1)'}`,
       }}>
         {/* Image header */}
-        <div style={{ position: 'relative', height: 240, flexShrink: 0, background: `${primaryColor}12` }}>
+        <div style={{ position: 'relative', height: 240, flexShrink: 0, background: `${primaryColor}12`, borderBottom: '8px solid #fff' }}>
           {product.image ? (
             <Image
               src={product.image}
