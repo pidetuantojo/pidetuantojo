@@ -284,7 +284,7 @@ export function ProductModal({ product, adicionales, primaryColor, onClose }: Pr
         {/* Footer */}
         <div style={{ flexShrink: 0, padding: '12px 16px 20px', borderTop: '1px solid #f3f4f6', background: '#fff', display: 'flex', gap: 10, alignItems: 'center' }}>
           {/* Quantity selector */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 0, border: '1.5px solid #e5e7eb', borderRadius: 12, overflow: 'hidden', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 0, border: '1.5px solid #e5e7eb', borderRadius: 999, overflow: 'hidden', flexShrink: 0 }}>
             <button
               onClick={() => setQuantity((q) => Math.max(1, q - 1))}
               style={{ width: 38, height: 48, border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: sg, fontWeight: 700, fontSize: 18, color: '#374151', display: 'grid', placeItems: 'center' }}
@@ -300,7 +300,7 @@ export function ProductModal({ product, adicionales, primaryColor, onClose }: Pr
           <button
             onClick={handleAdd}
             style={{
-              flex: 1, padding: '14px 12px', borderRadius: 12, border: 'none',
+              flex: 1, padding: '14px 12px', borderRadius: 999, border: 'none',
               background: primaryColor, color: '#fff', cursor: 'pointer',
               fontFamily: sg, fontWeight: 700, fontSize: 14,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
