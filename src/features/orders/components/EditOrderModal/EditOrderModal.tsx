@@ -28,6 +28,8 @@ interface EditOrderModalProps {
   paymentMethods?: PaymentMethodConfig[];
   onClose: () => void;
   onSaved: () => void;
+  // "Agregar" desde el panel del pedido: abre directo el buscador de productos
+  initialAddProduct?: boolean;
 }
 
 interface EditableItem {
@@ -50,7 +52,7 @@ const DELIVERY_TYPES = [
   { value: 'mesa' as const, label: 'En el local', emoji: '🪑' },
 ];
 
-export function EditOrderModal({ order, restaurantId, products, adicionales, categories, paymentMethods, onClose, onSaved }: EditOrderModalProps) {
+export function EditOrderModal({ order, restaurantId, products, adicionales, categories, paymentMethods, onClose, onSaved, initialAddProduct = false }: EditOrderModalProps) {
   const [items, setItems] = useState<EditableItem[]>(() =>
     order.items.map((item) => ({
       productId: item.productId,
@@ -84,7 +86,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
   const [scheduleDate, setScheduleDate] = useState(initialScheduled ? toDateInputValue(initialScheduled) : '');
   const [scheduleTime, setScheduleTime] = useState(initialScheduled ? toTimeInputValue(initialScheduled) : '');
 
-  const [showAddProduct, setShowAddProduct] = useState(false);
+  const [showAddProduct, setShowAddProduct] = useState(initialAddProduct);
   const [addingAdicionalFor, setAddingAdicionalFor] = useState<number | null>(null);
   const [filterCategoryId, setFilterCategoryId] = useState('');
 
@@ -227,7 +229,8 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', fontFamily: sg }}
+      // Encima del panel lateral del pedido (z 60-61)
+      style={{ position: 'fixed', inset: 0, zIndex: 70, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', fontFamily: sg }}
       className="sm:items-center sm:p-4"
     >
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(3px)' }} onClick={onClose} />

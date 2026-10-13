@@ -1,657 +1,95 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import {
-  ArrowRight, Clock, MapPin, MessageCircle, Pencil, Bike,
-  StickyNote, Check, XCircle, Search, Building2, Trash2,
-} from 'lucide-react';
+import { Bike, Clock, LayoutGrid, MapPin, CalendarClock } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
-import { useAuth } from '@/features/auth';
 import { formatScheduledDate } from '@/features/menu/helpers/schedule.helpers';
-import { PaymentMethodIcon } from '@/features/payment-methods/components/PaymentMethodIcon';
-import { isTransferMethod } from '@/features/payment-methods/helpers/payment-methods.helpers';
-import { PrintOrderButton } from '@/features/printers/components/PrintOrderButton';
-import type { AssignedDriver, Domiciliario } from '@/types';
-import { buildDriverMessage, toAssignedDriver, validateCourierName } from '../../helpers/driver.helpers';
+import type { OrderStatus } from '@/types';
+
 import { getOrderTotals } from '../../helpers/totals.helpers';
-import { ordersService } from '../../services/orders.service';
+import { timeAgo } from '../../helpers/time.helpers';
 import type { OrderCardProps } from './OrderCard.types';
 
-const DELIVERY_PHONE = process.env.NEXT_PUBLIC_DELIVERY_PHONE ?? '';
-
-function timeAgo(isoString: string): string {
-  const diff = Date.now() - new Date(isoString).getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return 'hace un momento';
-  if (minutes < 60) return `hace ${minutes} min`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `hace ${hours}h`;
-  return `hace ${Math.floor(hours / 24)}d`;
+export function StatusBadge({ status }: { status?: OrderStatus }) {
+  if (!status) return null;
+  return (
+    <span
+      className="inline-block rounded-full px-2 py-0.5 text-[10px] font-bold leading-tight"
+      style={{ backgroundColor: `${status.color}1f`, color: status.color }}
+    >
+      {status.name}
+    </span>
+  );
 }
 
-function formatShortDate(isoString: string): string {
-  const d = new Date(isoString);
-  return d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }) +
-    ' · ' + d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+function PaidBadge({ isPaid }: { isPaid?: boolean }) {
+  return isPaid ? (
+    <span className="rounded-full bg-emerald-50 px-1.5 py-px text-[9px] font-bold text-emerald-600">Pagado</span>
+  ) : null;
 }
 
-export function OrderCard({ order, status, statuses, restaurantId, domiciliarios, onOpen, onAdvance, onEdit, onDelete, canDelete }: OrderCardProps) {
-  const { can } = useAuth();
-  const canEdit = can('orders.edit');
-  const canChangeStatus = can('orders.change_status');
-  const canSetFee = can('orders.set_delivery_fee');
-  const canMarkPaid = can('orders.mark_paid');
-  const canManageNotes = can('orders.manage_notes');
-  const canAssignDriver = can('orders.assign_driver');
-  const companiesEnabled = can('features.delivery_companies');
+/**
+ * Tarjeta compacta del tablero: solo lo necesario para reconocer el pedido.
+ * Todas las acciones están en el panel lateral que se abre al tocarla.
+ */
+export function OrderCard({ order, status, selected, finished, onOpen }: OrderCardProps) {
+  const { total } = getOrderTotals(order);
+  const base = `w-full cursor-pointer rounded-xl border bg-[var(--t-surface)] text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
+    selected ? 'border-[#FF6A1A] ring-2 ring-[#FF6A1A]/30' : 'border-[var(--t-border)]'
+  } ${finished ? 'opacity-55' : ''}`;
+
+  if (order.deliveryType === 'mesa') {
+    return (
+      <button type="button" onClick={() => onOpen(order)} className={`${base} flex flex-col items-center gap-1 px-3 py-3 text-center`}>
+        <LayoutGrid className="h-5 w-5 text-emerald-600" />
+        <span className="text-sm font-extrabold uppercase tracking-wide text-emerald-600">
+          {order.tableName ?? 'Mesa'}
+        </span>
+        <span className="text-xs font-semibold text-[var(--t-text-1)]">Comanda {order.orderNumber}</span>
+        {order.customerName && (
+          <span className="max-w-full truncate text-[10px] text-[var(--t-text-4)]">{order.customerName}</span>
+        )}
+        <StatusBadge status={status} />
+        <span className="text-sm font-extrabold text-[var(--t-text-1)]">{formatCurrency(total)}</span>
+        <span className="flex items-center gap-1 text-[10px] text-[var(--t-text-4)]">
+          <Clock className="h-3 w-3" /> {timeAgo(order.createdAt)}
+        </span>
+        <PaidBadge isPaid={order.isPaid} />
+      </button>
+    );
+  }
 
   const isDomicilio = order.deliveryType === 'domicilio';
-  const isMesa = order.deliveryType === 'mesa';
-  const { productsTotal, discount, deliveryFee, total: grandTotal } = getOrderTotals(order);
-  const isTransfer = order.paymentMethodType ? isTransferMethod(order.paymentMethodType) : false;
-
-  // — delivery fee inline edit —
-  const [editingFee, setEditingFee] = useState(false);
-  const [feeInput, setFeeInput] = useState('');
-  const [savingFee, setSavingFee] = useState(false);
-
-  // — isPaid toggle —
-  const [localIsPaid, setLocalIsPaid] = useState(order.isPaid ?? false);
-  const [togglingPaid, setTogglingPaid] = useState(false);
-
-  // — nota interna —
-  const [editingNote, setEditingNote] = useState(false);
-  const [noteInput, setNoteInput] = useState(order.internalNote ?? '');
-  const [savingNote, setSavingNote] = useState(false);
-
-  // — domiciliario —
-  const [driverOpen, setDriverOpen] = useState(false);
-  const [driverSearch, setDriverSearch] = useState('');
-  const [assigningDriver, setAssigningDriver] = useState(false);
-  const driverRef = useRef<HTMLDivElement>(null);
-  const driverBtnRef = useRef<HTMLButtonElement>(null);
-  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
-  // Paso extra al elegir una empresa: nombre/código de quien tomó el pedido
-  const [courierForm, setCourierForm] = useState<{ base: AssignedDriver; value: string; error: string } | null>(null);
-
-  useEffect(() => {
-    if (!togglingPaid) setLocalIsPaid(order.isPaid ?? false);
-  }, [order.isPaid, togglingPaid]);
-
-  useEffect(() => {
-    if (!driverOpen) return;
-    function handle(e: MouseEvent) {
-      if (
-        driverRef.current && !driverRef.current.contains(e.target as Node) &&
-        driverBtnRef.current && !driverBtnRef.current.contains(e.target as Node)
-      ) {
-        setDriverOpen(false);
-        setDriverSearch('');
-      }
-    }
-    document.addEventListener('mousedown', handle);
-    return () => document.removeEventListener('mousedown', handle);
-  }, [driverOpen]);
-
-  useEffect(() => {
-    if (!editingNote) setNoteInput(order.internalNote ?? '');
-  }, [order.internalNote, editingNote]);
-
-  const driverQuery = driverSearch.trim().toLowerCase();
-  const availableDrivers = domiciliarios.filter(
-    (d) => d.isActive && (companiesEnabled || !d.isCompany) && (
-      d.name.toLowerCase().includes(driverQuery) ||
-      (!!d.code && d.code.toLowerCase().includes(driverQuery))
-    )
-  );
-
-  const activeStatuses = statuses.filter((s) => s.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
-  const currentIndex = activeStatuses.findIndex((s) => s.id === order.statusId);
-  const nextStatus = currentIndex !== -1 && currentIndex < activeStatuses.length - 1
-    ? activeStatuses[currentIndex + 1] : null;
-
-  async function handleSaveFee() {
-    const value = parseInt(feeInput.replace(/\D/g, ''), 10);
-    if (isNaN(value) || value < 0) return;
-    setSavingFee(true);
-    try {
-      await ordersService.updateDeliveryFee(restaurantId, order.id, value, order);
-      setEditingFee(false);
-      setFeeInput('');
-    } finally {
-      setSavingFee(false);
-    }
-  }
-
-  async function handleTogglePaid() {
-    if (togglingPaid) return;
-    const next = !localIsPaid;
-    setLocalIsPaid(next);
-    setTogglingPaid(true);
-    try {
-      await ordersService.updateIsPaid(restaurantId, order.id, next);
-    } catch {
-      setLocalIsPaid(!next);
-    } finally {
-      setTogglingPaid(false);
-    }
-  }
-
-  async function handleAssignDriver(driver: AssignedDriver | null) {
-    setDriverOpen(false);
-    setAssigningDriver(true);
-    try {
-      await ordersService.updateDriver(restaurantId, order.id, driver);
-    } finally {
-      setAssigningDriver(false);
-    }
-  }
-
-  async function handleSaveNote() {
-    setSavingNote(true);
-    try {
-      await ordersService.updateInternalNote(restaurantId, order.id, noteInput.trim());
-      setEditingNote(false);
-    } finally {
-      setSavingNote(false);
-    }
-  }
-
-  function buildDomiciliarioMsg() {
-    return encodeURIComponent(buildDriverMessage(order, { isPaid: localIsPaid, grandTotal, note: noteInput }));
-  }
-
-  // — empresa de domicilios: pedir quién tomó el pedido antes de asignar (o para corregirlo) —
-  function selectDriver(d: Domiciliario) {
-    setDriverOpen(false);
-    setDriverSearch('');
-    if (d.isCompany) {
-      setCourierForm({ base: toAssignedDriver(d), value: '', error: '' });
-      return;
-    }
-    handleAssignDriver(toAssignedDriver(d));
-  }
-
-  async function handleSaveCourier() {
-    if (!courierForm) return;
-    const error = validateCourierName({ isCompany: true }, courierForm.value);
-    if (error) { setCourierForm({ ...courierForm, error }); return; }
-    await handleAssignDriver({ ...courierForm.base, courierName: courierForm.value.trim() });
-    setCourierForm(null);
-  }
-
   return (
-    <div
-      onClick={() => onOpen(order)}
-      className="cursor-pointer rounded-2xl border border-[var(--t-border)] bg-[var(--t-surface)] p-4 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5"
-    >
-      {/* Header: número + estado + editar */}
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <span className="font-mono text-sm font-bold text-[var(--t-text-1)]">{order.orderNumber}</span>
-        <div className="flex items-center gap-2">
-          {status && (
-            <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold text-white" style={{ backgroundColor: status.color }}>
-              {status.name}
-            </span>
-          )}
-          {canEdit && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onEdit?.(order); }}
-            className="p-1 rounded-lg text-[var(--t-text-4)] hover:text-[#FF6A1A] hover:bg-orange-50 transition-colors"
-            aria-label="Editar pedido"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </button>
-          )}
-          {canDelete && onDelete && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onDelete(order); }}
-              className="p-1 rounded-lg text-[var(--t-text-4)] hover:text-red-600 hover:bg-red-50 transition-colors"
-              aria-label="Eliminar pedido"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
+    <button type="button" onClick={() => onOpen(order)} className={`${base} block space-y-1.5 px-3 py-2.5`}>
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-mono text-sm font-bold text-[var(--t-text-1)]">#{order.orderNumber}</span>
+        <StatusBadge status={status} />
       </div>
-
-      {/* Tiempo */}
-      <div className="flex items-center gap-1.5 text-xs text-[var(--t-text-4)] mb-3">
-        <Clock className="h-3 w-3" />
-        <span>{timeAgo(order.createdAt)}</span>
-        <span>·</span>
-        <span>{formatShortDate(order.createdAt)}</span>
-      </div>
-
-      {/* Items */}
-      <div className="space-y-1 mb-3">
-        {order.items.slice(0, 3).map((item, i) => (
-          <div key={i}>
-            <div className="flex items-baseline justify-between text-sm">
-              <span className="text-[var(--t-text-1)]">
-                {item.isGift && '🎁 '}{item.productName} <span className="text-[var(--t-text-3)]">×{item.quantity}</span>
-              </span>
-              <span className="text-[var(--t-text-2)] font-medium ml-2 flex-shrink-0">{item.isGift ? 'Regalo' : formatCurrency(item.subtotal)}</span>
-            </div>
-            {!!item.discount && (
-              <div className="ml-3 flex justify-between text-xs text-emerald-600">
-                <span>↳ {item.promotionName ?? 'Promoción'}</span>
-                <span>−{formatCurrency(item.discount)}</span>
-              </div>
-            )}
-            {item.additionals.length > 0 && (
-              <div className="ml-3 mt-0.5 space-y-0.5">
-                {item.additionals.map((a, j) => (
-                  <div key={j} className="flex justify-between text-xs text-[var(--t-text-4)]">
-                    <span>↳ {a.name}</span>
-                    <span>+{formatCurrency(a.price)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-        {order.items.length > 3 && <p className="text-xs text-[var(--t-text-4)]">+{order.items.length - 3} más...</p>}
-      </div>
-
-      {/* Totales */}
-      <div className="space-y-1 border-t border-[var(--t-border)] pt-2 mb-3 text-sm" onClick={(e) => e.stopPropagation()}>
-        <div className="flex justify-between text-[var(--t-text-2)]">
-          <span>Total productos</span>
-          <span className="font-medium">{formatCurrency(productsTotal)}</span>
-        </div>
-
-        {discount > 0 && (
-          <div className="flex justify-between text-emerald-600">
-            <span>Descuentos</span>
-            <span className="font-medium">−{formatCurrency(discount)}</span>
-          </div>
-        )}
-
-        {/* Valor domicilio editable */}
-        {isDomicilio && (
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-1.5 text-[var(--t-text-4)] text-xs">
-              <Bike className="h-3.5 w-3.5" />
-              <span>Valor de domicilio</span>
-            </div>
-            {editingFee ? (
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs text-[var(--t-text-4)]">$</span>
-                <input
-                  type="number"
-                  value={feeInput}
-                  onChange={(e) => setFeeInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleSaveFee(); if (e.key === 'Escape') { setEditingFee(false); setFeeInput(''); } }}
-                  placeholder="0"
-                  autoFocus
-                  className="w-20 text-right text-sm font-bold border-b-2 border-[#FF6A1A] bg-transparent outline-none tabular-nums text-[var(--t-text-1)] placeholder-[var(--t-text-4)]"
-                />
-                <button onClick={handleSaveFee} disabled={savingFee} className="text-xs font-bold text-white bg-[#FF6A1A] px-2 py-0.5 rounded-lg disabled:opacity-50">OK</button>
-                <button onClick={() => { setEditingFee(false); setFeeInput(''); }} className="text-[var(--t-text-4)] hover:text-[var(--t-text-2)]">
-                  <XCircle className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ) : order.freeDelivery && deliveryFee === 0 && !canSetFee ? (
-              <span className="text-sm font-bold text-emerald-600">Gratis (promo)</span>
-            ) : !canSetFee ? (
-              <span className="text-sm font-bold tabular-nums text-[var(--t-text-3)]">
-                {deliveryFee > 0 ? formatCurrency(deliveryFee) : 'Sin valor'}
-              </span>
-            ) : order.freeDelivery && deliveryFee === 0 ? (
-              <button
-                onClick={() => { setEditingFee(true); setFeeInput(''); }}
-                title="Domicilio gratis por promoción. Toca para cobrar un valor."
-                className="flex items-center gap-1 text-sm font-bold text-emerald-600 hover:text-[#FF6A1A]"
-              >
-                Gratis (promo)
-                <Pencil className="h-3 w-3 opacity-60" />
-              </button>
-            ) : (
-              <button
-                onClick={() => { setEditingFee(true); setFeeInput(deliveryFee > 0 ? String(deliveryFee) : ''); }}
-                className={`flex items-center gap-1 text-sm font-bold tabular-nums transition-colors ${deliveryFee > 0 ? 'text-[var(--t-text-3)] hover:text-[#FF6A1A]' : 'text-[#FF6A1A]'}`}
-              >
-                {deliveryFee > 0 ? formatCurrency(deliveryFee) : '+ Agregar valor'}
-                <Pencil className="h-3 w-3 opacity-60" />
-              </button>
-            )}
-          </div>
-        )}
-
-        <div className="flex justify-between font-bold text-[var(--t-text-1)] pt-1 border-t border-dashed border-[var(--t-border)]">
-          <span>Total</span>
-          <span className="text-[#FF6A1A]">{formatCurrency(grandTotal)}</span>
-        </div>
-
-        {/* Promociones aplicadas: el restaurante las valida al confirmar por WhatsApp */}
-        {(order.appliedPromotions?.length ?? 0) > 0 && (
-          <div className="flex flex-wrap gap-1 pt-1">
-            {order.appliedPromotions!.map((p) => (
-              <span
-                key={p.promotionId}
-                title={p.detail ?? p.name}
-                className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${p.type === 'loyalty' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-50 text-emerald-700'}`}
-              >
-                {p.type === 'loyalty' ? '🎁 Canje de fidelidad' : `🏷 ${p.name}`}{p.couponCode ? ` · ${p.couponCode}` : ''}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Cliente */}
-      <div className="space-y-1.5 border-t border-[var(--t-border)] pt-2 text-sm" onClick={(e) => e.stopPropagation()}>
-        <p className="font-semibold text-[var(--t-text-1)]">{order.customerName}</p>
-
-        {/* Método de pago + toggle isPaid */}
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-xs text-[var(--t-text-3)]">
-            <span className="inline-flex items-center gap-1.5">
-              {order.paymentMethodType && <PaymentMethodIcon type={order.paymentMethodType} size={13} />}
-              {order.paymentMethod}
-              {order.paymentAccount && <span className="text-[var(--t-text-4)]">· {order.paymentAccount}</span>}
-            </span>
-          </p>
-          {isTransfer && !canMarkPaid && (
-            <span className="text-[10px] font-bold" style={{ color: localIsPaid ? '#059669' : '#FF6A1A' }}>
-              {localIsPaid ? 'Pagado' : 'Pendiente'}
-            </span>
-          )}
-          {isTransfer && canMarkPaid && (
-            <button onClick={handleTogglePaid} disabled={togglingPaid} className="flex items-center gap-1.5 disabled:opacity-60">
-              <span className="text-[10px] font-bold" style={{ color: localIsPaid ? '#059669' : '#FF6A1A' }}>
-                {localIsPaid ? 'Pagado' : 'Pendiente'}
-              </span>
-              <div className="relative w-8 h-4 rounded-full transition-colors duration-200 flex-shrink-0" style={{ background: localIsPaid ? '#059669' : '#e5e5e5' }}>
-                <div className="absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-all duration-200" style={{ left: localIsPaid ? '17px' : '2px' }} />
-              </div>
-            </button>
-          )}
-        </div>
-
-        {order.customerAddress && (
-          <p className="flex items-start gap-1 text-xs text-[var(--t-text-3)]">
-            <MapPin className="h-3 w-3 mt-0.5 flex-shrink-0" />
-            <span>{order.customerAddress}{order.barrio ? ` — ${order.barrio}` : ''}</span>
-          </p>
-        )}
-        {isMesa && order.tableName && (
-          <p className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 w-fit">
-            🪑 {order.tableName}
-          </p>
-        )}
-        {order.isScheduled && order.scheduledFor && (
-          <p className="flex items-center gap-1.5 text-xs font-semibold text-violet-700 bg-violet-50 border border-violet-200 rounded-lg px-2 py-1 w-fit">
-            🕒 Programado: {formatScheduledDate(new Date(order.scheduledFor))}
-          </p>
-        )}
-        {order.location && (
-          <a
-            href={`https://maps.google.com/?q=${order.location.lat},${order.location.lng}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-lg transition-colors"
-          >
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/>
-            </svg>
-            Ver ubicación en mapa
-          </a>
-        )}
-      </div>
-
-      {/* Nota interna (sin permiso: solo lectura, y nada si está vacía) */}
-      {(canManageNotes || noteInput) && (
-      <div className="mt-2 border-t border-[var(--t-border)] pt-2" onClick={(e) => e.stopPropagation()}>
-        {!canManageNotes ? (
-          <p className="flex items-start gap-2">
-            <StickyNote className="h-3 w-3 text-amber-400 flex-shrink-0 mt-0.5" />
-            <span className="text-xs text-amber-700 leading-snug line-clamp-2">{noteInput}</span>
-          </p>
-        ) : editingNote ? (
-          <div className="flex flex-col gap-2">
-            <textarea
-              value={noteInput}
-              onChange={(e) => setNoteInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Escape') { setEditingNote(false); setNoteInput(order.internalNote ?? ''); } }}
-              placeholder="Nota interna..."
-              autoFocus
-              rows={2}
-              className="w-full text-xs text-[var(--t-text-1)] bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 outline-none resize-none placeholder-amber-300 focus:border-amber-400 transition-colors leading-relaxed"
-            />
-            <div className="flex items-center gap-1.5 justify-end">
-              <button onClick={() => { setEditingNote(false); setNoteInput(order.internalNote ?? ''); }} className="text-xs text-[var(--t-text-4)] hover:text-[var(--t-text-2)] font-bold px-2 py-1">
-                Cancelar
-              </button>
-              <button onClick={handleSaveNote} disabled={savingNote} className="flex items-center gap-1 text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 px-3 py-1.5 rounded-lg disabled:opacity-50 transition-colors">
-                <Check className="h-3 w-3" />
-                Guardar
-              </button>
-            </div>
-          </div>
-        ) : noteInput ? (
-          <button onClick={() => setEditingNote(true)} className="w-full flex items-start gap-2 text-left group">
-            <StickyNote className="h-3 w-3 text-amber-400 flex-shrink-0 mt-0.5" />
-            <span className="text-xs text-amber-700 leading-snug line-clamp-2 group-hover:text-amber-900 transition-colors">{noteInput}</span>
-          </button>
-        ) : (
-          <button onClick={() => setEditingNote(true)} className="flex items-center gap-1.5 text-xs text-[var(--t-text-4)] hover:text-amber-400 transition-colors font-medium">
-            <StickyNote className="h-3 w-3" />
-            Nota interna
-          </button>
-        )}
-      </div>
+      <p className="truncate text-sm font-semibold text-[var(--t-text-1)]">{order.customerName}</p>
+      {isDomicilio && order.customerAddress && (
+        <p className="flex items-start gap-1 text-[11px] text-[var(--t-text-3)]">
+          <MapPin className="mt-px h-3 w-3 flex-shrink-0" />
+          <span className="line-clamp-1">{order.customerAddress}{order.barrio ? ` — ${order.barrio}` : ''}</span>
+        </p>
       )}
-
-      {/* Domiciliario (sin permiso: solo se ve el asignado) */}
-      {isDomicilio && (canAssignDriver || order.assignedDriver) && (
-        <div className="mt-2 border-t border-[var(--t-border)] pt-2" onClick={(e) => e.stopPropagation()}>
-          {courierForm ? (
-            /* Empresa elegida: quién de la empresa tomó el pedido */
-            <div className="rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2.5 space-y-2">
-              <div className="flex items-center gap-2">
-                <Building2 className="h-3.5 w-3.5 flex-shrink-0 text-indigo-600" />
-                <p className="min-w-0 flex-1 truncate text-xs font-bold text-indigo-900">{courierForm.base.name}</p>
-                <span className="flex-shrink-0 rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-bold text-indigo-600">Empresa</span>
-              </div>
-              <label className="block text-[10px] font-semibold uppercase tracking-wide text-indigo-500" htmlFor={`courier-${order.id}`}>
-                Domiciliario
-              </label>
-              <input
-                id={`courier-${order.id}`}
-                autoFocus
-                type="text"
-                value={courierForm.value}
-                onChange={(e) => setCourierForm({ ...courierForm, value: e.target.value, error: '' })}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleSaveCourier(); if (e.key === 'Escape') setCourierForm(null); }}
-                placeholder="Nombre o código de quien tomó el pedido"
-                className={`w-full rounded-lg border bg-white px-2.5 py-2 text-xs text-[var(--t-text-1)] outline-none focus:border-indigo-400 ${courierForm.error ? 'border-red-300' : 'border-indigo-200'}`}
-              />
-              {courierForm.error && <p className="text-[11px] text-red-500">{courierForm.error}</p>}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setCourierForm(null)}
-                  className="flex-1 rounded-lg border border-indigo-200 bg-white py-1.5 text-xs font-semibold text-indigo-500 hover:bg-indigo-50"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleSaveCourier}
-                  disabled={assigningDriver}
-                  className="flex-[2] rounded-lg bg-indigo-600 py-1.5 text-xs font-bold text-white hover:bg-indigo-700 disabled:opacity-60"
-                >
-                  {assigningDriver ? 'Asignando...' : 'Asignar'}
-                </button>
-              </div>
-            </div>
-          ) : order.assignedDriver ? (
-            <div className="flex items-center gap-2 rounded-xl bg-indigo-50 border border-indigo-100 px-3 py-2">
-              <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100">
-                {order.assignedDriver.isCompany
-                  ? <Building2 className="h-3.5 w-3.5 text-indigo-600" />
-                  : <Bike className="h-3.5 w-3.5 text-indigo-600" />}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="flex items-center gap-1.5 text-xs font-bold text-indigo-900 leading-tight">
-                  <span className="truncate">{order.assignedDriver.name}</span>
-                  {order.assignedDriver.isCompany && (
-                    <span className="flex-shrink-0 rounded-full bg-indigo-100 px-1.5 py-px text-[9px] font-bold text-indigo-600">Empresa</span>
-                  )}
-                </p>
-                {order.assignedDriver.isCompany && (
-                  <p className="flex items-center gap-1 text-[11px] text-indigo-700">
-                    <span className="truncate">Domiciliario: <b>{order.assignedDriver.courierName ?? '—'}</b></span>
-                    {canAssignDriver && (
-                    <button
-                      onClick={() => setCourierForm({ base: order.assignedDriver!, value: order.assignedDriver!.courierName ?? '', error: '' })}
-                      className="flex-shrink-0 text-indigo-300 hover:text-indigo-500"
-                      title="Cambiar domiciliario de la empresa"
-                    >
-                      <Pencil className="h-3 w-3" />
-                    </button>
-                    )}
-                  </p>
-                )}
-                <p className="text-[10px] text-indigo-500">
-                  {[order.assignedDriver.code, order.assignedDriver.phone].filter(Boolean).join(' · ')}
-                </p>
-              </div>
-              {canAssignDriver && (
-              <button
-                onClick={() => handleAssignDriver(null)}
-                disabled={assigningDriver}
-                className="flex-shrink-0 text-indigo-300 hover:text-indigo-500 transition-colors disabled:opacity-40"
-                title="Quitar domiciliario"
-              >
-                <XCircle className="h-4 w-4" />
-              </button>
-              )}
-            </div>
-          ) : (
-            <>
-              <button
-                ref={driverBtnRef}
-                onClick={() => {
-                  if (driverOpen) { setDriverOpen(false); setDriverSearch(''); return; }
-                  const rect = driverBtnRef.current?.getBoundingClientRect();
-                  if (rect) {
-                    // Que el menú no se salga de la pantalla en mobile
-                    const width = Math.min(260, window.innerWidth - 16);
-                    const left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8));
-                    setDropdownPos({ top: rect.bottom + 6, left, width });
-                  }
-                  setDriverOpen(true);
-                }}
-                disabled={assigningDriver || domiciliarios.length === 0}
-                className="flex items-center gap-2 text-xs text-[var(--t-text-4)] hover:text-indigo-500 transition-colors font-medium disabled:opacity-40 disabled:cursor-default"
-              >
-                <Bike className="h-3.5 w-3.5" />
-                {domiciliarios.length === 0 ? 'Sin domiciliarios configurados' : 'Asignar domiciliario'}
-              </button>
-              {driverOpen && typeof document !== 'undefined' && createPortal(
-                <div
-                  ref={driverRef}
-                  style={{ position: 'fixed', top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width, zIndex: 9999 }}
-                  className="rounded-xl border border-[var(--t-border)] bg-[var(--t-surface)] shadow-2xl overflow-hidden"
-                >
-                  {/* Buscador */}
-                  <div className="flex items-center gap-2 border-b border-[var(--t-border)] px-3 py-2">
-                    <Search className="h-3.5 w-3.5 flex-shrink-0 text-[var(--t-text-4)]" />
-                    <input
-                      autoFocus
-                      type="text"
-                      value={driverSearch}
-                      onChange={(e) => setDriverSearch(e.target.value)}
-                      placeholder="Buscar domiciliario o empresa..."
-                      className="flex-1 text-xs outline-none placeholder-[var(--t-text-4)] text-[var(--t-text-1)] bg-transparent"
-                    />
-                    {driverSearch && (
-                      <button onClick={() => setDriverSearch('')} className="text-[var(--t-text-4)] hover:text-[var(--t-text-2)]">
-                        <XCircle className="h-3.5 w-3.5" />
-                      </button>
-                    )}
-                  </div>
-                  {/* Lista: individuales y empresas juntos */}
-                  <div className="max-h-56 overflow-y-auto p-1.5">
-                    {availableDrivers.map((d) => (
-                      <button
-                        key={d.id}
-                        onClick={() => selectDriver(d)}
-                        className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left hover:bg-indigo-50 transition-colors"
-                      >
-                        <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100">
-                          {d.isCompany ? <Building2 className="h-3 w-3 text-indigo-600" /> : <Bike className="h-3 w-3 text-indigo-600" />}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="flex items-center gap-1.5 text-xs font-bold text-[var(--t-text-1)]">
-                            <span className="truncate">{d.name}</span>
-                            {d.isCompany && (
-                              <span className="flex-shrink-0 rounded-full bg-indigo-100 px-1.5 py-px text-[9px] font-bold text-indigo-600">Empresa</span>
-                            )}
-                          </p>
-                          <p className="text-[10px] text-[var(--t-text-4)]">{[d.isCompany ? undefined : d.code, d.phone].filter(Boolean).join(' · ')}</p>
-                        </div>
-                      </button>
-                    ))}
-                    {availableDrivers.length === 0 && (
-                      <p className="py-4 text-center text-xs text-[var(--t-text-4)]">Sin resultados</p>
-                    )}
-                  </div>
-                </div>,
-                document.body
-              )}
-            </>
-          )}
-        </div>
+      {isDomicilio && order.assignedDriver && (
+        <p className="flex items-center gap-1 text-[11px] font-semibold text-indigo-600">
+          <Bike className="h-3 w-3" /> <span className="truncate">{order.assignedDriver.courierName ?? order.assignedDriver.name}</span>
+        </p>
       )}
-
-      {/* Avanzar estado */}
-      {nextStatus && canChangeStatus && (
-        <button
-          onClick={(e) => { e.stopPropagation(); onAdvance?.(order.id, nextStatus.id); }}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-          style={{ backgroundColor: nextStatus.color }}
-        >
-          <ArrowRight className="h-4 w-4" />
-          {nextStatus.name}
-        </button>
+      {order.isScheduled && order.scheduledFor && (
+        <p className="flex items-center gap-1 text-[11px] font-semibold text-violet-600">
+          <CalendarClock className="h-3 w-3" /> {formatScheduledDate(new Date(order.scheduledFor))}
+        </p>
       )}
-
-      {/* Imprimir comanda (QZ Tray) */}
-      <PrintOrderButton order={order} restaurantId={restaurantId} />
-
-      {/* WhatsApp cliente */}
-      <a
-        href={`https://wa.me/${order.customerPhone.replace(/\D/g, '')}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(e) => e.stopPropagation()}
-        className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-      >
-        <MessageCircle className="h-4 w-4" />
-        {order.customerPhone}
-      </a>
-
-      {/* WhatsApp domiciliario */}
-      {isDomicilio && (order.assignedDriver || DELIVERY_PHONE) && (
-        <a
-          href={`https://wa.me/${(order.assignedDriver?.phone ?? DELIVERY_PHONE).replace(/\D/g, '')}?text=${buildDomiciliarioMsg()}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-          style={{ background: 'linear-gradient(135deg, #6366f1, #4f46e5)' }}
-        >
-          <Bike className="h-4 w-4" />
-          <span className="truncate">
-            {order.assignedDriver ? `Enviar a ${order.assignedDriver.name}` : 'Enviar a domiciliario'}
-          </span>
-        </a>
-      )}
-    </div>
+      <div className="flex items-center justify-between gap-2 pt-0.5">
+        <span className="flex items-center gap-1 text-[10px] text-[var(--t-text-4)]">
+          <Clock className="h-3 w-3" /> {timeAgo(order.createdAt)}
+          <PaidBadge isPaid={order.isPaid} />
+        </span>
+        <span className="text-sm font-extrabold text-[var(--t-text-1)]">{formatCurrency(total)}</span>
+      </div>
+    </button>
   );
 }

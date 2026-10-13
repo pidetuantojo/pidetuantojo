@@ -13,6 +13,8 @@ export interface PushData {
   // Agrupa: un mismo pedido no aparece dos veces
   tag: string;
   orderId?: string;
+  // Logo del restaurante (Android; en iPhone se ve el ícono de la app instalada)
+  icon?: string;
 }
 
 const DELIVERY_LABEL: Record<OrderDeliveryType, string> = {
@@ -38,7 +40,7 @@ export interface NewOrderInfo {
 }
 
 /** "🛎 Nuevo pedido #123456" — "Juan · $45.000 · Domicilio" */
-export function buildNewOrderPush(order: NewOrderInfo): PushData {
+export function buildNewOrderPush(order: NewOrderInfo, icon?: string | null): PushData {
   const delivery = order.deliveryType
     ? `${DELIVERY_LABEL[order.deliveryType]}${order.deliveryType === 'mesa' && order.tableName ? ` (${order.tableName})` : ''}`
     : '';
@@ -50,16 +52,18 @@ export function buildNewOrderPush(order: NewOrderInfo): PushData {
     url: `${ORDERS_PATH}?pedido=${encodeURIComponent(order.id)}`,
     tag: `order-${order.id}`,
     orderId: order.id,
+    ...(icon ? { icon } : {}),
   };
 }
 
-export function buildTestPush(): PushData {
+export function buildTestPush(icon?: string | null): PushData {
   return {
     kind: 'test',
     title: '🔔 Avisos de pedidos activos',
     body: 'Así te vamos a avisar cuando entre un pedido, aunque la app esté cerrada.',
     url: ORDERS_PATH,
     tag: 'test',
+    ...(icon ? { icon } : {}),
   };
 }
 

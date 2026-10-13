@@ -6,7 +6,8 @@ Card: https://trello.com/c/qW9X7ao1
 
 | Pieza | Dónde |
 |---|---|
-| Manifest **solo del panel** | `public/panel.webmanifest` (`start_url: /dashboard/pedidos`, íconos `any` + `maskable`, atajos) |
+| Manifest **solo del panel** | Ruta `src/app/panel.webmanifest/route.ts` + `src/lib/pwa/panelManifest.ts` (`start_url: /dashboard/pedidos`, íconos `any` + `maskable`, atajos) |
+| **Logo y nombre del restaurante** en el acceso directo | Al iniciar sesión, `PanelBranding` cambia el manifest a `/panel.webmanifest?r={id}` y el ícono y el nombre de iPhone. El logo se adapta con Cloudinary (`src/lib/pwa/restaurantIcons.ts`). iPhone toma el ícono **solo al instalar** (hay que reinstalar); Android lo actualiza solo |
 | Enlace al manifest, iPhone y `theme-color` | `src/lib/pwa/panelMetadata.ts`, usado por `src/app/(dashboard)/layout.tsx` y `src/app/(auth)/layout.tsx` |
 | Íconos maskable | `public/icons/maskable-{192,512}.png` (degradado de marca + "p" en la zona segura del 80%) |
 | Registro del service worker + evento de instalación | `src/features/pwa/components/PwaRegister.tsx` (en `DashboardLayout`) |
@@ -58,6 +59,8 @@ Sin la clave, el panel muestra "Los avisos todavía no están configurados" y to
 - **No molestar / ahorro de batería** pueden silenciar o retrasar los avisos.
 - Los **pedidos manuales** del panel no generan aviso (los crea el mismo personal).
 - Sin modo offline: el service worker no intercepta `fetch`.
+- Logo en la notificación: en Android se ve el logo del restaurante (`icon`); en iPhone siempre se ve el ícono de la app instalada.
+- Si el logo no está en Cloudinary, se usan los íconos de Pide Tu Antojo.
 
 ## Cómo probar
 

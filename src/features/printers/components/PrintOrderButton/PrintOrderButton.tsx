@@ -16,6 +16,8 @@ import { usePrintStationStatus } from '../../hooks/usePrintStationStatus';
 interface PrintOrderButtonProps {
   order: Order;
   restaurantId: string;
+  // 'tile': botón cuadrado para la grilla de acciones del panel del pedido
+  variant?: 'block' | 'tile';
 }
 
 function formatTime(iso: string): string {
@@ -27,7 +29,7 @@ function formatTime(iso: string): string {
  * encola el trabajo y la Estación de impresión (PC con QZ Tray) lo imprime. El estado llega en
  * vivo en el pedido: en cola → imprimiendo → impreso / error.
  */
-export function PrintOrderButton({ order, restaurantId }: PrintOrderButtonProps) {
+export function PrintOrderButton({ order, restaurantId, variant = 'block' }: PrintOrderButtonProps) {
   const { user, can } = useAuth();
   const { data: printer, isLoading } = usePrinterConfig(restaurantId);
   const { online: stationOnline, loaded: stationLoaded } = usePrintStationStatus(restaurantId);
@@ -77,6 +79,27 @@ export function PrintOrderButton({ order, restaurantId }: PrintOrderButtonProps)
 
   // Sin permiso de imprimir (o plan sin impresión) el botón no se muestra
   if (!can('orders.print') || isLoading) return null;
+
+  if (variant === 'tile') {
+    const label = sending ? 'Enviando' : printing ? 'Imprimiendo' : queued ? 'En cola' : shownError ? 'Reintentar' : order.printedAt ? 'Reimprimir' : 'Imprimir';
+    const hint = !printer
+      ? 'Configura la impresora para imprimir comandas'
+      : shownError || (stationLoaded && !stationOnline ? 'La estación de impresión no está activa' : undefined);
+    return (
+      <button
+        type="button"
+        onClick={handlePrint}
+        disabled={!printer || busy}
+        title={hint}
+        className={`flex flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 text-[11px] font-semibold transition-colors disabled:cursor-default disabled:opacity-60 ${
+          shownError ? 'border-red-200 text-red-500 hover:bg-red-50' : 'border-[var(--t-border)] text-[var(--t-text-2)] hover:bg-[var(--t-surface-2)]'
+        }`}
+      >
+        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : shownError ? <RotateCcw className="h-4 w-4" /> : <Printer className="h-4 w-4" />}
+        {label}
+      </button>
+    );
+  }
 
   if (!printer) {
     return (

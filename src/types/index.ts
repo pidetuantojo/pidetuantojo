@@ -297,6 +297,22 @@ export interface AppliedPromotion {
   detail?: string;
 }
 
+/** Un pago registrado en caja. Una cuenta dividida tiene varios (uno por persona o parte). */
+export interface OrderPayment {
+  id: string;
+  amount: number;
+  // Etiqueta visible del método (ej: "Nequi"): Contabilidad agrupa por este valor
+  method: string;
+  methodType?: PaymentMethodType;
+  account?: string;
+  // "Persona 1", "Parte 2/3"...
+  label?: string;
+  // Efectivo: lo que entregó el cliente (para calcular el cambio)
+  received?: number;
+  paidAt: string;
+  paidBy?: string;
+}
+
 export interface Order {
   id: string;
   restaurantId: string;
@@ -337,6 +353,13 @@ export interface Order {
   internalNote?: string;
   location?: { lat: number; lng: number };
   assignedDriver?: AssignedDriver;
+  // Descuento manual del panel (ya incluido en `discount`): se guarda aparte para mostrarlo y poder cambiarlo
+  manualDiscount?: number;
+  manualDiscountReason?: string;
+  // Pagos registrados en caja ("Pagar" o "Dividir"). isPaid = la suma cubre el total
+  payments?: OrderPayment[];
+  // Mesa: el pedido sigue en el tablero hasta liberar la mesa (aunque ya esté entregado)
+  tableReleasedAt?: string;
   // Impresión de comanda (QZ Tray). 'printing' actúa como candado contra doble click.
   printStatus?: OrderPrintStatus;
   // Último trabajo de impresión encolado: los anteriores se descartan (evita duplicados al reintentar)
@@ -465,7 +488,8 @@ export type UpdateOrderData = Partial<Pick<Order,
   'items' | 'subtotal' | 'discount' | 'total' | 'customerName' | 'customerPhone' |
   'customerAddress' | 'barrio' | 'deliveryType' | 'paymentMethod' | 'assignedDriver' |
   'tableId' | 'tableName' | 'isScheduled' | 'scheduledFor' |
-  'paymentMethodType' | 'paymentAccount'
+  'paymentMethodType' | 'paymentAccount' |
+  'manualDiscount' | 'manualDiscountReason' | 'payments' | 'tableReleasedAt'
 >>;
 
 // ===== MESAS =====

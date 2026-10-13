@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
 
 import { getOrderTotals } from '@/features/orders/helpers/totals.helpers';
+import { paymentsByMethod } from '@/features/orders/helpers/payments.helpers';
 import type { Order } from '@/types';
 import type { AccountingStats, DateRange, PromotionStats } from '../types/accounting.types';
 
@@ -9,10 +10,13 @@ export function calculateStats(orders: Order[]): AccountingStats {
   const orderCount = orders.length;
   const avgTicket = orderCount > 0 ? totalRevenue / orderCount : 0;
 
+  // Una cuenta dividida suma en cada método con lo que se pagó por él
   const byPaymentMethod = orders.reduce<Record<string, { total: number; count: number }>>(
     (acc, o) => {
-      const prev = acc[o.paymentMethod] ?? { total: 0, count: 0 };
-      acc[o.paymentMethod] = { total: prev.total + o.total, count: prev.count + 1 };
+      for (const { method, amount } of paymentsByMethod(o)) {
+        const prev = acc[method] ?? { total: 0, count: 0 };
+        acc[method] = { total: prev.total + amount, count: prev.count + 1 };
+      }
       return acc;
     },
     {}

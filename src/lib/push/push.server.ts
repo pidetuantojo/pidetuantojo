@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 
 import { adminDb, adminMessaging } from '@/lib/firebase/admin';
 import { can, legacyPermissions, normalizePermissions } from '@/lib/permissions/permissions';
+import { restaurantIconUrl } from '@/lib/pwa/restaurantIcons';
 import type { AppUser } from '@/types';
 
 import { buildNewOrderPush, isInvalidTokenError, toFcmData, type NewOrderInfo, type PushData } from './payload';
@@ -100,9 +101,17 @@ export async function sendPush(targets: { docId: string; token: string }[], data
   return { sent: response.successCount, failed: response.failureCount, removed: invalid.length };
 }
 
+/** Logo del restaurante como ícono de la notificación (192 px, fondo blanco), o null si no tiene. */
+export async function restaurantPushIcon(restaurantId: string): Promise<string | null> {
+  const snap = await adminDb.collection('restaurants').doc(restaurantId).get();
+  return restaurantIconUrl((snap.data() as { logo?: string } | undefined)?.logo, 192);
+}
+
 /** Aviso de pedido nuevo a todo el equipo del restaurante que ve pedidos. */
 export async function notifyNewOrder(restaurantId: string, order: NewOrderInfo): Promise<SendResult> {
-  return sendPush(await recipientTokens(restaurantId), buildNewOrderPush(order));
+  const targets = await recipientTokens(restaurantId);
+  if (targets.length === 0) return { sent: 0, failed: 0, removed: 0 };
+  return sendPush(targets, buildNewOrderPush(order, await restaurantPushIcon(restaurantId)));
 }
 
 /** Tokens del usuario (para "Enviar prueba"). */

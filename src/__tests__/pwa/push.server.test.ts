@@ -58,6 +58,14 @@ describe('push.server', () => {
     expect(await push.recipientTokens('r1')).toHaveLength(1);
   });
 
+  it('el aviso lleva el logo del restaurante', async () => {
+    await seedTokens();
+    db.set('restaurants/r1', { name: 'Mangova', logo: 'https://res.cloudinary.com/demo/image/upload/v1/logo.png' });
+    sendEach.mockResolvedValue({ successCount: 2, failureCount: 0, responses: [{ success: true }, { success: true }] });
+    await push.notifyNewOrder('r1', { id: 'o1', orderNumber: '#100', customerName: 'Ana', total: 30000 });
+    expect(sendEach.mock.calls[0][0][0].data.icon).toBe('https://res.cloudinary.com/demo/image/upload/c_pad,w_173,h_173,b_white/c_pad,w_192,h_192,b_white,f_png/v1/logo.png');
+  });
+
   it('sin dispositivos no llama a FCM', async () => {
     expect(await push.notifyNewOrder('r1', { id: 'o1', orderNumber: '#1', customerName: 'A', total: 1 })).toEqual({ sent: 0, failed: 0, removed: 0 });
     expect(sendEach).not.toHaveBeenCalled();

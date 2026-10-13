@@ -8,6 +8,7 @@
  */
 
 const DEFAULT_URL = '/dashboard/pedidos';
+// Logo del restaurante si viene en el aviso (Android); si no, el de Pide Tu Antojo
 const ICON = '/android-chrome-192.png';
 
 self.addEventListener('install', () => {
@@ -47,7 +48,7 @@ self.addEventListener('push', (event) => {
 
     await self.registration.showNotification(data.title || 'Pide Tu Antojo', {
       body: data.body || '',
-      icon: ICON,
+      icon: data.icon || ICON,
       tag: data.tag || undefined,
       renotify: !!data.tag,
       // El pedido queda en pantalla hasta que alguien lo vea

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { errorResponse, requirePermission } from '@/lib/auth/serverAuth';
 import { buildTestPush } from '@/lib/push/payload';
-import { sendPush, userTokens } from '@/lib/push/push.server';
+import { restaurantPushIcon, sendPush, userTokens } from '@/lib/push/push.server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -11,7 +11,8 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   try {
     const caller = await requirePermission(request, 'orders.view');
-    const result = await sendPush(await userTokens(caller.uid), buildTestPush());
+    const icon = caller.restaurantId ? await restaurantPushIcon(caller.restaurantId) : null;
+    const result = await sendPush(await userTokens(caller.uid), buildTestPush(icon));
     return NextResponse.json(result);
   } catch (error) {
     return errorResponse(error, 'No se pudo enviar la prueba');

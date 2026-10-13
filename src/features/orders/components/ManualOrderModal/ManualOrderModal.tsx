@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { X, Plus, Minus, Trash2, Search, ShoppingBag } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
-import type { Product, Adicional, OrderItem, Additional, Category, PaymentMethodConfig } from '@/types';
+import type { Product, Adicional, OrderItem, Additional, Category, Mesa, OrderDeliveryType, PaymentMethodConfig } from '@/types';
 import { PaymentMethodPicker } from '@/features/payment-methods/components/PaymentMethodPicker';
 import { getActivePaymentMethods, toOrderPayment } from '@/features/payment-methods/helpers/payment-methods.helpers';
 import { normalizePhone } from '@/lib/customers/phone';
@@ -20,6 +20,12 @@ interface ManualOrderModalProps {
   adicionales: Adicional[];
   categories: Category[];
   paymentMethods?: PaymentMethodConfig[];
+  // Tipo preseleccionado (el "+" de cada columna del tablero)
+  initialDeliveryType?: OrderDeliveryType;
+  // Comer en el local: mesas configuradas y las que ya tienen un pedido abierto
+  mesas?: Mesa[];
+  occupiedTableIds?: Set<string>;
+  dineInEnabled?: boolean;
 }
 
 interface CartLine {
@@ -33,6 +39,7 @@ const sg = "var(--font-sans, sans-serif)";
 const DELIVERY_TYPES = [
   { value: 'recoger',   label: 'Recoger',   emoji: '🏪' },
   { value: 'domicilio', label: 'Domicilio',  emoji: '🛵' },
+  { value: 'mesa',      label: 'Mesa',       emoji: '🪑' },
 ] as const;
 
 export function ManualOrderModal({
@@ -44,6 +51,10 @@ export function ManualOrderModal({
   adicionales,
   categories,
   paymentMethods,
+  initialDeliveryType = 'recoger',
+  mesas = [],
+  occupiedTableIds,
+  dineInEnabled = false,
 }: ManualOrderModalProps) {
   const activePaymentMethods = getActivePaymentMethods(paymentMethods);
   const [search, setSearch] = useState('');
@@ -52,7 +63,8 @@ export function ManualOrderModal({
 
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
-  const [deliveryType, setDeliveryType] = useState<'recoger' | 'domicilio'>('recoger');
+  const [deliveryType, setDeliveryType] = useState<OrderDeliveryType>(initialDeliveryType);
+  const [tableId, setTableId] = useState('');
   const [address, setAddress] = useState('');
   const [barrio, setBarrio] = useState('');
   const [paymentMethodId, setPaymentMethodId] = useState('');
@@ -61,6 +73,16 @@ export function ManualOrderModal({
 
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+
+  // Cada vez que se abre arranca con el tipo de la columna desde la que se abrió
+  useEffect(() => {
+    if (isOpen) setDeliveryType(initialDeliveryType);
+  }, [isOpen, initialDeliveryType]);
+
+  const deliveryOptions = DELIVERY_TYPES.filter((t) => t.value !== 'mesa' || dineInEnabled);
+  const tableOptions = mesas.filter((m) => m.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
+  const selectedTable = tableOptions.find((m) => m.id === tableId);
+  const isMesa = deliveryType === 'mesa';
 
   const activeProducts = useMemo(() => products.filter((p) => p.isActive && p.isAvailable), [products]);
 
@@ -116,7 +138,7 @@ export function ManualOrderModal({
 
   function reset() {
     setCart([]); setCustomerName(''); setCustomerPhone('');
-    setDeliveryType('recoger'); setAddress(''); setBarrio('');
+    setDeliveryType(initialDeliveryType); setTableId(''); setAddress(''); setBarrio('');
     setPaymentMethodId(''); setNotes(''); setSearch('');
     setSelectedCategoryId(''); setError('');
   }
@@ -127,8 +149,10 @@ export function ManualOrderModal({
   }, 0);
 
   async function handleSubmit() {
-    if (!customerName.trim()) { setError('El nombre del cliente es requerido'); return; }
-    if (!customerPhone.trim()) { setError('El teléfono es requerido'); return; }
+    if (isMesa && !selectedTable) { setError('Elige la mesa'); return; }
+    // En mesa el nombre y el celular son opcionales: la mesa identifica el pedido
+    if (!isMesa && !customerName.trim()) { setError('El nombre del cliente es requerido'); return; }
+    if (!isMesa && !customerPhone.trim()) { setError('El teléfono es requerido'); return; }
     if (cart.length === 0) { setError('Agrega al menos un producto'); return; }
     if (deliveryType === 'domicilio' && !address.trim()) { setError('La dirección es requerida para domicilio'); return; }
     if (!selectedPayment) { setError('Elige un método de pago'); return; }
@@ -148,10 +172,11 @@ export function ManualOrderModal({
       await ordersService.create({
         restaurantId,
         statusId: receivedStatusId,
-        customerName: customerName.trim(),
+        customerName: customerName.trim() || selectedTable?.name || '',
         customerPhone: customerPhone.trim(),
         ...(phoneKey ? { customerPhoneKey: phoneKey } : {}),
         deliveryType,
+        ...(isMesa && selectedTable ? { tableId: selectedTable.id, tableName: selectedTable.name } : {}),
         ...(deliveryType === 'domicilio' && address.trim() ? { customerAddress: address.trim() } : {}),
         ...(deliveryType === 'domicilio' && barrio.trim() ? { barrio: barrio.trim() } : {}),
         ...toOrderPayment(selectedPayment),
@@ -355,9 +380,9 @@ export function ManualOrderModal({
                 Datos del cliente
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <input type="text" placeholder="Nombre completo *" value={customerName} onChange={(e) => setCustomerName(e.target.value)}
+                <input type="text" placeholder={isMesa ? 'Nombre (opcional)' : 'Nombre completo *'} value={customerName} onChange={(e) => setCustomerName(e.target.value)}
                   style={{ width: '100%', borderRadius: 12, border: '1.5px solid var(--t-input-border)', padding: '10px 13px', fontFamily: sg, fontSize: 13, color: 'var(--t-text-1)', background: 'var(--t-input-bg)', outline: 'none', boxSizing: 'border-box' }} />
-                <input type="tel" placeholder="Celular *" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)}
+                <input type="tel" placeholder={isMesa ? 'Celular (opcional)' : 'Celular *'} value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)}
                   style={{ width: '100%', borderRadius: 12, border: '1.5px solid var(--t-input-border)', padding: '10px 13px', fontFamily: sg, fontSize: 13, color: 'var(--t-text-1)', background: 'var(--t-input-bg)', outline: 'none', boxSizing: 'border-box' }} />
               </div>
             </section>
@@ -367,8 +392,8 @@ export function ManualOrderModal({
               <div style={{ fontFamily: sg, fontSize: 11, fontWeight: 700, letterSpacing: '.04em', color: 'var(--t-text-2)', marginBottom: 10 }}>
                 Entrega
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                {DELIVERY_TYPES.map((t) => {
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${deliveryOptions.length}, 1fr)`, gap: 8 }}>
+                {deliveryOptions.map((t) => {
                   const active = deliveryType === t.value;
                   return (
                     <button key={t.value} type="button" onClick={() => setDeliveryType(t.value)}
@@ -378,6 +403,24 @@ export function ManualOrderModal({
                   );
                 })}
               </div>
+              {isMesa && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(84px, 1fr))', gap: 6, marginTop: 8 }}>
+                  {tableOptions.length === 0 && (
+                    <span style={{ fontSize: 12, color: 'var(--t-text-4)' }}>No hay mesas configuradas.</span>
+                  )}
+                  {tableOptions.map((m) => {
+                    const busy = occupiedTableIds?.has(m.id) ?? false;
+                    const active = tableId === m.id;
+                    return (
+                      <button key={m.id} type="button" disabled={busy} onClick={() => setTableId(m.id)}
+                        style={{ padding: '8px 6px', borderRadius: 12, border: `2px solid ${active ? '#16a34a' : 'var(--t-border-2)'}`, background: active ? '#f0fdf4' : 'var(--t-surface)', color: busy ? 'var(--t-text-4)' : active ? '#15803d' : 'var(--t-text-2)', fontFamily: sg, fontWeight: 700, fontSize: 12, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1 }}>
+                        {m.name}
+                        <div style={{ fontSize: 10, fontWeight: 500 }}>{busy ? 'Ocupada' : 'Libre'}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
               {deliveryType === 'domicilio' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
                   <input type="text" placeholder="Dirección *" value={address} onChange={(e) => setAddress(e.target.value)}

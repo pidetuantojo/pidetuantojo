@@ -43,6 +43,12 @@ describe('service worker', () => {
     }));
   });
 
+  it('usa el logo del restaurante si viene en el aviso', async () => {
+    const sw = loadServiceWorker([]);
+    await sw.dispatch('push', pushEvent({ ...NEW_ORDER, icon: 'https://res.cloudinary.com/x/logo.png' }));
+    expect(sw.showNotification).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ icon: 'https://res.cloudinary.com/x/logo.png' }));
+  });
+
   it('con el panel abierto y visible no duplica (ya suena la voz)', async () => {
     const sw = loadServiceWorker([{ url: 'https://app.test/dashboard/pedidos', visibilityState: 'visible' }]);
     await sw.dispatch('push', pushEvent(NEW_ORDER));

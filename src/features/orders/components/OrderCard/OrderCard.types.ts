@@ -1,14 +1,11 @@
-import type { Domiciliario, Order, OrderStatus } from '@/types';
+import type { Order, OrderStatus } from '@/types';
 
 export interface OrderCardProps {
   order: Order;
   status?: OrderStatus;
-  statuses: OrderStatus[];
-  restaurantId: string;
-  domiciliarios: Domiciliario[];
+  // Pedido abierto en el panel lateral
+  selected?: boolean;
+  // Entregado / cancelado / mesa liberada (solo visible con "Ver finalizados")
+  finished?: boolean;
   onOpen: (order: Order) => void;
-  onAdvance?: (orderId: string, nextStatusId: string) => void;
-  onEdit?: (order: Order) => void;
-  onDelete?: (order: Order) => void;
-  canDelete?: boolean;
 }
