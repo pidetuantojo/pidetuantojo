@@ -53,7 +53,7 @@ export function OrderSummaryBar({ items, count, total, primaryColor: pri, second
       <div aria-hidden="true" style={{ height: isDesktop ? 24 : barHeight + 8 }} />
 
       <div ref={barRef} style={{ position: 'fixed', zIndex: 30, ...position }}>
-        <div style={{ borderRadius: 16, boxShadow: '0 12px 30px -12px rgba(0,0,0,.45)', overflow: 'hidden', border: isDesktop ? `1px solid ${sec}18` : 'none' }}>
+        <div style={{ borderRadius: 16, boxShadow: '0 12px 30px -12px rgba(0,0,0,.45)', overflow: 'hidden', border: isDesktop ? `1px solid ${sec}18` : '1px solid rgba(255,255,255,0.35)' }}>
           {isDesktop && (
             <div style={{ background: '#fff', padding: '12px 16px 0', fontFamily: sm, fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: '#9a8f86' }}>
               Tu pedido
@@ -87,7 +87,7 @@ export function OrderSummaryBar({ items, count, total, primaryColor: pri, second
           <button
             type="button"
             onClick={onOpen}
-            style={{ width: '100%', border: 'none', background: sec, padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, cursor: 'pointer', fontFamily: sg }}
+            style={{ width: '100%', border: 'none', borderTop: '1px solid rgba(255,255,255,0.2)', background: sec, padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, cursor: 'pointer', fontFamily: sg }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
               <span style={{ minWidth: 26, height: 26, padding: '0 7px', borderRadius: 8, background: pri, color: '#fff', fontWeight: 700, fontSize: 13, display: 'grid', placeItems: 'center', flexShrink: 0 }}>{count}</span>

@@ -205,7 +205,7 @@ function DrawerContent({
         {/* Header */}
         <div className="flex flex-shrink-0 items-center justify-between gap-3 border-b border-[var(--t-border)] px-5 py-3.5">
           <div className="flex min-w-0 items-center gap-2.5">
-            <span className="font-mono text-lg font-extrabold text-[var(--t-text-1)]">#{order.orderNumber}</span>
+            <span className="font-mono text-lg font-extrabold text-[var(--t-text-1)]">{order.orderNumber}</span>
             <StatusBadge status={status} />
             {isMesa && order.tableName && (
               <span className="truncate rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">{order.tableName}</span>

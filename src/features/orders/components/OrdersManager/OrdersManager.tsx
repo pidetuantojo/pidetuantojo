@@ -299,31 +299,21 @@ export function OrdersManager() {
     // Pedidos nuevos
     const newOrders = orders.filter((o) => !knownIdsRef.current!.has(o.id));
     if (newOrders.length > 0) {
-      playNotificationSound();
+      if (!voiceEnabled) playNotificationSound();
       newOrders.forEach((o) => {
         const id = ++toastCounterRef.current;
         setToasts((prev) => [...prev, { id, orderNumber: o.orderNumber }]);
       });
       if (newOrders.length === 1) {
-        announce(`Nuevo pedido ${newOrders[0].orderNumber}`);
+        announce(newOrders[0].orderNumber.replace(/^#/, ''));
       } else {
         announce(`${newOrders.length} pedidos nuevos`);
       }
     }
 
-    // Cambios de estado en pedidos ya conocidos
-    orders.forEach((order) => {
-      if (!knownIdsRef.current!.has(order.id)) return; // skip nuevos
-      const prev = prevStatusRef.current.get(order.id);
-      if (prev !== undefined && prev !== order.statusId) {
-        const statusName = statuses.find((s) => s.id === order.statusId)?.name;
-        if (statusName) announce(`Pedido ${order.orderNumber}: ${statusName}`);
-      }
-    });
-
     knownIdsRef.current = currentIds;
     prevStatusRef.current = new Map(orders.map((o) => [o.id, o.statusId]));
-  }, [orders, isLoading, statuses, announce]);
+  }, [orders, isLoading, statuses, announce, voiceEnabled]);
 
   // Al tocar el aviso push se llega con ?pedido={id}: se abre el detalle de ese pedido una sola vez
   const openedFromPushRef = useRef(false);

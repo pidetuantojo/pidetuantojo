@@ -63,7 +63,7 @@ export function OrderCard({ order, status, selected, finished, onOpen }: OrderCa
   return (
     <button type="button" onClick={() => onOpen(order)} className={`${base} block space-y-1.5 px-3 py-2.5`}>
       <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-sm font-bold text-[var(--t-text-1)]">#{order.orderNumber}</span>
+        <span className="font-mono text-sm font-bold text-[var(--t-text-1)]">{order.orderNumber}</span>
         <StatusBadge status={status} />
       </div>
       <p className="truncate text-sm font-semibold text-[var(--t-text-1)]">{order.customerName}</p>
