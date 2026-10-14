@@ -1,6 +1,7 @@
 import type { MDXComponents } from 'mdx/types';
 
 import { Callout, GuideLink, Step, Steps, Ui } from '@/features/help/components/mdx/MdxBlocks';
+import { OrderFlowSimulator } from '@/features/help/simulations/order-flow/OrderFlowSimulator';
 
 // Requerido por @next/mdx en el App Router: estilos de las guías del centro de ayuda
 export function useMDXComponents(components: MDXComponents): MDXComponents {
@@ -17,6 +18,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     Step,
     Ui,
     GuideLink,
+    OrderFlowSimulator,
     ...components,
   };
 }
