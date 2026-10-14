@@ -40,6 +40,9 @@ export const ROUTES = {
     },
     ayuda: '/dashboard/ayuda',
     ayudaGuia: (section: string, guide: string) => `/dashboard/ayuda/${section}/${guide}`,
+    ayudaChecklist: '/dashboard/ayuda/primeros-pasos/checklist-inicial',
+    ayudaPrimerosPasos: '/dashboard/ayuda/primeros-pasos/recorrido-del-panel',
+    ayudaGestionarPedido: '/dashboard/ayuda/pedidos/gestionar-un-pedido',
     // legacy — keep for redirects only
     menu: '/dashboard/menu',
     domicilios: '/dashboard/domicilios',

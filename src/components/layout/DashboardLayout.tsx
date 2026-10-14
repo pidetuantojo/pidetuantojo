@@ -15,6 +15,7 @@ import { getSubscriptionInfo } from '@/lib/subscription/subscription';
 import { getMissingRestaurantFields } from '@/features/restaurants/helpers/getMissingRestaurantFields';
 import { PwaRegister } from '@/features/pwa/components/PwaRegister';
 import { PanelBranding } from '@/features/pwa/components/PanelBranding';
+import { ContextualHelpButton } from '@/features/help/components/ContextualHelpButton/ContextualHelpButton';
 
 /**
  * Destino al que hay que mandar al usuario si no puede estar en `pathname` (null = puede quedarse).
@@ -354,6 +355,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8">{children}</main>
       </div>
+      <ContextualHelpButton />
       <Toaster />
       <ConfirmDialog />
     </div>
