@@ -20,6 +20,8 @@ import { formatShortDate, timeAgo } from '../../helpers/time.helpers';
 import { getOrderTotals } from '../../helpers/totals.helpers';
 import { useUpdateOrderStatus } from '../../hooks/useUpdateOrderStatus';
 import { ordersService } from '../../services/orders.service';
+import { useWaConfig } from '@/lib/whatsapp/useWaConfig';
+import { ROUTES } from '@/constants/routes';
 import { StatusBadge } from '../OrderCard/OrderCard';
 import { DiscountDialog, DriverDialog, TransferItemDialog, TransferTableDialog } from './dialogs';
 import { PaymentDialog } from './PaymentDialog';
@@ -92,7 +94,8 @@ function DrawerContent({
   const canManageNotes = can('orders.manage_notes');
   const canAssignDriver = can('orders.assign_driver');
   const companiesEnabled = can('features.delivery_companies');
-  const { updateStatus, isPending: statusPending, error: statusError } = useUpdateOrderStatus(restaurantId);
+  const { updateStatus, isPending: statusPending, error: statusError, waError, clearWaError, notifyPaid } = useUpdateOrderStatus(restaurantId);
+  const { autoNotify } = useWaConfig(restaurantId);
 
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [confirm, setConfirm] = useState<'cancel' | 'release' | null>(null);
@@ -144,7 +147,8 @@ function DrawerContent({
 
   async function changeStatus(next: OrderStatus) {
     if (!canChangeStatus || next.id === order.statusId) return;
-    await updateStatus(order.id, next.id, {
+    // Solo notificar al cliente si autoNotify está activo y NO es una mesa
+    const notifyData = (autoNotify && !isMesa) ? {
       customerPhone: order.customerPhone,
       customerName: order.customerName,
       orderNumber: order.orderNumber,
@@ -153,13 +157,30 @@ function DrawerContent({
       items: order.items.map((i) => ({ productName: i.productName, quantity: i.quantity })),
       paymentMethod: order.paymentMethod,
       total: totals.total,
-    });
+    } : undefined;
+    await updateStatus(order.id, next.id, notifyData);
   }
 
   async function handleCancel() {
     if (!cancelledStatus) return;
     await changeStatus(cancelledStatus);
     setConfirm(null);
+  }
+
+  async function handleMarkPaid(markAsPaid: boolean) {
+    await run(async () => {
+      await ordersService.updateIsPaid(restaurantId, order.id, markAsPaid);
+      if (markAsPaid && autoNotify && !isMesa && order.customerPhone) {
+        notifyPaid({
+          customerPhone: order.customerPhone,
+          customerName: order.customerName,
+          orderNumber: order.orderNumber,
+          statusName: 'Pagado',
+          paymentMethod: order.paymentMethod,
+          total: totals.total,
+        });
+      }
+    });
   }
 
   async function handleRelease() {
@@ -236,7 +257,7 @@ function DrawerContent({
                   <button
                     type="button"
                     disabled={busy}
-                    onClick={() => run(() => ordersService.updateIsPaid(restaurantId, order.id, !order.isPaid))}
+                    onClick={() => handleMarkPaid(!order.isPaid)}
                     className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${order.isPaid ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-[#FF6A1A]'}`}
                     title="Marcar pagado / pendiente"
                   >
@@ -537,6 +558,27 @@ function DrawerContent({
             </div>
           )}
           {statusError && <p className="text-xs text-red-500">{statusError}</p>}
+
+          {/* Banner: WA desconectado al intentar notificar */}
+          {waError === 'disconnected' && (
+            <div className="flex items-start gap-3 rounded-xl px-3 py-2.5" style={{ background: '#fff7ed', border: '1px solid #fed7aa' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#f97316" style={{ flexShrink: 0, marginTop: 1 }} aria-hidden="true">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold" style={{ color: '#9a3412' }}>WhatsApp desconectado</p>
+                <p className="text-xs" style={{ color: '#c2410c' }}>El cliente no recibió la notificación.</p>
+              </div>
+              <div className="flex flex-shrink-0 items-center gap-1.5">
+                <a href={ROUTES.dashboard.whatsapp} className="rounded-lg px-2 py-1 text-xs font-bold" style={{ background: '#f97316', color: '#fff' }}>
+                  Conectar
+                </a>
+                <button type="button" onClick={clearWaError} className="rounded-lg p-1 text-xs" style={{ color: '#9a3412' }} aria-label="Cerrar alerta">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Domiciliario */}
           {isDomicilio && (

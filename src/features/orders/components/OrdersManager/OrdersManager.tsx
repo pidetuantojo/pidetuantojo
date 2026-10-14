@@ -8,8 +8,6 @@ import {
   RefreshCw,
   Plus,
   X,
-  Volume2,
-  VolumeX,
   CalendarDays,
   Bike,
   LayoutGrid,
@@ -29,7 +27,8 @@ import { useRestaurant } from '@/features/restaurants/hooks/useRestaurants';
 import type { Order } from '@/types';
 
 import { useOrders } from '../../hooks/useOrders';
-import { useVoiceNotifications } from '../../hooks/useVoiceNotifications';
+import { useWaDisconnectAlert } from '../../hooks/useWaDisconnectAlert';
+import { ROUTES } from '@/constants/routes';
 import { PwaControls } from '@/features/pwa/components/PwaControls';
 import { ordersService } from '../../services/orders.service';
 import { useToastStore } from '@/store/toast.store';
@@ -147,31 +146,38 @@ function getAudioCtx(): AudioContext | null {
   return _audioCtx;
 }
 
+/** Crea y desbloquea el AudioContext — llamar en cualquier gesto del usuario. */
+function unlockAudio() {
+  const ctx = getAudioCtx();
+  if (ctx && ctx.state === 'suspended') ctx.resume();
+}
+
+function doPlay(ctx: AudioContext) {
+  const notes: [number, number][] = [[880, 0], [1108, 0.18]];
+  notes.forEach(([freq, offset]) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    const t = ctx.currentTime + offset;
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.4, t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+    osc.start(t);
+    osc.stop(t + 0.5);
+  });
+}
+
 function playNotificationSound() {
   try {
     const ctx = getAudioCtx();
     if (!ctx) return;
-    const doPlay = () => {
-      const notes = [880, 1108];
-      notes.forEach((freq, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-        const t = ctx.currentTime + i * 0.18;
-        gain.gain.setValueAtTime(0, t);
-        gain.gain.linearRampToValueAtTime(0.4, t + 0.01);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
-        osc.start(t);
-        osc.stop(t + 0.5);
-      });
-    };
     if (ctx.state === 'suspended') {
-      ctx.resume().then(doPlay);
+      ctx.resume().then(() => doPlay(ctx));
     } else {
-      doPlay();
+      doPlay(ctx);
     }
   } catch {
     // AudioContext no disponible
@@ -267,11 +273,12 @@ export function OrdersManager() {
   const [, setTick] = useState(0);
 
   const knownIdsRef = useRef<Set<string> | null>(null);
+  const announcedIdsRef = useRef<Set<string>>(new Set());
   const toastCounterRef = useRef(0);
   const prevStatusRef = useRef<Map<string, string>>(new Map());
 
-  const { announce, enabled: voiceEnabled, toggle: toggleVoice } = useVoiceNotifications();
   const { showToast } = useToastStore();
+  const { showAlert: waDisconnected, dismiss: dismissWaAlert } = useWaDisconnectAlert(restaurantId);
 
   const receivedStatusId = statuses.find((s) => s.code === 'received')?.id ?? '';
   const statusById = useMemo(() => new Map(statuses.map((s) => [s.id, s])), [statuses]);
@@ -283,6 +290,21 @@ export function OrdersManager() {
     const id = setInterval(() => setTick((t) => t + 1), 60_000);
     return () => clearInterval(id);
   }, []);
+
+  // Desbloquear AudioContext en el primer gesto del usuario
+  useEffect(() => {
+    document.addEventListener('click', unlockAudio, { once: true });
+    document.addEventListener('keydown', unlockAudio, { once: true });
+    return () => {
+      document.removeEventListener('click', unlockAudio);
+      document.removeEventListener('keydown', unlockAudio);
+    };
+  }, []);
+
+  // Al cambiar el rango de fechas, resetear la línea de base para no notificar pedidos históricos
+  useEffect(() => {
+    knownIdsRef.current = null;
+  }, [activeRange]);
 
   // Detect new orders and status changes
   useEffect(() => {
@@ -296,24 +318,25 @@ export function OrdersManager() {
       return;
     }
 
-    // Pedidos nuevos
-    const newOrders = orders.filter((o) => !knownIdsRef.current!.has(o.id));
+    // Pedidos nuevos: solo los que acaban de llegar (estado received) y no se han anunciado aún
+    const newOrders = orders.filter(
+      (o) =>
+        !knownIdsRef.current!.has(o.id) &&
+        !announcedIdsRef.current.has(o.id) &&
+        o.statusId === receivedStatusId,
+    );
     if (newOrders.length > 0) {
-      if (!voiceEnabled) playNotificationSound();
+      newOrders.forEach((o) => announcedIdsRef.current.add(o.id));
+      playNotificationSound();
       newOrders.forEach((o) => {
         const id = ++toastCounterRef.current;
         setToasts((prev) => [...prev, { id, orderNumber: o.orderNumber }]);
       });
-      if (newOrders.length === 1) {
-        announce(newOrders[0].orderNumber.replace(/^#/, ''));
-      } else {
-        announce(`${newOrders.length} pedidos nuevos`);
-      }
     }
 
     knownIdsRef.current = currentIds;
     prevStatusRef.current = new Map(orders.map((o) => [o.id, o.statusId]));
-  }, [orders, isLoading, statuses, announce, voiceEnabled]);
+  }, [orders, isLoading, statuses]);
 
   // Al tocar el aviso push se llega con ?pedido={id}: se abre el detalle de ese pedido una sola vez
   const openedFromPushRef = useRef(false);
@@ -394,6 +417,31 @@ export function OrdersManager() {
 
   return (
     <div className="flex h-full flex-col gap-4">
+      {/* WA desconectado (espontáneo) */}
+      {waDisconnected && (
+        <div
+          className="flex items-center gap-3 rounded-xl px-4 py-3"
+          style={{ background: '#fff7ed', border: '1px solid #fed7aa' }}
+        >
+          <span className="text-lg">📵</span>
+          <p className="flex-1 text-sm font-medium text-orange-800">
+            WhatsApp desconectado. Los mensajes automáticos no se están enviando.
+          </p>
+          <a
+            href={ROUTES.dashboard.whatsapp}
+            className="rounded-lg bg-orange-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-orange-600"
+          >
+            Conectar
+          </a>
+          <button
+            onClick={dismissWaAlert}
+            className="flex h-6 w-6 items-center justify-center rounded-full text-orange-400 hover:bg-orange-100 hover:text-orange-600"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -425,18 +473,6 @@ export function OrdersManager() {
             className="flex items-center gap-2 rounded-xl border border-[var(--t-border)] bg-[var(--t-surface)] px-4 py-2 text-sm font-medium text-[var(--t-text-2)] transition-colors hover:bg-[var(--t-surface-2)]"
           >
             🔔
-          </button>
-          <button
-            onClick={toggleVoice}
-            title={voiceEnabled ? 'Desactivar voz' : 'Activar voz'}
-            className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-colors ${
-              voiceEnabled
-                ? 'border-orange-300 bg-orange-50 text-orange-600 hover:bg-orange-100'
-                : 'border-[var(--t-border)] bg-[var(--t-surface)] text-[var(--t-text-4)] hover:bg-[var(--t-surface-2)]'
-            }`}
-          >
-            {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-            <span className="hidden sm:inline">{voiceEnabled ? 'Voz activa' : 'Voz off'}</span>
           </button>
           {/* PWA: instalar la app y avisos con la app cerrada */}
           <PwaControls />

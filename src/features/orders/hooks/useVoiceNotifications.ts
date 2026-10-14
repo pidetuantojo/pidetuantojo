@@ -29,7 +29,7 @@ export function useVoiceNotifications() {
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'es-CO';
-    utterance.rate = 1.05;
+    utterance.rate = 0.92;
     utterance.pitch = 1;
     utterance.volume = 1;
 

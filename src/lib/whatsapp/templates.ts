@@ -4,7 +4,7 @@ import type { WaNotifyData } from '@/features/orders/hooks/useUpdateOrderStatus'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
-export type WaEventCode = 'pedido_nuevo' | 'pedido_confirmado' | 'pedido_en_camino' | 'pedido_entregado';
+export type WaEventCode = 'pedido_nuevo' | 'pedido_confirmado' | 'pedido_en_camino' | 'pedido_entregado' | 'pedido_estado_actualizado' | 'pedido_pagado';
 
 export interface WaEventMeta {
   code: WaEventCode;
@@ -18,10 +18,12 @@ export type WaTemplates = Record<WaEventCode, string>;
 // ─── Metadata de eventos ──────────────────────────────────────────────────────
 
 export const WA_EVENTS: WaEventMeta[] = [
-  { code: 'pedido_nuevo',       label: 'Pedido nuevo',      emoji: '🆕', description: 'Se envía cuando llega un pedido nuevo' },
-  { code: 'pedido_confirmado',  label: 'Pedido confirmado', emoji: '✅', description: 'Se envía cuando el admin confirma el pedido' },
-  { code: 'pedido_en_camino',   label: 'Pedido en camino',  emoji: '🚀', description: 'Se envía cuando el pedido pasa a "en camino"' },
-  { code: 'pedido_entregado',   label: 'Pedido entregado',  emoji: '✔️', description: 'Se envía cuando el pedido es entregado' },
+  { code: 'pedido_nuevo',              label: 'Pedido nuevo',              emoji: '🆕', description: 'Se envía cuando llega un pedido nuevo' },
+  { code: 'pedido_confirmado',         label: 'Pedido confirmado',         emoji: '✅', description: 'Se envía cuando el admin confirma el pedido' },
+  { code: 'pedido_en_camino',          label: 'Pedido en camino',          emoji: '🚀', description: 'Se envía cuando el pedido pasa a "en camino"' },
+  { code: 'pedido_entregado',          label: 'Pedido entregado',          emoji: '✔️', description: 'Se envía cuando el pedido es entregado' },
+  { code: 'pedido_estado_actualizado', label: 'Estado actualizado (otros)', emoji: '📦', description: 'Se envía para estados personalizados no mapeados (usa {{estadoPedido}})' },
+  { code: 'pedido_pagado',            label: 'Pedido pagado',             emoji: '💳', description: 'Se envía cuando el pedido es marcado como pagado' },
 ];
 
 // ─── Plantillas por defecto ───────────────────────────────────────────────────
@@ -31,6 +33,8 @@ export const DEFAULT_TEMPLATES: WaTemplates = {
   pedido_confirmado: `Hola {{nombreCliente}}! 👋\nTu pedido *#{{numeroPedido}}* fue *confirmado* ✅\n\n*🛒 Productos:*\n{{productos}}\n\n*💰 Total:* {{total}}\n*💳 Pago:* {{metodoPago}}`,
   pedido_en_camino: `Hola {{nombreCliente}}! 🚀\nTu pedido *#{{numeroPedido}}* está *en camino* 🛵\n\n¡Preparate para recibirlo!`,
   pedido_entregado: `Hola {{nombreCliente}}! ✔️\nTu pedido *#{{numeroPedido}}* fue *entregado*.\n\n¡Gracias por tu pedido! 🙌`,
+  pedido_estado_actualizado: `Hola {{nombreCliente}}! 📦\nTu pedido *#{{numeroPedido}}* ahora está: *{{estadoPedido}}*`,
+  pedido_pagado: `Hola {{nombreCliente}}! 💳\nTu pedido *#{{numeroPedido}}* ya fue *pagado* ✅\n\n*💰 Total:* {{total}}\n*💳 Pago:* {{metodoPago}}\n\n¡Gracias por tu pedido! 🙌`,
 };
 
 // ─── Variables disponibles ────────────────────────────────────────────────────
@@ -41,6 +45,7 @@ export const TEMPLATE_VARS = [
   { key: '{{total}}',          label: 'Total (COP)' },
   { key: '{{metodoPago}}',     label: 'Método de pago' },
   { key: '{{productos}}',      label: 'Lista de productos' },
+  { key: '{{estadoPedido}}',   label: 'Nombre del estado actual (para estados personalizados)' },
 ];
 
 // ─── Firestore helpers ────────────────────────────────────────────────────────
@@ -72,5 +77,6 @@ export function applyTemplate(template: string, data: Partial<WaNotifyData>): st
     .replace(/{{numeroPedido}}/g, data.orderNumber ?? '')
     .replace(/{{total}}/g, data.total !== undefined ? formatCOP(data.total) : '')
     .replace(/{{metodoPago}}/g, data.paymentMethod ?? '')
-    .replace(/{{productos}}/g, products);
+    .replace(/{{productos}}/g, products)
+    .replace(/{{estadoPedido}}/g, data.statusName ?? '');
 }

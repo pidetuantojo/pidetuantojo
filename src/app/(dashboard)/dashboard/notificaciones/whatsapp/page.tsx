@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/features/auth';
+import { useWaConfig } from '@/lib/whatsapp/useWaConfig';
 
 type WaStatus = 'disconnected' | 'connecting' | 'connected';
 
@@ -32,6 +33,8 @@ export default function WhatsAppPage() {
   const [loading, setLoading] = useState(false);
   const [qrWasShown, setQrWasShown] = useState(false);
   const qrWasShownRef = useRef(false);
+
+  const { autoNotify, isLoading: waConfigLoading, setAutoNotify, isSaving } = useWaConfig(restaurantId);
 
   async function fetchStatus() {
     try {
@@ -190,10 +193,46 @@ export default function WhatsAppPage() {
                 WhatsApp conectado
               </p>
               <p style={{ fontSize: 13, color: '#16a34a', margin: '2px 0 0' }}>
-                Los mensajes automáticos están activos. Cuando el pedido pase a <strong>Confirmado</strong>, el cliente recibe una notificación.
+                Los mensajes automáticos están activos. Cuando el pedido cambia de estado, el cliente recibe una notificación.
               </p>
             </div>
           </div>
+
+          {/* Toggle mensajes automáticos */}
+          <div style={{
+            background: 'var(--t-surface)', border: '1px solid var(--t-border)',
+            borderRadius: 16, padding: '16px 20px', marginBottom: 16,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+          }}>
+            <div style={{ minWidth: 0 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--t-text-1)', margin: 0 }}>
+                Mensajes automáticos
+              </p>
+              <p style={{ fontSize: 13, color: 'var(--t-text-3)', margin: '2px 0 0' }}>
+                Notifica al cliente en cada cambio de estado del pedido
+              </p>
+            </div>
+            <button
+              onClick={() => setAutoNotify(!autoNotify)}
+              disabled={waConfigLoading || isSaving}
+              aria-label={autoNotify ? 'Desactivar mensajes automáticos' : 'Activar mensajes automáticos'}
+              style={{
+                width: 44, height: 24, borderRadius: 999, flexShrink: 0,
+                background: autoNotify ? '#22c55e' : 'var(--t-border)',
+                border: 'none', cursor: waConfigLoading || isSaving ? 'not-allowed' : 'pointer',
+                position: 'relative', transition: 'background .2s',
+                opacity: waConfigLoading || isSaving ? 0.6 : 1,
+              }}
+            >
+              <span style={{
+                position: 'absolute', top: 2, left: autoNotify ? 22 : 2,
+                width: 20, height: 20, borderRadius: '50%', background: '#fff',
+                boxShadow: '0 1px 3px rgba(0,0,0,.25)',
+                transition: 'left .2s',
+              }} />
+            </button>
+          </div>
+
           <button
             onClick={handleDisconnect}
             disabled={loading}
