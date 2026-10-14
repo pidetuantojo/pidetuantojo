@@ -32,7 +32,7 @@ export function ChecklistBlock({ id, items }: ChecklistBlockProps) {
       const next = new Set(prev);
       if (next.has(i)) next.delete(i);
       else next.add(i);
-      try { localStorage.setItem(key, JSON.stringify([...next])); } catch {}
+      try { localStorage.setItem(key, JSON.stringify(Array.from(next))); } catch {}
       return next;
     });
   }
