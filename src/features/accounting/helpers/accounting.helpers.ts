@@ -2,8 +2,13 @@ import * as XLSX from 'xlsx';
 
 import { getOrderTotals } from '@/features/orders/helpers/totals.helpers';
 import { paymentsByMethod } from '@/features/orders/helpers/payments.helpers';
-import type { Order } from '@/types';
+import type { Order, OrderStatus } from '@/types';
 import type { AccountingStats, DateRange, PromotionStats } from '../types/accounting.types';
+
+/** Un pedido cancelado no es venta: se muestra en el detalle pero no suma en ningún total. */
+export function isCancelledOrder(order: Order, statuses: OrderStatus[]): boolean {
+  return statuses.find((s) => s.id === order.statusId)?.code === 'cancelled';
+}
 
 export function calculateStats(orders: Order[]): AccountingStats {
   const totalRevenue = orders.reduce((acc, o) => acc + o.total, 0);
@@ -87,10 +92,12 @@ export function getPresetRange(preset: 'today' | 'week' | 'month'): DateRange {
   return { start: start.toISOString(), end: end.toISOString() };
 }
 
-export function exportToExcel(orders: Order[]): void {
+export function exportToExcel(orders: Order[], statuses: OrderStatus[]): void {
+  const statusById = new Map(statuses.map((s) => [s.id, s]));
   const rows = orders.map((o) => ({
     Fecha: new Date(o.createdAt).toLocaleString('es-CO'),
     Pedido: o.orderNumber,
+    Estado: statusById.get(o.statusId)?.name ?? '',
     Cliente: o.customerName,
     Teléfono: o.customerPhone,
     'Método de pago': o.paymentMethod,

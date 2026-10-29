@@ -1,32 +1,86 @@
-Las categorías agrupan los productos de tu menú (Entradas, Platos fuertes, Bebidas…). Sin categorías no podés publicar productos.
+Las categorías son las secciones de tu menú (Entradas, Platos fuertes, Bebidas…). Cada producto tiene que pertenecer a una, así que **crea las categorías antes que los productos**.
 
 <Callout type="info" title="Quién puede hacerlo">
-  Solo el administrador del restaurante puede crear y editar categorías.
+  Depende de los permisos de cada usuario: crear categorías, editar y activar/desactivar, o eliminar son permisos separados. Si no ves un botón, pídele al administrador que te lo habilite en <Ui>Mi restaurante → Equipo</Ui>.
 </Callout>
 
-## Paso a paso
+## Crear una categoría
 
 <Steps>
-  <Step title="Abrí Categorías">
-    En el menú lateral andá a <Ui>Productos → Categorías</Ui>.
+  <Step title="Abre Categorías">
+    En el menú lateral entra a <Ui>Productos</Ui> y después a <Ui>Categorías</Ui>.
   </Step>
-  <Step title="Creá una nueva">
-    Tocá el botón <Ui>+ Nueva categoría</Ui> que aparece arriba a la derecha.
+  <Step title="Toca el botón de crear">
+    Toca <Ui>Nueva categoría</Ui>, arriba a la derecha. Si todavía no tienes ninguna, también aparece <Ui>Crear primera categoría</Ui> en el medio de la pantalla.
   </Step>
-  <Step title="Completá el nombre">
-    Escribí el nombre de la categoría (ej: "Ensaladas", "Combos", "Postres"). Podés agregar una imagen de portada opcional.
+  <Step title="Escribe el nombre">
+    En <Ui>Nombre de la categoría</Ui> pon algo corto y claro (ej: "Ensaladas", "Combos", "Postres"). **Es obligatorio** y necesita al menos 2 letras.
   </Step>
-  <Step title="Guardá">
-    Tocá <Ui>Guardar</Ui>. La categoría ya aparece en el menú y podés empezar a agregarle productos.
+  <Step title="Agrega una descripción (opcional)">
+    El campo <Ui>Descripción</Ui> es opcional. Se ve en tu lista del panel; sirve para que tú y tu equipo se ubiquen.
   </Step>
-  <Step title="Reordenar (opcional)">
-    Arrastrá las categorías con el ícono de las seis puntas para cambiar el orden en que aparecen en el menú.
+  <Step title="Elige el orden">
+    En <Ui>Orden de aparición</Ui> pon un número: **el número más bajo aparece primero** en el menú. Al crear, el sistema propone el siguiente número libre (la nueva queda al final).
+  </Step>
+  <Step title="Deja la categoría activa">
+    La casilla <Ui>Categoría activa</Ui> viene marcada. Si la desmarcas, los clientes no ven la categoría.
+  </Step>
+  <Step title="Guarda">
+    Toca <Ui>Crear categoría</Ui>. Aparece el aviso "Categoría creada" y ya puedes usarla al crear productos.
   </Step>
 </Steps>
 
+<Callout type="info" title="Las categorías no llevan foto">
+  A diferencia de los productos, la categoría solo tiene nombre, descripción, orden y estado. En el menú se muestra como una pestaña con su nombre.
+</Callout>
+
+## Cambiar el orden
+
+Cada fila de la lista muestra un círculo naranja con su número de orden. Para moverla:
+
+<Steps>
+  <Step title="Toca el lápiz">
+    En la categoría que quieres mover toca el ícono de lápiz (<Ui>Editar</Ui>).
+  </Step>
+  <Step title="Cambia el número">
+    Modifica <Ui>Orden de aparición</Ui>. Por ejemplo, pon 1 para que sea la primera.
+  </Step>
+  <Step title="Guarda los cambios">
+    Toca <Ui>Guardar cambios</Ui>.
+  </Step>
+</Steps>
+
+<Callout type="warning" title="No se arrastra">
+  Cada fila tiene un ícono de puntitos que parece un agarre, pero **hoy no sirve para arrastrar**. El orden solo se cambia con el número. Si dos categorías tienen el mismo número, el orden entre ellas no es seguro: dales números distintos.
+</Callout>
+
+## Ocultar, editar o eliminar
+
+En cada fila hay tres íconos (según tus permisos):
+
+| Ícono | Qué hace |
+|---|---|
+| Ojo (<Ui>Activar</Ui> / <Ui>Desactivar</Ui>) | Muestra u oculta la categoría en el menú sin borrarla. Sirve para categorías de temporada. |
+| Lápiz (<Ui>Editar</Ui>) | Cambia nombre, descripción, orden o estado. |
+| Papelera (<Ui>Eliminar</Ui>) | Borra la categoría. Te pide confirmación y **no se puede deshacer**. |
+
+<Callout type="warning" title="Antes de eliminar">
+  No puedes eliminar una categoría que tiene productos: el sistema te avisa y no la borra. Primero pasa esos productos a otra categoría (o elimínalos). Si solo quieres ocultarla por un tiempo, usa <Ui>Desactivar</Ui>.
+</Callout>
+
+## Qué ve el cliente
+
+- Las categorías **activas** aparecen en el menú, ordenadas por su número, como pestañas arriba (o como secciones desplegables si elegiste el diseño "Lista por categorías").
+- Una categoría **inactiva** no se muestra, y tampoco sus productos.
+- Si una categoría activa no tiene productos activos, en el diseño de tarjetas el cliente ve el mensaje "Sin productos en esta categoría."; en el diseño de lista simplemente no aparece.
+- Cuando hay promociones vigentes, el menú agrega automáticamente una primera pestaña "🔥 Promociones". No la creas tú ni la ves en esta lista.
+
 ## Errores comunes
 
-- **No veo el botón + Nueva categoría:** tu usuario no tiene permiso para crear categorías. Pedíselo al administrador.
-- **Los clientes no ven la categoría:** verificá que la categoría tenga al menos un producto activo.
+- **No veo el botón Nueva categoría:** tu usuario no tiene permiso para crear. Pídeselo al administrador.
+- **"Mínimo 2 caracteres":** el nombre es muy corto.
+- **"Debe ser mayor a 0":** el orden tiene que ser 1 o más.
+- **Los clientes no ven la categoría:** revisa que diga <Ui>Activa</Ui> en la lista y que tenga productos activos.
+- **El orden no cambia como esperaba:** hay números repetidos. Pon un número distinto a cada categoría.
 
-<GuideCard href="/dashboard/ayuda/menu/agregar-productos" title="Agregar productos" summary="Con las categorías listas, el siguiente paso es agregar los productos." />
+<GuideCard href="/dashboard/ayuda/menu/agregar-productos" title="Agregar productos" summary="Con las categorías listas, el siguiente paso es cargar los productos." />

@@ -185,8 +185,14 @@ export function DeliveryMethodsManager() {
     const next = checked
       ? Array.from(new Set([...existing, paymentId]))
       : existing.filter((id) => id !== paymentId);
-    // Si quedan seleccionados todos los activos → omitir el campo (comportamiento por defecto)
     const activeIds = allPayments.filter((m) => m.isActive).map((m) => m.id);
+    // Mínimo 1: una lista vacía en el checkout equivale a "todos", lo contrario de lo que se ve aquí
+    if (!next.some((id) => activeIds.includes(id))) {
+      setSavingId(null);
+      showToast('Debe quedar al menos un método de pago para este método de entrega');
+      return;
+    }
+    // Si quedan seleccionados todos los activos → omitir el campo (comportamiento por defecto)
     const allSelected = activeIds.every((id) => next.includes(id)) && next.length === activeIds.length;
     // Firestore rechaza undefined — si son todos, se omite el campo en lugar de pasar undefined
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -364,9 +370,11 @@ export function DeliveryMethodsManager() {
                       </span>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {activePayments.map((pm) => {
+                      {activePayments.map((pm, _i, list) => {
                         const allowed = methods[method.key]?.allowedPaymentMethodIds;
                         const checked = !allowed || allowed.includes(pm.id);
+                        const checkedCount = list.filter((p) => !allowed || allowed.includes(p.id)).length;
+                        const isLastChecked = checked && checkedCount <= 1;
                         return (
                           <label
                             key={pm.id}
@@ -377,7 +385,7 @@ export function DeliveryMethodsManager() {
                             ) : (
                               <Checkbox
                                 checked={checked}
-                                disabled={!canManage || !!savingId}
+                                disabled={!canManage || !!savingId || isLastChecked}
                                 onChange={(e) => togglePaymentForMethod(method.key, pm.id, e.target.checked)}
                               />
                             )}
@@ -394,9 +402,10 @@ export function DeliveryMethodsManager() {
                     </div>
                     {(() => {
                       const allowed = methods[method.key]?.allowedPaymentMethodIds;
+                      // Datos viejos guardados con la lista vacía: el cliente ve todos los métodos
                       return allowed && allowed.length === 0 ? (
                         <p style={{ margin: '8px 0 0', fontSize: 12, color: '#ef4444' }}>
-                          Seleccioná al menos un método de pago.
+                          Selecciona al menos un método de pago. Mientras tanto, tus clientes ven todos los métodos activos.
                         </p>
                       ) : null;
                     })()}

@@ -237,6 +237,16 @@ describe('buildWhatsAppUrl', () => {
     expect(buildWhatsAppUrl('+57 (300) 123-4567', 'Hola')).toContain('wa.me/573001234567?');
   });
 
+  it('agrega el indicativo 57 a celulares colombianos guardados sin él', () => {
+    expect(buildWhatsAppUrl('3001234567', 'Hola')).toContain('wa.me/573001234567?');
+    expect(buildWhatsAppUrl('300 123 4567', 'Hola')).toContain('wa.me/573001234567?');
+  });
+
+  it('no duplica el indicativo si ya viene', () => {
+    expect(buildWhatsAppUrl('573001234567', 'Hola')).toContain('wa.me/573001234567?');
+    expect(buildWhatsAppUrl('+57 300 123 4567', 'Hola')).toContain('wa.me/573001234567?');
+  });
+
   it('construye una URL de wa.me válida', () => {
     expect(buildWhatsAppUrl('3001234567', 'Test')).toMatch(/^https:\/\/wa\.me\/\d+\?text=/);
   });

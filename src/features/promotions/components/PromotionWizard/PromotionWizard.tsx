@@ -227,7 +227,7 @@ export function PromotionWizard({ initial, editingId, products, categories, othe
         </div>
         {form.discountKind === 'percent' && (
           <div>
-            <Label hint="Opcional">Tope del descuento</Label>
+            <Label hint={allowFixed ? 'Opcional · por unidad' : 'Opcional'}>Tope del descuento</Label>
             <MoneyInput value={form.maxDiscount} onChange={(v) => set('maxDiscount', v)} placeholder="Sin tope" />
           </div>
         )}

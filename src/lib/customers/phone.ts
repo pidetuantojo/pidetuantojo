@@ -19,6 +19,17 @@ export function normalizePhone(raw: string | null | undefined): string | null {
 }
 
 /**
+ * Número para links wa.me: siempre con indicativo. "3001234567" → "573001234567".
+ * Sin el 57, wa.me abre un chat con un número que no existe.
+ * Números de otros países (ya con su indicativo) pasan solo con los dígitos.
+ */
+export function toWhatsAppNumber(raw: string | null | undefined): string {
+  const digits = (raw ?? '').replace(/\D/g, '');
+  const key = normalizePhone(digits);
+  return key && key.length === 10 ? `${COUNTRY_CODE}${key}` : digits;
+}
+
+/**
  * Formas en que pudo quedar guardado el teléfono en pedidos viejos (antes de `customerPhoneKey`),
  * para reconocer clientes que ya habían pedido. Máximo 10 (límite de `in` en Firestore).
  */

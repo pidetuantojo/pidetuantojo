@@ -1,0 +1,98 @@
+Los adicionales son los extras que el cliente puede sumar a un producto: una salsa, queso extra, tocineta, un topping. Cada uno tiene un nombre y un precio, y **tú eliges en qué productos se ofrece**. Son una forma fácil de subir el valor de cada pedido.
+
+<Callout type="info" title="Quién puede hacerlo">
+  Crear, editar/activar y eliminar adicionales son permisos separados que se asignan en <Ui>Mi restaurante → Equipo</Ui>. Si no ves un botón, tu usuario no tiene ese permiso.
+</Callout>
+
+## Cómo funcionan
+
+1. **Primero creas el adicional** una sola vez, en un catálogo común (<Ui>Productos → Adicionales</Ui>).
+2. **Después lo marcas en cada producto** donde quieres ofrecerlo (en el formulario del producto).
+
+Así, si "Queso extra" va en 10 hamburguesas, lo creas una vez. Y si le subes el precio, cambia en las 10.
+
+## Crear un adicional
+
+<Steps>
+  <Step title="Abre Adicionales">
+    En el menú lateral entra a <Ui>Productos</Ui> y después a <Ui>Adicionales</Ui>.
+  </Step>
+  <Step title="Toca Nuevo adicional">
+    Toca <Ui>Nuevo adicional</Ui>, arriba a la derecha. Se abre una ventana.
+  </Step>
+  <Step title="Escribe el nombre">
+    En <Ui>Nombre *</Ui> pon cómo lo va a leer el cliente (ej: "Queso extra", "Gomitas (4und)"). Es obligatorio.
+  </Step>
+  <Step title="Pon el precio">
+    En <Ui>Precio</Ui> escribe el valor que **se suma** al producto, solo números y sin puntos: `2000`, no `2.000`. Si el extra es gratis, pon `0`.
+  </Step>
+  <Step title="Déjalo activo">
+    La casilla <Ui>Activo</Ui> viene marcada. Si la desmarcas, el adicional no se ofrece a los clientes.
+  </Step>
+  <Step title="Guarda">
+    Toca <Ui>Crear adicional</Ui>. Aparece el aviso con el nombre y el adicional queda en la lista.
+  </Step>
+</Steps>
+
+## Asignarlo a tus productos
+
+Crear el adicional **no lo agrega solo a ningún producto**. Hay que marcarlo en cada uno:
+
+<Steps>
+  <Step title="Abre el producto">
+    En <Ui>Productos → Productos</Ui> toca el lápiz (<Ui>Editar</Ui>) del producto, o crea uno nuevo.
+  </Step>
+  <Step title="Busca la sección Adicionales">
+    Baja hasta <Ui>Adicionales</Ui>. Ves todos los adicionales con su precio, por ejemplo "+$2.000".
+  </Step>
+  <Step title="Marca los que apliquen">
+    Marca la casilla de cada adicional que quieres ofrecer en ese producto. Los adicionales inactivos aparecen opacos y no se pueden marcar.
+  </Step>
+  <Step title="Guarda">
+    Toca <Ui>Guardar cambios</Ui> (o <Ui>Crear producto</Ui> si es nuevo).
+  </Step>
+</Steps>
+
+<Callout type="tip" title="Atajo">
+  Dentro del formulario del producto, el enlace <Ui>Administrar catálogo →</Ui> te lleva directo a la lista de adicionales.
+</Callout>
+
+## Qué ve el cliente
+
+Cuando el cliente toca un producto que tiene adicionales, se abre una ventana con el título "Elige tus adicionales":
+
+- Una opción **"Sin adicionales"**, que viene elegida por defecto.
+- La lista de extras de ese producto, con su precio. El cliente puede marcar **uno o varios** (no puede pedir "dos de queso extra" como una sola opción).
+- Un cuadro para instrucciones especiales.
+- El total del producto ya con los extras sumados.
+
+Si el producto no tiene adicionales asignados, esta sección no aparece.
+
+<Callout type="info" title="Adicionales y promociones">
+  Los adicionales **se cobran completos**: las promociones (precio tachado, 2x1, combos) descuentan sobre el precio del producto, nunca sobre los extras. Por ejemplo, en un 2x1 de hamburguesas, la segunda hamburguesa sale gratis pero el queso extra se paga.
+</Callout>
+
+## Administrar la lista
+
+En <Ui>Productos → Adicionales</Ui> cada fila muestra el nombre y el precio con un "+". Si está inactivo, ves la etiqueta INACTIVO y la fila se ve apagada. Los íconos son:
+
+| Ícono | Qué hace |
+|---|---|
+| Tilde verde / X (<Ui>Desactivar</Ui> / <Ui>Activar</Ui>) | Oculta o muestra el adicional en el menú sin borrarlo. Útil cuando se te acaba un ingrediente. |
+| Lápiz | Cambia nombre, precio o estado. Se guarda con <Ui>Guardar cambios</Ui>. |
+| Papelera | Elimina el adicional. Pide confirmación y no se puede deshacer. |
+
+<Callout type="warning" title="Cambios de precio y eliminación">
+  Si cambias el precio de un adicional, el nuevo valor aplica a los pedidos nuevos en todos los productos donde esté asignado. Si lo eliminas, los productos que lo usaban **dejan de mostrarlo**. Si solo quieres pausarlo, mejor desactívalo.
+</Callout>
+
+## Errores comunes
+
+- **"El nombre es requerido":** dejaste el nombre vacío.
+- **"El precio no es válido":** el precio es negativo o tiene caracteres que no son números. Usa `0` si es gratis.
+- **Creé el adicional pero no sale en el menú:** falta marcarlo en el producto (sección <Ui>Adicionales</Ui> del formulario) y guardar.
+- **No puedo marcar un adicional en el producto:** está inactivo. Actívalo desde <Ui>Productos → Adicionales</Ui>.
+- **Quiero que el cliente sea obligado a elegir una opción (tamaño, punto de cocción):** hoy los adicionales son siempre opcionales y solo se pueden sumar; no hay grupos de selección obligatoria.
+
+<GuideCard href="/dashboard/ayuda/menu/agregar-productos" title="Agregar productos" summary="Asigna los adicionales al crear o editar cada producto." />
+<GuideCard href="/dashboard/ayuda/menu/promociones" title="Promociones" summary="Descuentos, 2x1, combos y más para vender más." />

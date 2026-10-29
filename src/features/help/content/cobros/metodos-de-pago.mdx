@@ -1,33 +1,94 @@
-Los métodos de pago que activás son los que ve el cliente al hacer su pedido. Activá solo los que realmente aceptás para evitar confusiones.
+Los métodos de pago son las formas en que tus clientes pueden pagarte. **Lo que activas aquí es lo que el cliente ve al confirmar su pedido**, así que activa solo lo que de verdad aceptas.
 
-<Callout type="info" title="Quién puede hacerlo">
-  Solo el administrador puede configurar los métodos de pago.
+## Qué puedes configurar
+
+| Tipo | Qué es | Datos que pide |
+|---|---|---|
+| <Ui>Efectivo</Ui> | Paga al recibir o en el local | Ninguno |
+| <Ui>Datáfono</Ui> | Paga con tarjeta al recibir o en el local | Ninguno |
+| Cuentas para transferencias | Nequi, Daviplata, BreB, Bancolombia u otro banco | El número o llave de la cuenta (opcional) |
+
+<Callout type="info" title="Según tu plan">
+  Si tu plan no incluye cuentas de pago, solo vas a ver <Ui>Efectivo</Ui>: sin Datáfono ni transferencias.
 </Callout>
 
-## Paso a paso
+## Activar efectivo o datáfono
 
 <Steps>
-  <Step title="Abrí Métodos de pago">
-    En el menú lateral andá a <Ui>Finanzas → Métodos de pago</Ui>.
+  <Step title="Abre Métodos de pago">
+    En el menú lateral ve a <Ui>Finanzas → Métodos de pago</Ui>.
   </Step>
-  <Step title="Activá los que usás">
-    Tocá el toggle de cada método para activarlo o desactivarlo. Los métodos disponibles son: efectivo, tarjeta débito, tarjeta crédito, transferencia y otros que hayas configurado.
+  <Step title="Busca la tarjeta Pago al recibir o en el local">
+    Ahí están <Ui>Efectivo</Ui> y <Ui>Datáfono</Ui>.
   </Step>
-  <Step title="Configurá por tipo de pedido (opcional)">
-    Algunos métodos pueden habilitarse solo para domicilio o solo para para llevar. Revisá las opciones de cada método.
-  </Step>
-  <Step title="Guardá">
-    Los cambios se guardan automáticamente al activar o desactivar cada toggle.
+  <Step title="Usa el interruptor">
+    Enciéndelo para ofrecerlo o apágalo para quitarlo. **Se guarda solo**, no hay botón de guardar.
   </Step>
 </Steps>
 
-<Callout type="tip" title="Efectivo siempre activo">
-  Si arrancás, dejá por lo menos efectivo activo. Es el método con que más clientes pagan en el primer pedido.
+Si nunca configuraste nada, tus clientes solo ven efectivo.
+
+## Agregar una cuenta para transferencias
+
+<Steps>
+  <Step title="Toca Agregar cuenta">
+    Está en la tarjeta <Ui>Cuentas para transferencias</Ui>.
+  </Step>
+  <Step title="Elige el tipo">
+    Toca <Ui>Nequi</Ui>, <Ui>Daviplata</Ui>, <Ui>BreB</Ui>, <Ui>Bancolombia</Ui> u <Ui>Otro banco</Ui>.
+  </Step>
+  <Step title="Escribe el nombre del banco (solo Otro banco)">
+    En <Ui>Nombre del banco</Ui> pon, por ejemplo, Davivienda. Ese nombre es el que verá el cliente.
+  </Step>
+  <Step title="Escribe los datos de la cuenta">
+    El campo cambia según el tipo, como se explica en la tabla de abajo. Es opcional.
+  </Step>
+  <Step title="Guarda">
+    Toca <Ui>Agregar</Ui>. La cuenta queda activa.
+  </Step>
+</Steps>
+
+| Tipo | Qué escribir | Formato aceptado |
+|---|---|---|
+| Nequi o Daviplata | <Ui>Número de celular</Ui> | 10 dígitos que empiecen por 3. Ejemplo: 3001234567 |
+| BreB | <Ui>Llave (alias o número)</Ui> | Un alias con @ (ejemplo: @turestaurante) o un número |
+| Bancolombia | <Ui>Número de cuenta</Ui> | 11 dígitos |
+| Otro banco | <Ui>Número de cuenta</Ui> | Entre 6 y 20 dígitos |
+
+Puedes poner espacios, puntos o guiones: el sistema los quita solo. Puedes agregar **todas las cuentas que quieras**, por ejemplo dos Nequi.
+
+<Callout type="tip" title="¿Y si no quieres mostrar el número?">
+  Deja el campo vacío. El cliente verá solo el nombre del método y tú le pasas los datos por WhatsApp. En la lista vas a ver "Sin número visible para el cliente".
 </Callout>
+
+## Editar, desactivar o eliminar una cuenta
+
+Cada cuenta tiene un lápiz (<Ui>Editar cuenta</Ui>), una papelera (<Ui>Eliminar cuenta</Ui>) y su interruptor. Si la desactivas, no se pierde: solo deja de aparecerle al cliente. Eliminar pide confirmación y **no se puede deshacer**.
+
+## Siempre tiene que quedar uno activo
+
+El último método activo muestra la etiqueta "mín. 1" y no se puede apagar ni eliminar. Si quieres cambiar todo, primero prende el nuevo y después apagas el viejo.
+
+## Qué ve el cliente
+
+Al confirmar su pedido, el cliente ve el título <Ui>Método de Pago</Ui> con un botón por cada método activo. Si elige una cuenta con número, aparece un aviso con el número copiado ("Número de cuenta copiado") y el recordatorio **"Envía el comprobante por WhatsApp al confirmar"**.
+
+<Callout type="info" title="Pagos distintos por tipo de entrega">
+  Puedes ofrecer medios distintos según el cliente recoja, pida domicilio o coma en el local. Se configura en <GuideLink href="/dashboard/ayuda/domicilios/metodos-de-entrega">Métodos de entrega</GuideLink>.
+</Callout>
+
+## Cobrar desde el panel
+
+Este es el listado de lo que **ofreces**. El cobro real lo registras tú en el detalle de cada pedido, con el botón <Ui>Pagar</Ui>, donde eliges el medio con el que pagó el cliente. Se puede cobrar en un solo pago o dividir la cuenta entre varias personas. Ver <GuideLink href="/dashboard/ayuda/pedidos/gestionar-un-pedido">Gestionar un pedido</GuideLink>.
 
 ## Errores comunes
 
-- **El cliente no ve el método de pago que esperaba:** verificá que esté activo y que aplique para el tipo de pedido del cliente (domicilio vs. para llevar).
-- **No aparece la pantalla de cobro:** el método de pago se elige al registrar el pago desde el panel de pedidos, no desde el menú del cliente.
+- **No veo Datáfono ni cuentas para transferencias:** tu plan no las incluye.
+- **Me dice "Debe ser un celular de 10 dígitos que empiece por 3":** en Nequi y Daviplata no pongas el 57 ni espacios raros: solo los 10 dígitos.
+- **Me dice "Esa cuenta ya está agregada":** ya cargaste esa misma cuenta.
+- **Me dice "Ingresa el nombre del banco":** en <Ui>Otro banco</Ui> el nombre es obligatorio.
+- **No puedo apagar un método:** es el único activo.
+- **El cliente no ve un método que activé:** puede estar desmarcado para el tipo de entrega que eligió. Revísalo en <Ui>Gestión de entrega → Métodos de entrega</Ui>.
+- **Veo la pantalla pero no puedo cambiar nada:** dice "Solo lectura". Tu usuario necesita el permiso de configurar métodos y cuentas.
 
-<GuideCard href="/dashboard/ayuda/cobros/contabilidad" title="Ver la contabilidad del día" summary="Revisá los ingresos y pagos de cada jornada." />
+<GuideCard href="/dashboard/ayuda/cobros/contabilidad" title="Contabilidad" summary="Mira cuánto vendiste y con qué medios te pagaron." />

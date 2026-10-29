@@ -1,27 +1,64 @@
-La contabilidad muestra un resumen de los pedidos cobrados, los ingresos por método de pago y los pedidos cancelados del período que elijas.
+La contabilidad te muestra **cuánto vendiste en el período que elijas**: ingresos, cantidad de pedidos, cuánto entró por cada medio de pago y qué productos se vendieron más. Sirve para hacer el cierre de caja y ver cómo va el negocio.
+
+<Callout type="warning" title="Cuenta todos los pedidos, no solo los cobrados">
+  La contabilidad suma **todos los pedidos creados en las fechas elegidas, estén pagados o no**. Los pedidos **cancelados no suman**: aparecen en la tabla atenuados y con el total tachado, para que sepas que existieron.
+</Callout>
 
 ## Paso a paso
 
 <Steps>
-  <Step title="Abrí Contabilidad">
-    En el menú lateral andá a <Ui>Finanzas → Contabilidad</Ui>.
+  <Step title="Abre Contabilidad">
+    En el menú lateral ve a <Ui>Finanzas → Contabilidad</Ui>.
   </Step>
-  <Step title="Elegí el período">
-    Usá los filtros de fecha: <Ui>Hoy</Ui>, <Ui>Ayer</Ui>, <Ui>Últimos 7 días</Ui>, <Ui>Este mes</Ui> o un rango personalizado.
+  <Step title="Elige el período">
+    Arriba toca <Ui>Hoy</Ui>, <Ui>Esta semana</Ui>, <Ui>Este mes</Ui> o <Ui>Personalizado</Ui>. Al entrar, viene en **Este mes**.
   </Step>
-  <Step title="Revisá el resumen">
-    Ves el total de ingresos, la cantidad de pedidos y el desglose por método de pago (efectivo, tarjeta, transferencia…).
+  <Step title="Elige las fechas (solo Personalizado)">
+    Aparecen dos calendarios: la fecha de inicio y la de fin. El día final se incluye completo.
   </Step>
-  <Step title="Explorá los pedidos">
-    Más abajo hay una tabla con cada pedido del período: número, cliente, total y método de pago. Podés tocar cualquiera para ver el detalle.
+  <Step title="Revisa el resumen">
+    Mira las tarjetas de arriba y, más abajo, el desglose por medio de pago.
+  </Step>
+  <Step title="Revisa la tabla">
+    Al final está <Ui>Detalle de pedidos</Ui>, con un renglón por pedido.
   </Step>
 </Steps>
 
-<Callout type="tip" title="Cierre de caja diario">
-  Al final del turno, filtrá por <Ui>Hoy</Ui> y revisá que el total en efectivo coincida con lo que tenés en caja. Cualquier diferencia aparece ahí.
+## Qué muestra cada parte
+
+| Parte | Qué es |
+|---|---|
+| <Ui>Ingresos</Ui> | Suma del total de los pedidos del período |
+| <Ui>Pedidos</Ui> | Cuántos pedidos hubo y el promedio por pedido |
+| <Ui>Ticket promedio</Ui> | Lo que gasta en promedio cada cliente |
+| Ventas brutas, descuentos y netas | Solo aparece si hubo promociones en el período |
+| <Ui>Rendimiento de promociones</Ui> | Solo aparece si hubo promociones: cuántos pedidos trajo cada una y cuánto costó |
+| Tarjetas por medio de pago | Cuánto dinero y cuántos pedidos por Efectivo, Nequi, etc. |
+| <Ui>Unidades vendidas por producto</Ui> | Ranking de los productos más vendidos. Los regalos de promociones no cuentan como ventas |
+| <Ui>Detalle de pedidos</Ui> | Fecha, pedido, cliente, estado, método, cantidad de items y total, con el total general al final |
+
+### Cómo se reparte el dinero por medio de pago
+
+- Cuando registras un pago en el pedido, esa plata se anota en el medio con que pagó el cliente.
+- Si el pedido sigue sin cobrar, se anota en el medio que **eligió el cliente** al pedir.
+- En una cuenta dividida, cada parte suma en su propio medio.
+
+## Cierre de caja
+
+<Callout type="tip" title="Cierre del día">
+  Al terminar el turno toca <Ui>Hoy</Ui> y comparas el valor de la tarjeta de <Ui>Efectivo</Ui> con la plata que tienes en caja. Antes de comparar, asegúrate de haber registrado los pagos con el botón <Ui>Pagar</Ui> en cada pedido.
 </Callout>
+
+## Exportar a Excel
+
+Si tu usuario tiene el permiso, arriba de la tabla ves el botón <Ui>Exportar Excel</Ui>. Descarga un archivo con los pedidos del período: fecha, número, cliente, teléfono, método de pago, productos, descuentos, domicilio, promociones y total.
 
 ## Errores comunes
 
-- **Un pedido no aparece en la contabilidad:** solo aparecen los pedidos que tienen el pago registrado. Si el pedido está entregado pero sin pago, registralo desde el panel de pedidos tocando <Ui>Pagar</Ui>.
-- **El total no coincide con lo esperado:** buscá pedidos cancelados en el período — esos no suman al total pero sí aparecen en la tabla.
+- **Un pedido no aparece:** revisa que su fecha de creación caiga en el período elegido. En <Ui>Esta semana</Ui>, la semana empieza el lunes.
+- **El total no coincide con la caja:** puede haber pedidos entregados que todavía no marcaste como pagados. Esos suman en el total aunque la plata no haya entrado. Revisa que cada pedido cobrado tenga su pago registrado.
+- **No veo el botón Exportar Excel:** tu usuario no tiene ese permiso, o no hay pedidos en el período. Dice "Sin pedidos en el rango seleccionado."
+- **No me aparece Contabilidad en el menú:** tu usuario no tiene permiso para verla. Pídeselo al administrador en <GuideLink href="/dashboard/ayuda/configuracion/equipo-y-permisos">Equipo y permisos</GuideLink>.
+- **Las filas no se abren:** la tabla es solo de consulta. Para ver o cambiar un pedido, ve a <Ui>Gestión de pedidos → Pedidos</Ui>.
+
+<GuideCard href="/dashboard/ayuda/cobros/metodos-de-pago" title="Métodos de pago" summary="Elige con qué medios te pueden pagar." />

@@ -1,0 +1,66 @@
+La estación de impresión es una pantalla del panel que se deja **abierta en la computadora de la impresora**. Ella recibe cada comanda que alguien manda a imprimir y la saca en papel. Sin la estación abierta, el botón <Ui>Imprimir</Ui> de los pedidos queda esperando y la comanda no sale.
+
+## ¿Te conviene?
+
+Solo si imprimes comandas. Es la pieza que hace posible imprimir desde un celular o una tablet: ellos mandan el pedido y la computadora de la impresora lo imprime. **Incluso si tocas Imprimir desde esa misma computadora, la comanda pasa por la estación.**
+
+## Antes de empezar
+
+- Tener configurada la impresora en <Ui>Mi restaurante → Impresoras</Ui> (mira la guía de abajo).
+- Tener **QZ Tray** abierto en esa computadora.
+- Que tu usuario tenga el permiso para abrir la estación de impresión. Si no ves <Ui>Estación de impresión</Ui> en el menú, pídele al administrador que te lo active en <Ui>Mi restaurante → Equipo</Ui>.
+
+## Abrir la estación
+
+<Steps>
+  <Step title="Entra al panel desde la computadora de la impresora">
+    Usa el navegador de esa computadora e inicia sesión con un usuario que tenga permiso.
+  </Step>
+  <Step title="Abre la estación">
+    En el menú lateral ve a <Ui>Mi restaurante → Estación de impresión</Ui>. También puedes llegar con el botón <Ui>Abrir estación de impresión</Ui> de la pantalla de Impresoras.
+  </Step>
+  <Step title="Revisa el estado">
+    Tiene que aparecer el tilde verde con el mensaje <Ui>Escuchando pedidos para imprimir</Ui> y, abajo, el nombre de tu impresora. Si dice otra cosa, mira la tabla de más abajo.
+  </Step>
+  <Step title="Deja la pestaña abierta">
+    No la cierres ni cierres sesión. Puedes minimizar el navegador, pero la pestaña tiene que seguir abierta y la computadora no puede suspenderse.
+  </Step>
+</Steps>
+
+## Qué te dice la pantalla
+
+| Mensaje | Qué significa | Qué hacer |
+| --- | --- | --- |
+| <Ui>Escuchando pedidos para imprimir</Ui> | Todo listo | Nada, déjala abierta |
+| <Ui>QZ Tray no está abierto en este equipo</Ui> | No hay conexión con la impresora | Abre QZ Tray. Las comandas quedan en cola y salen solas cuando se conecta |
+| <Ui>No hay impresora configurada</Ui> | Falta elegir la impresora | Ve a <Ui>Mi restaurante → Impresoras</Ui> y guárdala |
+| <Ui>Iniciando...</Ui> | Está cargando | Espera unos segundos |
+
+Además verás:
+
+- **en cola:** cuántas comandas están esperando.
+- **impresos:** cuántas imprimió desde que abriste esta pantalla (se reinicia si recargas).
+- **Últimos trabajos:** las últimas comandas con su hora, quién las pidió y su estado: <Ui>En cola</Ui>, <Ui>Imprimiendo</Ui>, <Ui>Impreso</Ui>, <Ui>Error</Ui> o <Ui>Reemplazado</Ui>.
+- Un cuadro rojo con el motivo si alguna comanda falló.
+
+## Qué pasa después
+
+- Cuando alguien toca <Ui>Imprimir</Ui> en un pedido, el botón muestra <Ui>En cola</Ui>, luego <Ui>Imprimiendo</Ui>, y al final el pedido muestra a qué hora se imprimió. Si se imprime otra vez, el botón dice <Ui>Reimprimir</Ui>.
+- La estación avisa cada 30 segundos que está activa. Si pasan unos 2 minutos sin ese aviso, los pedidos muestran que **"La estación de impresión no está activa"**.
+- La pantalla trata de mantener la computadora despierta mientras está abierta.
+- <Ui>Reemplazado</Ui> significa que alguien pidió imprimir el mismo pedido otra vez y se imprimió solo la última orden, para que no salgan comandas repetidas.
+- Si abres la estación en dos computadoras, cada comanda la imprime solo una de ellas.
+
+## Que quede siempre activa (opcional)
+
+Al final de la pantalla hay un recuadro **Para que quede siempre activa**. Explica cómo crear un acceso directo de Chrome en modo pantalla completa dentro de la carpeta de inicio de Windows, para que la estación se abra sola cada vez que se prende la computadora. Es un paso técnico: si no te animas, pídele ayuda a quien te instaló el computador.
+
+## Errores comunes
+
+- **Imprimir queda en "En cola" y no sale:** la estación no está abierta, o QZ Tray está cerrado. Abre la estación y revisa el mensaje de estado.
+- **Se cerró la pestaña o la computadora se suspendió:** la estación deja de imprimir. Ábrela de nuevo. Lo que quedó en cola se imprime al volver.
+- **Cambié la impresora y sigue usando la anterior:** recarga la página de la estación.
+- **Un empleado de cocina toca Imprimir y no pasa nada:** puede que la estación esté apagada. Él no necesita acceso a la estación: alguien con permiso tiene que dejarla abierta.
+
+<GuideCard href="/dashboard/ayuda/configuracion/impresoras" title="Configurar impresoras" summary="Instala QZ Tray y elige tu impresora antes de abrir la estación." />
+<GuideCard href="/dashboard/ayuda/problemas-frecuentes/no-imprime" title="No imprime — solución rápida" summary="Qué revisar paso a paso si la comanda no sale." />

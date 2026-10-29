@@ -172,7 +172,7 @@ export default function DashboardHomePage() {
               Ver mi carta pública →
             </div>
             <p style={{ fontFamily: sm, fontSize: 12, color: '#b8aaa0', margin: 0 }}>
-              antojo.app/{slug}
+              pidetuantojo.com/{slug}
             </p>
           </a>
         )}

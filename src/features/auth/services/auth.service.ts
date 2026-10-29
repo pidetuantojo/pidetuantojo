@@ -34,7 +34,7 @@ export const authService = {
           if (info.status === 'suspended') {
             await firebaseSignOut(auth);
             throw new Error(
-              'Tu cuenta está suspendida por falta de pago. Contactá a soporte para reactivarla.',
+              'Tu cuenta está suspendida por falta de pago. Contacta a soporte para reactivarla.',
             );
           }
         }

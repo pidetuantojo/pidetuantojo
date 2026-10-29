@@ -100,5 +100,8 @@ export function getPaymentMethodsForDelivery(
   const allowed = methodConfig?.allowedPaymentMethodIds;
   if (!allowed || allowed.length === 0) return active;
 
-  return active.filter((m) => allowed.includes(m.id));
+  // Si los permitidos ya no están activos (se desactivaron después), mostrar todos los activos
+  // antes que dejar al cliente sin ninguna forma de pago.
+  const filtered = active.filter((m) => allowed.includes(m.id));
+  return filtered.length > 0 ? filtered : active;
 }

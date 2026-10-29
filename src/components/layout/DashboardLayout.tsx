@@ -168,7 +168,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 year: 'numeric',
               })}
             </strong>{' '}
-            y el período de gracia ya expiró. Contactá a soporte para reactivar tu cuenta.
+            y el período de gracia ya expiró. Contacta a soporte para reactivar tu cuenta.
           </p>
           <button
             type="button"
@@ -343,12 +343,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 })}
                 .
               </strong>{' '}
-              Tenés{' '}
+              Tienes{' '}
               <strong>
                 {subscriptionInfo.graceDaysLeft}{' '}
                 {subscriptionInfo.graceDaysLeft === 1 ? 'día hábil' : 'días hábiles'}
               </strong>{' '}
-              para regularizar el pago. Contactá a soporte para renovar.
+              para regularizar el pago. Contacta a soporte para renovar.
             </span>
           </div>
         )}

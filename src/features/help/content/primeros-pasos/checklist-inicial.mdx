@@ -1,34 +1,56 @@
-Completá estos pasos antes de compartir tu menú con los clientes. Toca cada ítem cuando lo termines — el progreso se guarda en este navegador.
+Esta lista te lleva, en orden, desde el panel vacío hasta tu primer pedido real. Toca cada ítem cuando lo termines: el progreso **se guarda solo en este navegador** (si abres el panel desde otro celular o computador, vas a verla vacía).
 
 <Checklist id="onboarding" items={[
-  "Subí el logo y completá los datos de tu restaurante (nombre, descripción, colores)",
-  "Configurá tus horarios de atención en Configuración",
-  "Creá al menos una categoría en el menú",
-  "Agregá tus productos con foto, precio y descripción",
-  "Definí los métodos de pago que aceptás",
-  "Abrí el link de tu menú y hacé un pedido de prueba",
-  "Compartí el link con tu primer cliente"
+  "Completa los datos de tu restaurante: nombre, teléfono, tipo de cocina, logo, departamento y ciudad",
+  "Elige los colores y el diseño de tu menú",
+  "Define tu horario de atención",
+  "Crea al menos una categoría",
+  "Agrega tus productos con foto, precio y descripción",
+  "Revisa tus métodos de pago (al menos uno tiene que quedar activo)",
+  "Revisa cómo entregas: recoger en el local, domicilio o comer en el local",
+  "Abre el link de tu menú y haz un pedido de prueba",
+  "Comparte el link con tu primer cliente"
 ]} />
 
 ## Dónde está cada cosa
 
 <Steps>
-  <Step title="Datos del restaurante">
-    Andá a <Ui>Mi restaurante → Configuración</Ui>. Ahí ponés el nombre, logo, descripción, colores y horarios. Tus clientes ven todo esto cuando abren tu menú.
+  <Step title="Carga los datos del restaurante">
+    Ve a <Ui>Mi restaurante → Configuración</Ui>. Las secciones se abren tocándolas: <Ui>Información básica</Ui>, <Ui>Branding</Ui> (logo y portada), <Ui>Diseño del menú</Ui> (colores), <Ui>Ubicación</Ui>, <Ui>Redes sociales</Ui> y <Ui>Horario de atención</Ui>. Los campos con asterisco (*) son obligatorios: el logo, el tipo de cocina, el departamento y la ciudad. Tus clientes ven todo esto cuando abren el menú.
   </Step>
-  <Step title="Categorías y productos">
-    En <Ui>Productos → Categorías</Ui> creás las secciones (Entradas, Platos, Bebidas…). Después en <Ui>Productos → Productos</Ui> agregás cada ítem con foto, precio y descripción.
+  <Step title="Define el horario">
+    En <Ui>Horario de atención</Ui>, activa los días que abres y pon la hora de apertura y de cierre. El menú muestra solo si estás abierto o cerrado según ese horario. **Fuera de horario tus clientes pueden ver el menú, pero no pueden pedir.**
   </Step>
-  <Step title="Métodos de pago">
-    En <Ui>Finanzas → Métodos de pago</Ui> activás efectivo, tarjeta, transferencia o los que uses. El cliente los ve al hacer el pedido.
+  <Step title="Arma el menú">
+    Primero crea las secciones en <Ui>Productos → Categorías</Ui> (Entradas, Platos, Bebidas…). Después, en <Ui>Productos → Productos</Ui>, agrega cada ítem con foto, precio y descripción.
   </Step>
-  <Step title="Probá tu menú">
-    Andá a <Ui>Inicio</Ui> y tocá el link de tu menú público. Abrilo en modo incógnito para verlo exactamente como lo ve un cliente nuevo.
+  <Step title="Revisa los métodos de pago">
+    En <Ui>Finanzas → Métodos de pago</Ui> activa los que aceptas. Siempre tiene que quedar **al menos uno activo**. El cliente ve esos métodos cuando confirma su pedido.
+  </Step>
+  <Step title="Revisa las formas de entrega">
+    En <Ui>Gestión de entrega → Métodos de entrega</Ui> eliges cuáles ofreces. Si haces domicilios, suma a tus repartidores en <Ui>Gestión de entrega → Domiciliarios</Ui>.
+  </Step>
+  <Step title="Prueba tu menú">
+    En <Ui>Mi restaurante → Configuración</Ui>, arriba, está el <Ui>Link de tu menú público</Ui>: toca <Ui>Copiar</Ui> o ábrelo. También lo abres desde <Ui>Inicio</Ui> con <Ui>Ver mi carta pública →</Ui>. Si lo abres en una ventana de incógnito, lo ves igual que un cliente nuevo.
+  </Step>
+  <Step title="Haz un pedido de prueba">
+    Pide algo desde tu propio menú y ve a <Ui>Gestión de pedidos → Pedidos</Ui>: tiene que aparecer. Cuando termines de probar, abre el pedido y toca <Ui>Cancelar</Ui> para que no quede mezclado con los reales.
   </Step>
 </Steps>
 
-<Callout type="tip" title="Tip">
-  No tenés que tener todo perfecto para empezar. Con una categoría, tres productos y el método de pago en efectivo ya podés recibir tu primer pedido.
+<Callout type="tip" title="No hace falta tener todo perfecto">
+  Con tus datos básicos, un horario, una categoría, tres productos y efectivo activo ya puedes recibir tu primer pedido. El resto lo vas completando.
+</Callout>
+
+## Opcional, para más adelante
+
+- **Imprimir comandas en cocina:** necesitas una impresora térmica y dejar una computadora con la estación de impresión abierta. Está en la guía de impresoras (abajo).
+- **Avisos automáticos por WhatsApp:** conectar WhatsApp es opcional. Sin conectarlo, igual puedes escribirle al cliente desde cada pedido.
+- **Sumar a tu equipo:** en <Ui>Mi restaurante → Equipo</Ui> creas usuarios con permisos limitados (caja, cocina, meseros).
+
+<Callout type="info" title="Algunas opciones dependen de tu plan">
+  Impresión, mesas, zonas de domicilio y promociones dependen de lo que incluya tu plan. Si no ves una opción en el menú lateral, puede ser por eso o porque tu usuario no tiene el permiso.
 </Callout>
 
 <GuideCard href="/dashboard/ayuda/pedidos/gestionar-un-pedido" title="Gestiona un pedido de principio a fin" summary="Cuando llegue tu primer pedido, esta guía te explica qué hacer." />
+<GuideCard href="/dashboard/ayuda/configuracion/impresoras" title="Configurar impresoras" summary="Para imprimir las comandas en cocina." />

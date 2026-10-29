@@ -1,0 +1,69 @@
+Las plantillas son los textos que recibe el cliente por WhatsApp en cada momento del pedido. Vienen escritas por defecto, y puedes adaptarlas al tono de tu restaurante.
+
+<Callout type="info" title="Solo se usan si WhatsApp está conectado">
+  Las plantillas se envían únicamente si conectaste WhatsApp **y** encendiste <Ui>Mensajes automáticos</Ui>. Si no, puedes editarlas igual, pero no se mandan.
+</Callout>
+
+<GuideCard href="/dashboard/ayuda/configuracion/whatsapp" title="Conectar WhatsApp" summary="Primero conecta tu número y activa los mensajes automáticos." />
+
+## Qué mensaje se envía y cuándo
+
+| Plantilla | Se envía cuando… |
+|---|---|
+| <Ui>Pedido nuevo</Ui> | El cliente confirma el pedido en tu menú |
+| <Ui>Pedido confirmado</Ui> | Mueves el pedido al estado "confirmado" |
+| <Ui>Pedido en camino</Ui> | Mueves el pedido a un estado llamado **En camino**. Este estado no viene por defecto: créalo en <Ui>Estados</Ui> con ese nombre exacto |
+| <Ui>Pedido entregado</Ui> | Mueves el pedido a "entregado" |
+| <Ui>Pedido pagado</Ui> | Marcas el pedido como pagado |
+| <Ui>Estado actualizado (otros)</Ui> | Mueves el pedido a un **estado que creaste tú** (por ejemplo "En preparación") |
+
+Los pedidos de mesa y los cancelados nunca envían mensaje.
+
+## Editar una plantilla
+
+<Steps>
+  <Step title="Abre las plantillas">
+    En el menú lateral ve a <Ui>Notificaciones → Plantillas</Ui>.
+  </Step>
+  <Step title="Toca Editar en el mensaje que quieres cambiar">
+    Se abre el editor con el texto actual.
+  </Step>
+  <Step title="Escribe tu mensaje">
+    Usa las variables de la lista para meter los datos del pedido (ver abajo).
+  </Step>
+  <Step title="Revisa la Vista previa">
+    La pestaña <Ui>Vista previa</Ui> muestra cómo lo va a ver el cliente, con datos de ejemplo.
+  </Step>
+  <Step title="Toca Guardar">
+    El cambio se aplica desde el próximo mensaje.
+  </Step>
+</Steps>
+
+Si no te gustó cómo quedó, toca <Ui>Restaurar por defecto</Ui> para volver al texto original y después <Ui>Guardar</Ui>.
+
+## Variables
+
+Las variables son palabras entre llaves dobles que se reemplazan por los datos reales de cada pedido. Escríbelas **exactamente** así, con las llaves:
+
+| Variable | Se reemplaza por | Ejemplo |
+|---|---|---|
+| `{{nombreCliente}}` | Nombre del cliente | Juan García |
+| `{{numeroPedido}}` | Número del pedido | 1042 |
+| `{{total}}` | Total a pagar | $45.000 |
+| `{{metodoPago}}` | Método de pago elegido | Efectivo |
+| `{{productos}}` | Lista de productos con cantidades | 2x Hamburguesa clásica |
+| `{{estadoPedido}}` | Nombre del estado (útil en "Estado actualizado") | En preparación |
+
+**Ejemplo:**
+
+```
+Hola {{nombreCliente}}! Tu pedido #{{numeroPedido}} ya está listo 🍔
+Total: {{total}}
+```
+
+## Consejos
+
+- **Para dar formato usa los símbolos de WhatsApp:** `*texto*` sale en **negrita** y `_texto_` en _cursiva_.
+- **Mensajes cortos.** El cliente los lee en el celular: con el número de pedido y lo importante alcanza.
+- **No borres `{{numeroPedido}}`.** Es lo que le permite al cliente saber de qué pedido le hablas, sobre todo si pide seguido.
+- **Una variable mal escrita sale tal cual.** Si pones `{{nombre}}` en vez de `{{nombreCliente}}`, el cliente va a ver literalmente `{{nombre}}`. Revisa siempre la <Ui>Vista previa</Ui>.

@@ -1,38 +1,109 @@
-Podés agregar empleados al panel para que atiendan pedidos sin tener acceso a la configuración o a las finanzas. Cada empleado tiene su propio usuario y contraseña.
+En **Equipo** creas un usuario para cada persona que trabaja contigo (cajero, cocina, mesero…) y decides **exactamente qué puede ver y hacer en el panel**. Así cada uno hace lo suyo sin tocar cosas delicadas como precios, finanzas o configuración.
 
-<Callout type="info" title="Quién puede hacerlo">
-  Solo el administrador puede agregar empleados y editar sus permisos.
+<Callout type="info" title="Quién puede entrar aquí">
+  El administrador siempre tiene acceso a todo lo que incluye tu plan. Otros usuarios ven <Ui>Mi restaurante → Equipo</Ui> solo si tienen permiso para ver usuarios, y cada acción (crear, editar, cambiar contraseña, eliminar) es un permiso aparte.
 </Callout>
 
-## Agregar un empleado
+## Cómo funciona
+
+- Cada persona tiene su **propio correo y contraseña**. No hay invitación por correo: tú creas el usuario y le pasas los datos.
+- Los permisos que puedes dar dependen de **tu plan** y de **los que tú mismo tienes**. No puedes darle a otro algo que tú no tienes.
+- Tu plan puede limitar la cantidad de usuarios. Si lo alcanzas, el botón se bloquea y dice "Límite de N usuarios alcanzado".
+- El menú lateral de cada persona muestra **solo las pantallas que puede usar**.
+
+## Agregar un usuario
 
 <Steps>
-  <Step title="Abrí Equipo">
-    En el menú lateral andá a <Ui>Mi restaurante → Equipo</Ui>.
+  <Step title="Abre Equipo">
+    En el menú lateral ve a <Ui>Mi restaurante → Equipo</Ui>. Ves la lista de <Ui>Usuarios del restaurante</Ui>.
   </Step>
-  <Step title="Invitá a un nuevo miembro">
-    Tocá <Ui>+ Invitar empleado</Ui> e ingresá el correo electrónico del empleado.
+  <Step title="Toca Agregar usuario">
+    Es el botón <Ui>+ Agregar usuario</Ui>, debajo de la lista.
   </Step>
-  <Step title="Asigná los permisos">
-    Elegí qué puede ver y hacer el empleado. Los permisos más comunes son:
-    - **Ver pedidos**: puede ver y gestionar el tablero de pedidos
-    - **Imprimir**: puede imprimir comandas
-    - **Ver contabilidad**: puede ver los ingresos del día
+  <Step title="Completa sus datos">
+    Escribe <Ui>Nombre completo</Ui>, <Ui>Correo</Ui> y <Ui>Contraseña</Ui> (mínimo 6 caracteres). Con ese correo y esa contraseña va a entrar al panel.
   </Step>
-  <Step title="Enviá la invitación">
-    Tocá <Ui>Enviar invitación</Ui>. El empleado recibe un email para crear su contraseña y ya puede entrar al panel.
+  <Step title="Elige una plantilla">
+    En <Ui>Qué puede hacer</Ui>, con <Ui>Permisos específicos</Ui> marcado, toca una de las <Ui>Plantillas rápidas</Ui>: <Ui>Cajero</Ui>, <Ui>Cocina</Ui>, <Ui>Mesero</Ui> o <Ui>Domicilios</Ui>. Las plantillas marcan los permisos típicos de cada puesto.
+  </Step>
+  <Step title="Ajusta los permisos">
+    Marca o desmarca lo que haga falta. Puedes usar <Ui>Seleccionar todo</Ui> y <Ui>Quitar todo</Ui>.
+  </Step>
+  <Step title="Crea el usuario">
+    Toca <Ui>Crear usuario</Ui> y avísale a la persona su correo y contraseña.
   </Step>
 </Steps>
 
-## Editar o quitar un empleado
+Tienes que elegir al menos un permiso (o <Ui>Acceso completo</Ui>). Si no, te avisa.
 
-Desde la lista de <Ui>Equipo</Ui> podés tocar cualquier empleado para editar sus permisos o eliminarlo del restaurante. Al eliminar un empleado, pierde acceso de inmediato.
+### Acceso completo o permisos específicos
 
-<Callout type="tip" title="Empleado en múltiples restaurantes">
-  Si tenés más de un restaurante, cada uno tiene su propia lista de equipo. Un empleado puede estar en varios restaurantes con permisos distintos.
+| Opción | Qué significa |
+|---|---|
+| <Ui>Acceso completo</Ui> | Tiene todos los permisos de tu plan. Si el plan cambia, su acceso se actualiza solo. Esta opción solo aparece si tú puedes darla |
+| <Ui>Permisos específicos</Ui> | Eliges uno por uno, o con una plantilla |
+
+## Qué incluye cada plantilla
+
+| Plantilla | Para quién | Puede hacer |
+|---|---|---|
+| <Ui>Cajero</Ui> | Caja | Ver, crear y editar pedidos, cambiar estados, cobrar, poner el valor del domicilio, asignar domiciliarios, imprimir, ver contabilidad y marcar productos agotados |
+| <Ui>Cocina</Ui> | Cocina | Ver pedidos, cambiar su estado, imprimir y marcar productos agotados |
+| <Ui>Mesero</Ui> | Salón | Ver y crear pedidos, cambiar su estado, dejar notas internas e imprimir |
+| <Ui>Domicilios</Ui> | Despacho | Ver pedidos, cambiar su estado, asignar domiciliarios, poner el valor del domicilio y ver la lista de domiciliarios |
+
+Si tu plan no incluye algo (por ejemplo impresión), esa parte de la plantilla se omite sola.
+
+## Qué permisos existen
+
+Los permisos están agrupados por pantalla. Los de "Ver" abren la pantalla; los demás permiten acciones dentro de ella.
+
+| Pantalla | Qué se puede permitir |
+|---|---|
+| Inicio | Ver la pantalla de inicio |
+| Pedidos | Ver pedidos, crear pedido manual, editar pedidos, cambiar estado, editar valor de domicilio, marcar pagado o pendiente, nota interna, asignar domiciliario, imprimir comanda |
+| Estados de pedido | Ver, crear, editar y reordenar, eliminar |
+| Productos | Ver, crear, editar, marcar disponible o agotado, eliminar |
+| Categorías | Ver, crear, editar, eliminar |
+| Adicionales | Ver, crear, editar, eliminar |
+| Promociones | Ver, y crear, editar o pausar (incluye fidelidad) |
+| Contabilidad | Ver, y exportar a Excel |
+| Métodos de pago | Ver, y configurar métodos y cuentas |
+| Métodos de entrega | Ver, activar métodos y programación, y crear, editar o eliminar mesas |
+| Domiciliarios | Ver, crear, editar y activar, eliminar |
+| Zonas de domicilio | Ver, crear, editar y activar, eliminar |
+| Configuración del restaurante | Ver, y editar por partes: información básica, marca y diseño, ubicación, redes sociales, horario, modo de domicilios |
+| Impresoras | Ver y configurar la impresora, y abrir la estación de impresión |
+| Equipo | Ver, crear, editar usuarios y permisos, cambiar contraseñas, eliminar |
+
+Algunos permisos **piden otros**. Por ejemplo, para editar productos hace falta poder ver productos y categorías. El panel marca los necesarios solo y te muestra "Requiere:" con la lista. Los que tu plan no incluye aparecen bloqueados con el aviso "No lo puedes otorgar".
+
+<Callout type="warning" title="Cuidado con los permisos delicados">
+  Piensa dos veces antes de dar <Ui>Contabilidad</Ui>, <Ui>Métodos de pago</Ui>, <Ui>Equipo</Ui> o <Ui>Eliminar</Ui>. Una buena regla: dale a cada persona solo lo que necesita para su trabajo diario.
+</Callout>
+
+## Editar, desactivar o eliminar un usuario
+
+Toca a la persona en la lista. En su pantalla vas a ver:
+
+- <Ui>Datos del usuario</Ui>: cambia nombre o correo y toca <Ui>Guardar datos</Ui>.
+- <Ui>Qué puede hacer</Ui>: cambia sus permisos y toca <Ui>Guardar permisos</Ui>.
+- <Ui>Cambiar contraseña</Ui>: escribe la nueva dos veces y toca <Ui>Cambiar contraseña</Ui>. Sirve cuando alguien la olvida.
+- <Ui>Estado</Ui>: con <Ui>Desactivar</Ui> la persona deja de poder iniciar sesión, pero no pierdes su usuario. <Ui>Activar</Ui> la deja entrar de nuevo.
+- <Ui>Zona de peligro</Ui>: <Ui>Eliminar</Ui> borra el usuario. Te pregunta "¿Eliminar a…?" y **no se puede deshacer**. Confirmas con <Ui>Sí, eliminar</Ui>.
+
+<Callout type="tip" title="Si alguien se va">
+  Desactívalo apenas termine su trabajo, así no entra más. Si más adelante vuelve, lo activas. Elimínalo solo si estás seguro.
 </Callout>
 
 ## Errores comunes
 
-- **El empleado no recibió el email:** revisá que la dirección sea correcta y pedile que revise su carpeta de spam.
-- **El empleado no ve ciertos botones:** sus permisos no lo permiten. Editá sus permisos desde <Ui>Equipo</Ui>.
+- **No veo el botón Agregar usuario:** tu usuario no tiene permiso para crear, o está bloqueado por el límite del plan.
+- **Me dice "Nombre y correo son obligatorios" o "La contraseña debe tener al menos 6 caracteres":** completa esos campos.
+- **Me dice "Elige al menos un permiso o Acceso completo":** el usuario quedaría sin acceso a nada. Marca al menos uno.
+- **Un empleado no ve un botón o una pantalla:** no tiene el permiso. Edita su usuario y revisa <Ui>Qué puede hacer</Ui>.
+- **Un permiso aparece bloqueado:** no está en tu plan o tú no lo tienes.
+- **Veo a un usuario pero no puedo editarlo:** tiene permisos que tú no tienes, así que solo puedes verlo. Lo edita alguien con más permisos.
+- **Un empleado dice que no puede entrar:** puede estar <Ui>Inactivo</Ui> (aparece una etiqueta en la lista). Actívalo, o cámbiale la contraseña.
+
+<GuideCard href="/dashboard/ayuda/configuracion/datos-del-restaurante" title="Datos del restaurante" summary="Nombre, logo, colores y horarios de tu menú." />

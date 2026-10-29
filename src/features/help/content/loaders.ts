@@ -7,20 +7,27 @@ export const GUIDE_CONTENT: Record<string, () => Promise<{ default: MDXContent }
   'primeros-pasos/recorrido-del-panel': () => import('./primeros-pasos/recorrido-del-panel.mdx'),
   // Pedidos
   'pedidos/gestionar-un-pedido': () => import('./pedidos/gestionar-un-pedido.mdx'),
+  'pedidos/estados-de-pedido': () => import('./pedidos/estados-de-pedido.mdx'),
   // Menú
   'menu/agregar-categorias': () => import('./menu/agregar-categorias.mdx'),
   'menu/agregar-productos': () => import('./menu/agregar-productos.mdx'),
   'menu/ver-menu-como-cliente': () => import('./menu/ver-menu-como-cliente.mdx'),
+  'menu/adicionales': () => import('./menu/adicionales.mdx'),
+  'menu/promociones': () => import('./menu/promociones.mdx'),
+  'menu/cupones-y-fidelizacion': () => import('./menu/cupones-y-fidelizacion.mdx'),
   // Domicilios
   'domicilios/zonas-y-tarifas': () => import('./domicilios/zonas-y-tarifas.mdx'),
   'domicilios/domiciliarios': () => import('./domicilios/domiciliarios.mdx'),
+  'domicilios/metodos-de-entrega': () => import('./domicilios/metodos-de-entrega.mdx'),
   // Cobros
   'cobros/metodos-de-pago': () => import('./cobros/metodos-de-pago.mdx'),
   'cobros/contabilidad': () => import('./cobros/contabilidad.mdx'),
   // Configuración
   'configuracion/datos-del-restaurante': () => import('./configuracion/datos-del-restaurante.mdx'),
   'configuracion/impresoras': () => import('./configuracion/impresoras.mdx'),
+  'configuracion/estacion-de-impresion': () => import('./configuracion/estacion-de-impresion.mdx'),
   'configuracion/whatsapp': () => import('./configuracion/whatsapp.mdx'),
+  'configuracion/plantillas-whatsapp': () => import('./configuracion/plantillas-whatsapp.mdx'),
   'configuracion/equipo-y-permisos': () => import('./configuracion/equipo-y-permisos.mdx'),
   // Problemas frecuentes
   'problemas-frecuentes/no-imprime': () => import('./problemas-frecuentes/no-imprime.mdx'),

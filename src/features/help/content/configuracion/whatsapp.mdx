@@ -1,39 +1,89 @@
-Conectar WhatsApp te permite avisar a los clientes el estado de su pedido y enviarle la dirección al domiciliario, todo con un toque desde el panel.
+Conectar WhatsApp es **opcional**. Sirve para que tu restaurante le escriba solo al cliente: le confirma el pedido y le avisa cada vez que cambia de estado, desde tu propio número.
 
-<Callout type="warning" title="Una sesión a la vez">
-  WhatsApp solo puede estar conectado en un dispositivo a la vez. Si escaneás desde el panel, se desconecta el celular donde tenías WhatsApp Web abierto.
+Si no lo conectas, todo sigue funcionando: los clientes te mandan el pedido a tu chat de WhatsApp como siempre.
+
+## ¿Te conviene conectarlo?
+
+Lo que cambia es **cómo te llega el pedido** y **qué recibe el cliente**:
+
+| | Sin conectar (por defecto) | Conectado + mensajes automáticos |
+|---|---|---|
+| Cuando el cliente confirma el pedido | Se le abre su WhatsApp con el pedido ya escrito y **él te lo envía** a tu número | Ve una pantalla de "pedido recibido" y **le llega un mensaje automático** desde tu número |
+| Dónde te enteras del pedido | En tu chat de WhatsApp **y** en <Ui>Pedidos</Ui> | **Solo en <Ui>Pedidos</Ui>** (ya no te llega como chat) |
+| Avisos al cliente cuando cambia el estado | No se envían | Se envían solos (confirmado, en camino, entregado, pagado…) |
+| Mensaje al domiciliario | Funciona igual | Funciona igual |
+
+<Callout type="warning" title="Si lo activas, mira el panel de Pedidos">
+  Con los mensajes automáticos encendidos, el cliente **ya no te escribe** al chat. Tienes que tener el panel de <Ui>Pedidos</Ui> abierto (con sonido) para enterarte de cada pedido nuevo.
 </Callout>
+
+**Te conviene** si ya trabajas con el panel de Pedidos abierto todo el día y quieres que el cliente reciba confirmación y seguimiento sin que nadie tenga que escribirle.
+
+**Mejor no** si todavía recibes y respondes los pedidos desde el chat de WhatsApp del celular.
 
 ## Conectar WhatsApp
 
 <Steps>
-  <Step title="Abrí la configuración de WhatsApp">
-    En el menú lateral andá a <Ui>Notificaciones → Configuración WhatsApp</Ui>.
+  <Step title="Abre la configuración de WhatsApp">
+    En el menú lateral ve a <Ui>Notificaciones → Configuración WhatsApp</Ui>.
   </Step>
-  <Step title="Iniciá la sesión">
-    Tocá <Ui>Conectar WhatsApp</Ui>. Aparece un código QR.
+  <Step title="Toca Conectar WhatsApp">
+    Aparece un código QR en la pantalla. Se renueva solo cada pocos segundos, así que no hace falta apurarse.
   </Step>
-  <Step title="Escaneá el QR desde tu celular">
-    En tu celular abrí WhatsApp → <Ui>Dispositivos vinculados</Ui> → <Ui>Vincular dispositivo</Ui> y apuntá la cámara al código QR de la pantalla.
+  <Step title="Escanea el QR con el celular del restaurante">
+    En el celular abre WhatsApp → <Ui>Dispositivos vinculados</Ui> → <Ui>Vincular dispositivo</Ui> y apunta la cámara al código.
   </Step>
-  <Step title="Listo">
-    En unos segundos el panel confirma que WhatsApp está conectado. Ya podés enviar notificaciones a clientes desde los pedidos.
+  <Step title="Espera la confirmación">
+    En unos segundos el estado cambia a <Ui>Conectado</Ui> y ves el número vinculado.
+  </Step>
+  <Step title="Enciende Mensajes automáticos">
+    Activa el interruptor <Ui>Mensajes automáticos</Ui>. **Mientras esté apagado no se envía ningún mensaje**, aunque WhatsApp figure como conectado.
   </Step>
 </Steps>
 
-## Mantener la conexión activa
-
-La sesión de WhatsApp dura mientras el celular tenga internet. Si se cae la conexión:
-- El panel muestra una alerta de "WhatsApp desconectado"
-- Volvé a <Ui>Notificaciones → Configuración WhatsApp</Ui> y escaneá el QR nuevamente
-
-<Callout type="tip" title="Plantillas de mensajes">
-  Podés personalizar los mensajes que se envían a los clientes en <Ui>Notificaciones → Plantillas</Ui>. Cambiá el texto, el tono o los emojis.
+<Callout type="info" title="Tu celular sigue funcionando normal">
+  El panel se vincula como un dispositivo más, igual que WhatsApp Web. Puedes seguir usando WhatsApp en el celular y en otros dispositivos al mismo tiempo. Los mensajes automáticos salen desde ese número, así que usa el **número del restaurante**, no uno personal.
 </Callout>
 
-## Errores comunes
+## Qué mensajes recibe el cliente
 
-- **El QR expiró:** los códigos QR vencen a los 20 segundos. Tocá <Ui>Actualizar QR</Ui> para generar uno nuevo.
-- **Se desconecta seguido:** el celular donde está la cuenta necesita tener buena conexión a internet. Evitá que el celular entre en modo ahorro de batería, ya que puede cortar la conexión.
+Con <Ui>Mensajes automáticos</Ui> encendido:
 
-<GuideCard href="/dashboard/ayuda/problemas-frecuentes/whatsapp-desconectado" title="WhatsApp desconectado — solución rápida" summary="Pasos para reconectar si la sesión se cayó." />
+- **Pedido nuevo:** apenas confirma el pedido en tu menú.
+- **Cambio de estado:** cada vez que mueves el pedido (confirmado, en camino, entregado o tus estados personalizados).
+- **Pedido pagado:** cuando lo marcas como pagado.
+
+Nunca se envía mensaje en estos casos:
+- Pedidos de **mesa** (comer en el local).
+- Pedidos **cancelados**.
+
+Puedes cambiar el texto de cada mensaje en <Ui>Notificaciones → Plantillas</Ui>.
+
+<GuideCard href="/dashboard/ayuda/configuracion/plantillas-whatsapp" title="Personalizar los mensajes" summary="Cambia el texto que recibe el cliente en cada momento del pedido." />
+
+## Apagar o desconectar
+
+Tienes dos opciones, según lo que quieras:
+
+| Quieres… | Haz esto |
+|---|---|
+| Dejar de mandar mensajes por un tiempo | Apaga <Ui>Mensajes automáticos</Ui>. WhatsApp queda vinculado y lo vuelves a encender cuando quieras. |
+| Desvincular tu número del todo | Toca <Ui>Desconectar WhatsApp</Ui>. Para volver a usarlo vas a tener que escanear el QR otra vez. |
+
+En los dos casos, los clientes vuelven a mandarte el pedido a tu chat de WhatsApp.
+
+## Preguntas frecuentes
+
+**¿Si cierro sesión en el panel se desconecta WhatsApp?**
+No. WhatsApp queda conectado aunque cierres sesión o apagues la computadora, para que los clientes sigan recibiendo sus avisos.
+
+**¿Puedo ver el estado desde otro dispositivo?**
+Sí. La conexión es del restaurante, no del dispositivo: cualquier persona del equipo que entre al panel la ve igual.
+
+**¿Necesito tener el celular prendido?**
+No todo el tiempo. Lo único que corta la conexión es desvincular el dispositivo desde el celular, o pasar unas dos semanas sin abrir WhatsApp en ese celular.
+
+**¿Qué pasa con los pedidos si se desconecta?**
+No pierdes pedidos. El menú lo detecta y vuelve solo al envío por chat, como si no estuviera conectado. En <Ui>Pedidos</Ui> vas a ver un aviso naranja para reconectar.
+
+<GuideCard href="/dashboard/ayuda/problemas-frecuentes/whatsapp-desconectado" title="WhatsApp desconectado" summary="Qué hacer si ves el aviso de desconexión." />

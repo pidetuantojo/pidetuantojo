@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import QRCode from 'qrcode';
 
+import { adminDb } from '@/lib/firebase/admin';
 import { getWhatsAppSession } from '@/lib/whatsapp/session';
 
 const SERVICE_URL = process.env.WHATSAPP_SERVICE_URL;
@@ -14,14 +15,27 @@ function restaurantId(req: NextRequest) {
   return req.nextUrl.searchParams.get('restaurantId') ?? '';
 }
 
-// GET /api/whatsapp/connect?restaurantId= — estado + QR
+// El menú público no puede leer settings/waConfig (reglas: solo miembros), así que
+// el toggle "Mensajes automáticos" se expone acá, leído con Admin SDK.
+async function getAutoNotify(rid: string): Promise<boolean> {
+  if (!rid) return false;
+  try {
+    const snap = await adminDb.doc(`restaurants/${rid}/settings/waConfig`).get();
+    return snap.data()?.autoNotify === true;
+  } catch {
+    return false;
+  }
+}
+
+// GET /api/whatsapp/connect?restaurantId= — estado + QR + autoNotify
 export async function GET(req: NextRequest) {
   const rid = restaurantId(req);
+  const autoNotifyPromise = getAutoNotify(rid);
 
   if (SERVICE_URL) {
     const res = await fetch(`${SERVICE_URL}/status?restaurantId=${rid}`, { headers: serviceHeaders() });
     const data = await res.json();
-    return NextResponse.json(data);
+    return NextResponse.json({ ...data, autoNotify: await autoNotifyPromise });
   }
 
   // Dev local — singleton
@@ -29,7 +43,7 @@ export async function GET(req: NextRequest) {
   const { status, qr, connectedNumber, lastError } = session.getState();
   let qrDataUrl: string | null = null;
   if (qr) qrDataUrl = await QRCode.toDataURL(qr, { width: 256, margin: 2 });
-  return NextResponse.json({ status, qr: qrDataUrl, connectedNumber, lastError });
+  return NextResponse.json({ status, qr: qrDataUrl, connectedNumber, lastError, autoNotify: await autoNotifyPromise });
 }
 
 // POST /api/whatsapp/connect — iniciar conexión

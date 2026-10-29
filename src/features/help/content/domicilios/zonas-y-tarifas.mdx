@@ -1,36 +1,66 @@
-Las zonas definen hasta dónde llegás con tus domicilios y cuánto cobrás por el envío. Podés tener varias zonas con tarifas distintas.
+Las zonas son la lista de barrios o sectores a los que llegas, cada uno con su precio de envío. Cuando el cliente pide a domicilio, elige su zona y **el valor del envío se suma solo al total**.
 
-<Callout type="info" title="Quién puede hacerlo">
-  Solo el administrador puede crear y editar zonas de domicilio.
+<Callout type="info" title="¿Te conviene usar zonas?">
+  Solo funcionan si tu plan las incluye y si el **Modo de domicilios** está en **Por zonas**. Si prefieres poner el valor del envío a mano en cada pedido, deja el modo en **Manual** y no necesitas crear zonas.
 </Callout>
+
+## Cuándo usar cada modo
+
+| | Manual | Por zonas |
+|---|---|---|
+| El cliente | Escribe su dirección y su barrio o sector | Escribe su dirección y elige su zona de una lista |
+| El valor del envío | Lo pones tú en cada pedido | Se calcula solo según la zona |
+| Ideal si | Tus precios cambian según la distancia o el pedido | Tienes tarifas fijas por barrio |
 
 ## Paso a paso
 
 <Steps>
-  <Step title="Abrí Zonas de domicilios">
-    En el menú lateral andá a <Ui>Gestión de entrega → Zonas de domicilios</Ui>.
+  <Step title="Activa el modo Por zonas">
+    Ve a <Ui>Mi restaurante → Configuración</Ui>, abre la sección <Ui>Diseño del menú</Ui> y en <Ui>MODO DE DOMICILIOS</Ui> elige <Ui>Por zonas</Ui>. Toca <Ui>Guardar cambios</Ui>.
   </Step>
-  <Step title="Creá una zona nueva">
-    Tocá <Ui>+ Nueva zona</Ui>. Escribí el nombre de la zona (ej: "Centro", "Norte", "Zona 1").
+  <Step title="Abre las zonas">
+    En el menú lateral ve a <Ui>Gestión de entrega → Zonas de domicilios</Ui>.
   </Step>
-  <Step title="Definí la tarifa">
-    Escribí el valor del domicilio para esa zona. Si el envío es gratis, poné 0.
+  <Step title="Toca Nueva zona">
+    Si todavía no tienes ninguna, también puedes tocar <Ui>+ Agregar primera zona</Ui>.
   </Step>
-  <Step title="Agregá los barrios o sectores">
-    Escribí los barrios, comunas o sectores que cubre esa zona. El cliente los va a ver al hacer su pedido para saber si llegás a donde está.
+  <Step title="Escribe el nombre del barrio o sector">
+    En <Ui>Nombre del sector / barrio</Ui> pon, por ejemplo, "Centro" o "Laureles". **Una zona es un solo barrio o sector.**
   </Step>
-  <Step title="Guardá">
-    Tocá <Ui>Guardar</Ui>. La zona ya está activa para los pedidos de domicilio.
+  <Step title="Escribe el precio del domicilio">
+    En <Ui>Precio del domicilio ($)</Ui> pon el valor en pesos, sin puntos. Si el envío a ese barrio es gratis, pon 0.
+  </Step>
+  <Step title="Guarda la zona">
+    Toca <Ui>Agregar zona</Ui>. Aparece en la lista y ya queda **Activa**.
   </Step>
 </Steps>
 
-<Callout type="tip" title="Varias zonas">
-  Creá una zona "Zona cercana" con tarifa baja y otra "Zona lejana" con tarifa mayor. El cliente elige cuál aplica según su dirección.
+<Callout type="tip" title="Varios barrios con el mismo precio">
+  Cada zona lleva un solo nombre. Si cobras lo mismo en tres barrios, crea tres zonas con el mismo precio. Así el cliente encuentra su barrio exacto en la lista.
 </Callout>
+
+## Administrar las zonas
+
+En cada zona de la lista ves el nombre, el precio y si está <Ui>Activa</Ui> o <Ui>Inactiva</Ui>. A la derecha hay tres botones:
+
+- **Ojo:** activa o desactiva la zona. Una zona inactiva deja de aparecerle al cliente, pero no se pierde.
+- **Lápiz:** cambia el nombre o el precio. Toca <Ui>Guardar cambios</Ui>.
+- **Papelera:** elimina la zona. Te pide confirmación y **no se puede deshacer**.
+
+## Qué ve el cliente
+
+Al elegir <Ui>Domicilio</Ui> en su pedido, el cliente escribe su dirección y toca el selector <Ui>Elige tu zona / barrio</Ui>. Ve solo las zonas activas, cada una con su precio. Si no elige zona, no puede confirmar el pedido: le aparece "Elige tu zona de domicilio".
+
+Con el modo **Manual**, en cambio, el cliente escribe su barrio o sector. El valor del envío lo pones tú al abrir el pedido, con el botón del lápiz junto a "Envío" (<GuideLink href="/dashboard/ayuda/pedidos/gestionar-un-pedido">cómo gestionar un pedido</GuideLink>).
 
 ## Errores comunes
 
-- **El cliente no puede elegir zona:** verificá que la opción de domicilio esté activada en <Ui>Gestión de entrega → Métodos de entrega</Ui>.
-- **No aparece el costo de envío en el pedido:** la zona debe tener una tarifa mayor a 0 para mostrarse en el total.
+- **No veo "Zonas de domicilios" en el menú:** tu plan puede no incluirlas, o tu usuario no tiene el permiso para verlas. Pídele al administrador que lo revise en <GuideLink href="/dashboard/ayuda/configuracion/equipo-y-permisos">Equipo y permisos</GuideLink>.
+- **En Configuración no puedo elegir "Por zonas":** esa opción aparece bloqueada si tu plan no incluye zonas de domicilio.
+- **Creé zonas pero el cliente sigue escribiendo el barrio:** el modo de domicilios sigue en **Manual**. Cámbialo en Configuración, sección <Ui>Diseño del menú</Ui>.
+- **Con el modo Por zonas el cliente no puede pedir a domicilio:** revisa que tengas al menos una zona <Ui>Activa</Ui>. Sin zonas activas no hay nada que elegir.
+- **El cliente dice que su barrio no está:** crea una zona nueva para ese barrio.
+- **No veo los botones de crear, editar o eliminar:** cada acción es un permiso aparte. Tu usuario puede tener solo algunos.
 
-<GuideCard href="/dashboard/ayuda/domicilios/domiciliarios" title="Agregar domiciliarios" summary="Con las zonas listas, configurá quién hace las entregas." />
+<GuideCard href="/dashboard/ayuda/domicilios/metodos-de-entrega" title="Métodos de entrega" summary="Activa Recoger, Domicilio o Comer en el local." />
+<GuideCard href="/dashboard/ayuda/domicilios/domiciliarios" title="Domiciliarios" summary="Registra quién hace las entregas y asígnalo a cada pedido." />

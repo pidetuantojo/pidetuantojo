@@ -1,31 +1,60 @@
-Si un cliente dice que hizo un pedido pero no lo ves en el panel, revisá estos puntos en orden.
+Si un cliente dice que hizo un pedido y no lo ves, o si te llegan pero no te enteras a tiempo, revisa estos puntos en orden. Casi siempre es algo simple.
+
+<Callout type="info" title="Primero, lo más importante">
+  Todos los pedidos aparecen en <Ui>Gestión de pedidos → Pedidos</Ui>. Si conectaste los mensajes automáticos de WhatsApp, **el pedido ya no te llega como mensaje al chat**: tienes que mirar esa pantalla.
+</Callout>
 
 <Steps>
-  <Step title="Verificá que el restaurante está abierto">
-    Andá a <Ui>Inicio</Ui> en el panel. El indicador debe decir "Abierto". Si dice "Cerrado", revisá los horarios en <Ui>Mi restaurante → Configuración</Ui>. Si estás en horario y sigue cerrado, activalo manualmente.
+  <Step title="Mira que el tablero esté en vivo">
+    Entra a <Ui>Gestión de pedidos → Pedidos</Ui>. Arriba tiene que verse el aviso verde <Ui>En vivo</Ui>. Toca <Ui>Refrescar</Ui> para volver a cargar los pedidos. Si la pantalla se queda cargando, revisa tu conexión a internet.
   </Step>
-  <Step title="Revisá la pestaña de Pedidos">
-    Andá a <Ui>Gestión de pedidos → Pedidos</Ui>. A veces el pedido llega pero el sonido no suena si el navegador no tenía foco. Revisá si hay tarjetas nuevas.
+  <Step title="Revisa el día y los finalizados">
+    Debajo del título hay botones de fecha: <Ui>Hoy</Ui>, <Ui>Ayer</Ui>, <Ui>Últ. 7 días</Ui> y <Ui>Este mes</Ui>. Si estabas viendo otro día, el pedido no se muestra. Además, los pedidos ya entregados o cancelados quedan escondidos: toca <Ui>Ver finalizados</Ui> para verlos. Si el cliente pidió para más tarde, el pedido aparece con un reloj violeta y la hora programada.
   </Step>
-  <Step title="Activá las notificaciones del navegador">
-    El navegador pide permiso para mostrar notificaciones la primera vez. Si lo rechazaste, no vas a recibir las alertas. Revisá los permisos del sitio en la barra de dirección (ícono de candado) y activá notificaciones.
+  <Step title="Busca en la columna correcta">
+    El tablero separa los pedidos en <Ui>Para llevar</Ui>, <Ui>Domicilio</Ui> y <Ui>Mesa</Ui>. Un pedido puede estar en una columna distinta a la que imaginabas.
   </Step>
-  <Step title="Verificá que la página no está suspendida">
-    Algunos navegadores suspenden pestañas inactivas. Mantené la pestaña de Pedidos visible o anclala. En Chrome podés usar la extensión "Tab Suspender" para excluir el panel.
+  <Step title="Confirma que el cliente terminó el pedido">
+    Pídele que te muestre su pantalla. Si tienes WhatsApp conectado con mensajes automáticos, al terminar el pedido le sale el aviso <Ui>¡Pedido creado!</Ui> con el número y le llega la confirmación a su WhatsApp. Si no lo tienes conectado, se le abre su WhatsApp con el pedido ya escrito. Si el cliente no vio ninguna de las dos cosas, el pedido no se llegó a enviar y tiene que repetirlo.
   </Step>
-  <Step title="Confirmá con el cliente">
-    Pedile al cliente que te comparta una captura de la confirmación del pedido. Ahí aparece el número de pedido — buscalo en el historial del panel con filtro "Hoy".
+  <Step title="Revisa si tu local estaba abierto">
+    Fuera del horario que cargaste en <Ui>Mi restaurante → Configuración → Horario de atención</Ui>, el menú se puede ver pero **no se pueden hacer pedidos**, salvo que hayas marcado <Ui>Aceptar pedidos programados cuando estés cerrado</Ui>. Revisa que los días y las horas estén bien.
+  </Step>
+  <Step title="Revisa tus permisos">
+    Si no ves la opción <Ui>Pedidos</Ui> en el menú, tu usuario no tiene permiso para ver pedidos. Pídele al administrador que lo active en <Ui>Mi restaurante → Equipo</Ui>.
   </Step>
 </Steps>
 
-<Callout type="warning" title="El pedido llegó pero no sonó la alerta">
-  El navegador bloquea los sonidos hasta que el usuario interactúa con la página. Al iniciar el turno, tocá cualquier parte de la pantalla de Pedidos una vez para desbloquear el audio.
+## Los pedidos llegan, pero no suena la alerta
+
+La alerta (sonido y aviso naranja <Ui>¡Nuevo pedido!</Ui>) tiene algunas condiciones:
+
+- **Tiene que estar abierta la pantalla de Pedidos.** Si estás en otra sección del panel, no suena. Tampoco suena si cerraste el navegador: el panel no manda avisos al celular con la pantalla cerrada.
+- **El navegador necesita que toques la pantalla una vez** después de abrirla. Toca cualquier parte de Pedidos al empezar el turno.
+- **Prueba el sonido** con el botón de la campana (🔔) de arriba. Si ahí tampoco suena, revisa el volumen del equipo y que la pestaña no esté silenciada.
+- **No suena por pedidos viejos.** Al abrir la pantalla o al cambiar el día no suena por lo que ya estaba; solo por los que llegan después.
+- **El navegador puede frenar pestañas inactivas.** Mantén la pestaña de Pedidos a la vista y, si puedes, deja el equipo conectado y con la pantalla encendida.
+- **Si usas un bloqueador de anuncios** y algo no carga bien, prueba desactivarlo para el panel.
+
+<Callout type="tip" title="Si lo usas en el celular">
+  En <Ui>Pedidos</Ui>, si tu navegador lo permite, aparece el botón <Ui>Instalar app</Ui>: te deja abrir el panel de pedidos como una aplicación desde la pantalla de inicio.
 </Callout>
+
+## Los pedidos llegaban por WhatsApp y dejaron de llegar
+
+Esto pasa cuando conectas WhatsApp y dejas activos los <Ui>Mensajes automáticos</Ui> (en <Ui>Notificaciones → Configuración WhatsApp</Ui>). Entonces el cliente recibe la confirmación automática y **tú no recibes el pedido en el chat**. No es una falla: el pedido está en el tablero de Pedidos.
+
+- Sin WhatsApp conectado, o con los mensajes automáticos apagados, al cliente se le abre su propio WhatsApp con el pedido ya escrito para enviártelo a tu número. El pedido igual aparece siempre en el tablero.
+- Los pedidos de mesa y las cancelaciones nunca mandan mensajes.
+
+<GuideCard href="/dashboard/ayuda/configuracion/whatsapp" title="Conectar WhatsApp" summary="Qué cambia cuando conectas WhatsApp y cómo apagar los mensajes automáticos." />
 
 ## Si el problema persiste
 
-- Probá recargar la página de Pedidos (F5)
-- Cerrá y volvé a abrir el navegador
-- Si usás un bloqueador de anuncios, desactivalo para pidetuantojo.com
+- Recarga la página de Pedidos.
+- Cierra y vuelve a abrir el navegador, y entra de nuevo al panel.
+- Prueba desde otro dispositivo (por ejemplo, tu celular) para saber si el problema es de ese equipo.
+- Haz un pedido de prueba desde tu menú público: si aparece en el tablero, el sistema está bien y el problema era de la pantalla o del aviso.
 
 <GuideCard href="/dashboard/ayuda/pedidos/gestionar-un-pedido" title="Gestiona un pedido de principio a fin" summary="Cuando lleguen los pedidos, esta guía te explica qué hacer." />
+<GuideCard href="/dashboard/ayuda/problemas-frecuentes/whatsapp-desconectado" title="WhatsApp desconectado" summary="Si el panel te avisa que WhatsApp se desconectó." />

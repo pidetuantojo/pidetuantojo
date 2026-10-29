@@ -534,7 +534,7 @@ export function HomeClient({ restaurants, restaurantCategories }: HomeClientProp
                   marginBottom: 6,
                 }}
               >
-                Todavía no hay restaurantes acá
+                Todavía no hay restaurantes aquí
               </div>
               <div style={{ fontFamily: sg, fontSize: 14, color: 'var(--t-text-3)' }}>
                 Prueba con otra ciudad o quita algún filtro.
@@ -896,7 +896,7 @@ export function HomeClient({ restaurants, restaurantCategories }: HomeClientProp
                     marginBottom: 5,
                   }}
                 >
-                  Sin restaurantes acá
+                  Sin restaurantes aquí
                 </div>
                 <div style={{ fontFamily: sg, fontSize: 13, color: 'var(--t-text-3)' }}>
                   Prueba otra ciudad o quita un filtro.

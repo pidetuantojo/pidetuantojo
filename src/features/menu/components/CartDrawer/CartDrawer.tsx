@@ -484,7 +484,8 @@ export function CartDrawer({ primaryColor, secondaryColor, deliveryZones, delive
     // Construir URL antes de limpiar estado, navegar al final (igual que antojo-express)
     const whatsappUrl = buildWhatsAppUrl(restaurantPhone, message);
 
-    // Si el pedido fue creado y WA está conectado, enviar notificación automática
+    // Si el pedido fue creado, WA está conectado y el restaurante activó "Mensajes automáticos",
+    // enviar notificación automática. Si no, flujo wa.me (el cliente envía el pedido al chat).
     let waConnected = false;
     if (created && restaurantId) {
       try {
@@ -492,7 +493,8 @@ export function CartDrawer({ primaryColor, secondaryColor, deliveryZones, delive
           fetch(`/api/whatsapp/connect?restaurantId=${restaurantId}`).then((r) => r.json()),
           new Promise<{ status: string }>((resolve) => setTimeout(() => resolve({ status: 'unknown' }), 2000)),
         ]);
-        waConnected = (statusRes as { status: string }).status === 'connected';
+        const { status, autoNotify } = statusRes as { status: string; autoNotify?: boolean };
+        waConnected = status === 'connected' && autoNotify === true;
       } catch { /* si falla el chequeo, caemos al flujo wa.me */ }
     }
 

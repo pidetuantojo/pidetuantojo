@@ -136,7 +136,7 @@ export function MultiSelect({
           flexShrink: 0,
         }}>
           <span style={{ fontSize: 12, color: 'var(--t-text-3)', fontFamily: sg }}>
-            Seleccioná hasta {max}
+            Selecciona hasta {max}
           </span>
           <span style={{
             fontSize: 11, fontWeight: 700,

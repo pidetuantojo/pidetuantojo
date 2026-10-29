@@ -1,0 +1,133 @@
+Esta guía cubre las herramientas para **traer clientes nuevos y hacer que vuelvan**: cupones con código, promociones de primer pedido, límites por cliente y el programa de fidelidad (sellos). Todo se maneja desde <Ui>Productos → Promociones</Ui>.
+
+<Callout type="info" title="Requiere el plan con promociones avanzadas">
+  Cupones, primer pedido, usos por cliente y fidelidad solo están en el plan con promociones avanzadas. Si tu plan no los incluye, en el asistente esos campos aparecen bloqueados ("CUPÓN Y CLIENTES — PLAN AVANZADO"), el cliente no ve el cuadro de cupón y no aparece la sección de fidelidad. Gestionarlos requiere además el permiso de gestionar promociones. Antes de seguir, conviene haber leído <GuideLink href="/dashboard/ayuda/menu/promociones">Promociones</GuideLink>.
+</Callout>
+
+## ¿Te conviene?
+
+| Herramienta | Sirve para | Ejemplo |
+|---|---|---|
+| **Cupón** | Dar un descuento solo a quien tenga el código. Ideal para Instagram, volantes o influencers. | Código `INSTA10`: 10% en el total. |
+| **Primer pedido** | Que un cliente nuevo pruebe tu comida. | "Producto en oferta" del 15% solo en el primer pedido. |
+| **Usos por cliente** | Evitar que una misma persona repita la promoción. | "Combo de bienvenida", 1 vez por cliente. |
+| **Fidelidad** | Premiar a los clientes frecuentes. | "Cada 10 pedidos, el siguiente gratis hasta $30.000". |
+
+## Crear un cupón
+
+Un cupón no es un tipo aparte: es **cualquier promoción** (producto en oferta, descuento en el total, domicilio gratis, 2x1, combo o regalo) a la que le agregas un código.
+
+<Steps>
+  <Step title="Crea la promoción como siempre">
+    En <Ui>+ Nueva promoción</Ui> elige el tipo y completa los pasos 1 a 3.
+  </Step>
+  <Step title="Ve al paso 4: Condiciones">
+    Baja hasta la zona "CUPÓN Y CLIENTES".
+  </Step>
+  <Step title="Escribe el código">
+    En <Ui>Código de cupón (opcional)</Ui> pon el código, por ejemplo `INSTA10`. Se escribe en mayúsculas solo y no admite espacios. Tiene que tener de 3 a 20 letras, números, guiones o guion bajo.
+  </Step>
+  <Step title="Sigue hasta el final y créala">
+    En el paso 5 ponle nombre y toca <Ui>Crear promoción</Ui>. En la lista aparece con la etiqueta "CUPÓN INSTA10".
+  </Step>
+</Steps>
+
+<Callout type="warning" title="Los cupones no se muestran en el menú">
+  Para que nadie vea el código, una promoción con cupón **nunca sale en el banner del menú** (la casilla <Ui>Mostrar en el banner del menú</Ui> queda bloqueada) ni muestra su precio tachado en los productos. El cliente solo la recibe si escribe el código. Comparte el código por tus redes o mensajes.
+</Callout>
+
+**Reglas del cupón**
+
+- Cada código es único: si ya existe en otra promoción, el asistente te avisa "Ya tienes otra promoción con ese cupón".
+- Puedes combinarlo con horarios, fechas, pedido mínimo, forma de entrega y límite de usos, igual que cualquier promoción.
+- Al <Ui>Duplicar</Ui> una promoción, la copia sale **sin código** para que no se repita.
+
+**Qué hace el cliente**
+
+1. En el carrito toca <Ui>¿Tienes un cupón?</Ui>.
+2. Escribe el código en <Ui>Código del cupón</Ui> y toca <Ui>Aplicar</Ui>.
+3. Si es válido ve "Cupón aplicado" con el nombre de la promoción y el descuento en el desglose. Con la X (<Ui>Quitar cupón</Ui>) lo puede sacar.
+
+Mensajes que puede ver el cliente cuando algo no cuadra:
+
+| Mensaje | Por qué pasa |
+|---|---|
+| "Este cupón no existe o ya no está disponible." | Código mal escrito, promoción pausada o eliminada. |
+| "Esta promoción ya venció." / "todavía no empieza." / "no aplica en este horario." | Está fuera de sus fechas u horario. |
+| "Esta promoción ya se agotó." | Llegó a su límite de usos. |
+| "Pedido mínimo de $X para usar este cupón." | El pedido no llega al mínimo. |
+| "Solo aplica para …" | Es para otra forma de entrega (domicilio, recoger o en el local). |
+| "El cupón es válido, pero tu pedido ya tiene una promoción mejor." | Ya recibe un descuento mayor; no se acumulan. |
+
+## Solo para el primer pedido
+
+En el paso 4, en la zona "CUPÓN Y CLIENTES", prende <Ui>Solo para el primer pedido</Ui>. La promoción vale únicamente para clientes que nunca te hayan pedido. En el banner del menú se muestra con la marca "PRIMER PEDIDO".
+
+<Callout type="warning" title="Úsalo con descuentos moderados">
+  El sistema reconoce al cliente por su **número de celular**. Alguien podría escribir otro número para fingir que es nuevo. Por eso conviene que el descuento no sea enorme, y revisar los pedidos raros por WhatsApp.
+</Callout>
+
+## Límite de usos por cliente
+
+También en el paso 4, el campo <Ui>Usos por cliente</Ui> limita cuántas veces puede usar esa promoción la misma persona (por ejemplo, 1). Si lo supera, ve "Ya usaste esta promoción." Vacío significa sin límite. Es distinto del <Ui>Límite total de usos</Ui>, que cuenta todos los pedidos de todos los clientes ("las primeras 50").
+
+## Programa de fidelidad (sellos)
+
+Es el clásico "cada N pedidos, un premio". Cada pedido completo suma un sello; al juntar los necesarios, el cliente puede canjear su premio en su siguiente pedido.
+
+### Configurarlo
+
+<Steps>
+  <Step title="Baja hasta Programa de fidelidad">
+    Está al final de la pantalla <Ui>Promociones</Ui>, debajo de la lista. Solo aparece si tu plan incluye promociones avanzadas.
+  </Step>
+  <Step title="Elige cuántos pedidos">
+    En <Ui>Pedidos para ganar</Ui> pon entre 2 y 50. Ejemplo: 10.
+  </Step>
+  <Step title="Pon un mínimo por pedido (opcional)">
+    <Ui>Mínimo por pedido</Ui> hace que solo cuenten los pedidos que lleguen a ese valor en productos. Vacío = cuentan todos.
+  </Step>
+  <Step title="Define el premio">
+    En <Ui>Premio</Ui> elige <Ui>%</Ui> (porcentaje) o <Ui>$</Ui> (monto fijo) y escribe el valor. Con porcentaje aparece <Ui>Tope del premio</Ui>: **100% con un tope de $30.000 equivale a "pedido gratis hasta $30.000"**.
+  </Step>
+  <Step title="Guarda y activa">
+    Toca <Ui>Guardar programa</Ui>. Con la casilla <Ui>Activo</Ui> / <Ui>Apagado</Ui> lo prendes o apagas; al cambiarla se guarda en el momento.
+  </Step>
+</Steps>
+
+Al abrir por primera vez el programa viene apagado, con 10 pedidos, premio de 100% y tope de $30.000. Revisa esos valores antes de activarlo. Arriba del formulario ves un resumen, por ejemplo: "Cada 10 pedidos el cliente gana 100% de descuento (hasta $30.000)".
+
+### Cómo se ganan los sellos
+
+- Cuenta cada pedido del cliente (se identifica por su **celular**) que quede marcado como **Entregado** o **Pagado**. Un pedido que nunca se entregó ni se cobró no suma.
+- Si pusiste un mínimo por pedido, solo cuentan los que lo alcanzan.
+- Los pedidos que cargas a mano en el panel también suman si usas el celular del cliente.
+- Al canjear el premio, los sellos vuelven a cero.
+
+### Qué ve el cliente
+
+En el carrito aparece el cuadro **Programa de fidelidad**:
+
+- Antes de poner su celular: "Cada N pedidos ganas … Escribe tu celular para ver tus sellos."
+- Con su celular: círculos amarillos, uno por sello, y "Llevas X de N. Te faltan Y pedidos para …".
+- Cuando junta todos: "¡Ganaste … ! Usarlo en este pedido", con una casilla. Si la marca, el premio aparece como "Premio de fidelidad" restando en el total.
+
+### Qué hacer cuando llega un canje
+
+El descuento ya viene calculado: lo ves en el detalle del pedido y en el mensaje de WhatsApp como "Premio de fidelidad". Como la identidad es el celular, confirma por WhatsApp que quien pide es el cliente real, sobre todo si el premio es grande.
+
+## Autorización para promociones por WhatsApp
+
+Cuando tu restaurante tiene promociones, cupones o fidelidad activos, el carrito muestra una casilla que el cliente puede marcar: "Quiero recibir promociones de [tu restaurante] por WhatsApp y autorizo el tratamiento de mis datos (Ley 1581 de 2012)". Es opcional para el cliente. Si no la marca, igual puede pedir y usar sus promociones.
+
+## Errores comunes
+
+- **"Los cupones requieren el plan con promociones avanzadas":** tu plan no los incluye.
+- **"El cupón debe tener de 3 a 20 letras, números, guiones o _":** el código es muy corto, largo o tiene símbolos.
+- **El cliente dice que el cupón no funciona:** revisa si la promoción está pausada, fuera de horario, agotada, o si el pedido no llega al mínimo. Pruébalo tú en el carrito.
+- **No me aparece Programa de fidelidad:** tu plan no incluye promociones avanzadas.
+- **"Los pedidos para ganar deben estar entre 2 y 50" / "Escribe el valor del premio":** corrige esos campos y vuelve a tocar <Ui>Guardar programa</Ui>.
+- **El cliente no suma sellos:** el pedido todavía no está marcado como **Entregado** o **Pagado**, o no alcanzó el mínimo por pedido.
+
+<GuideCard href="/dashboard/ayuda/menu/promociones" title="Promociones" summary="Los 6 tipos de promoción, horarios y condiciones." />
+<GuideCard href="/dashboard/ayuda/pedidos/gestionar-un-pedido" title="Gestiona un pedido" summary="Marca pedidos como entregados o pagados para que sumen sellos." />

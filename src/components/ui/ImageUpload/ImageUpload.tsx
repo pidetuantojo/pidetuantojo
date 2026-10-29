@@ -332,7 +332,7 @@ export function ImageUpload({
             </div>
 
             <p style={{ margin: '12px 0 20px', fontSize: 12, color: 'var(--t-text-3)', textAlign: 'center' }}>
-              Arrastrá para ajustar el encuadre
+              Arrastra para ajustar el encuadre
             </p>
 
             <div style={{ display: 'flex', gap: 10 }}>

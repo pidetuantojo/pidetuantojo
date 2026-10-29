@@ -2,7 +2,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 
 export interface WaConfig {
-  /** Si true, se envían mensajes automáticos al cliente cuando cambia el estado del pedido. */
+  /** Si true, se envían mensajes automáticos al cliente: confirmación del pedido nuevo y cada cambio de estado. */
   autoNotify: boolean;
 }
 

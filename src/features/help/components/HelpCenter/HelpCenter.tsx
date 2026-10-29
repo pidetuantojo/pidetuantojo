@@ -57,7 +57,7 @@ export function HelpCenter() {
 
       {groups.length === 0 && (
         <p style={{ fontSize: 14, color: 'var(--t-text-3)' }}>
-          No encontramos guías para &quot;{query}&quot;. Probá con otra palabra.
+          No encontramos guías para &quot;{query}&quot;. Prueba con otra palabra.
         </p>
       )}
 

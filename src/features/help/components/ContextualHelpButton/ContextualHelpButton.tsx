@@ -13,20 +13,24 @@ const CONTEXT_GUIDES: Array<{ path: string; section: string; guide: string; titl
   { path: '/dashboard/configuracion', section: 'configuracion', guide: 'datos-del-restaurante', title: 'Datos del restaurante' },
   // Pedidos
   { path: '/dashboard/pedidos', section: 'pedidos', guide: 'gestionar-un-pedido', title: 'Gestionar un pedido' },
-  { path: '/dashboard/estados', section: 'pedidos', guide: 'gestionar-un-pedido', title: 'Gestionar un pedido' },
+  { path: '/dashboard/estados', section: 'pedidos', guide: 'estados-de-pedido', title: 'Estados de pedido' },
+  { path: '/dashboard/estacion-impresion', section: 'configuracion', guide: 'estacion-de-impresion', title: 'Estación de impresión' },
   // Menú
   { path: '/dashboard/productos', section: 'menu', guide: 'agregar-productos', title: 'Agregar productos' },
   { path: '/dashboard/categorias', section: 'menu', guide: 'agregar-categorias', title: 'Agregar categorías' },
-  { path: '/dashboard/adicionales', section: 'menu', guide: 'agregar-productos', title: 'Agregar productos' },
+  { path: '/dashboard/adicionales', section: 'menu', guide: 'adicionales', title: 'Adicionales' },
+  { path: '/dashboard/promociones', section: 'menu', guide: 'promociones', title: 'Promociones' },
   // Finanzas
   { path: '/dashboard/contabilidad', section: 'cobros', guide: 'contabilidad', title: 'Ver la contabilidad' },
   { path: '/dashboard/pagos', section: 'cobros', guide: 'metodos-de-pago', title: 'Métodos de pago' },
   // Domicilios (domiciliarios antes que la raíz)
   { path: '/dashboard/domicilios/domiciliarios', section: 'domicilios', guide: 'domiciliarios', title: 'Domiciliarios' },
   { path: '/dashboard/domicilios', section: 'domicilios', guide: 'zonas-y-tarifas', title: 'Zonas y tarifas' },
+  { path: '/dashboard/entrega', section: 'domicilios', guide: 'metodos-de-entrega', title: 'Métodos de entrega' },
   // Equipo / WhatsApp
   { path: '/dashboard/equipo', section: 'configuracion', guide: 'equipo-y-permisos', title: 'Equipo y permisos' },
   { path: '/dashboard/whatsapp', section: 'configuracion', guide: 'whatsapp', title: 'Conectar WhatsApp' },
+  { path: '/dashboard/notificaciones/plantillas', section: 'configuracion', guide: 'plantillas-whatsapp', title: 'Personalizar mensajes' },
   { path: '/dashboard/notificaciones', section: 'configuracion', guide: 'whatsapp', title: 'Conectar WhatsApp' },
 ];
 

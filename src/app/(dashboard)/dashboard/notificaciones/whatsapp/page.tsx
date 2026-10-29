@@ -142,9 +142,9 @@ export default function WhatsAppPage() {
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
         }}>
           <p style={{ fontSize: 14, color: 'var(--t-text-2)', textAlign: 'center', margin: 0 }}>
-            Abrí WhatsApp en tu teléfono →<br />
+            Abre WhatsApp en tu teléfono →<br />
             <strong>Dispositivos vinculados → Vincular dispositivo</strong><br />
-            y escaneá este código
+            y escanea este código
           </p>
           <img
             src={state.qr}
@@ -193,7 +193,9 @@ export default function WhatsAppPage() {
                 WhatsApp conectado
               </p>
               <p style={{ fontSize: 13, color: '#16a34a', margin: '2px 0 0' }}>
-                Los mensajes automáticos están activos. Cuando el pedido cambia de estado, el cliente recibe una notificación.
+                {autoNotify
+                  ? 'Los mensajes automáticos están activos. El cliente recibe la confirmación del pedido y un aviso en cada cambio de estado.'
+                  : 'Los mensajes automáticos están apagados. Los clientes te siguen enviando el pedido a tu chat de WhatsApp.'}
               </p>
             </div>
           </div>
@@ -209,7 +211,7 @@ export default function WhatsAppPage() {
                 Mensajes automáticos
               </p>
               <p style={{ fontSize: 13, color: 'var(--t-text-3)', margin: '2px 0 0' }}>
-                Notifica al cliente en cada cambio de estado del pedido
+                Confirma el pedido al cliente y le avisa en cada cambio de estado
               </p>
             </div>
             <button

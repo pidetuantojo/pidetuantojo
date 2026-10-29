@@ -35,7 +35,7 @@ const BENEFITS = [
       </svg>
     ),
     title: 'Pedidos en tiempo real',
-    desc: 'Recibís cada pedido al instante con notificaciones y panel de gestión.',
+    desc: 'Recibes cada pedido al instante con notificaciones y panel de gestión.',
   },
   {
     icon: (
@@ -53,7 +53,7 @@ const BENEFITS = [
       </svg>
     ),
     title: 'Estadísticas y contabilidad',
-    desc: 'Controlá ventas, productos más pedidos y rendimiento del negocio.',
+    desc: 'Controla ventas, productos más pedidos y rendimiento del negocio.',
   },
 ];
 

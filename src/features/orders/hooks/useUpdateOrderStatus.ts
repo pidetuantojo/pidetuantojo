@@ -4,10 +4,12 @@ import { ordersService } from '../services/orders.service';
 import { getWaTemplates, applyTemplate, DEFAULT_TEMPLATES } from '@/lib/whatsapp/templates';
 import type { WaEventCode } from '@/lib/whatsapp/templates';
 
-// Mapa de statusCode base → eventCode de plantilla específica
+// Mapa de statusCode → eventCode de plantilla específica.
+// "En camino" no es estado base: se crea a mano y su code sale del nombre (slugify → "en_camino").
 const STATUS_TO_EVENT: Record<string, WaEventCode> = {
   confirmed:  'pedido_confirmado',
   on_the_way: 'pedido_en_camino',
+  en_camino:  'pedido_en_camino',
   delivered:  'pedido_entregado',
   received:   'pedido_nuevo',
   paid:       'pedido_pagado',

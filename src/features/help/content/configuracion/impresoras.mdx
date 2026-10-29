@@ -1,44 +1,96 @@
-Para imprimir comandas necesitás dos cosas: **QZ Tray** instalado en la computadora de la caja y la impresora configurada en el panel.
+Con la impresora configurada, tus comandas salen en papel directo desde cada pedido, sin ventanas de impresión. Es lo que evita que la cocina tenga que leer pedidos en una pantalla.
 
-<Callout type="warning" title="Requisito previo">
-  QZ Tray es un programa gratuito que conecta el navegador con la impresora. Debe estar abierto siempre que uses el panel en esa computadora.
+## ¿Te conviene?
+
+Es opcional. Sirve si tienes una **impresora térmica de tickets** (la de rollo, como las de las cajas registradoras) y una computadora que pueda quedar prendida junto a ella. Si no imprimes comandas, no necesitas nada de esto.
+
+<Callout type="warning" title="Qué necesitas">
+  - Una impresora térmica de tickets (80 mm o 58 mm) instalada en una computadora con Windows o Mac.
+  - **QZ Tray**, un programa gratuito que conecta el navegador con la impresora. Tiene que estar abierto en esa computadora.
+  - Que tu plan incluya impresión de comandas. Si no ves <Ui>Impresoras</Ui> en el menú, puede ser por el plan o por tus permisos.
 </Callout>
+
+## Cómo funciona
+
+Hay dos piezas, y es importante entender la diferencia:
+
+| Pieza | Dónde está | Qué hace |
+| --- | --- | --- |
+| <Ui>Impresoras</Ui> | <Ui>Mi restaurante → Impresoras</Ui> | Eliges **qué** impresora usar y cómo se imprime el papel. Se hace una sola vez |
+| <Ui>Estación de impresión</Ui> | <Ui>Mi restaurante → Estación de impresión</Ui> | Es la pantalla que se deja abierta en la computadora de la impresora y **imprime de verdad** cada comanda |
+
+Cuando alguien toca <Ui>Imprimir</Ui> en un pedido (desde el celular, una tablet o la misma computadora), la comanda va a una fila y **la estación la imprime**. Por eso la estación tiene que estar abierta siempre que quieras imprimir.
 
 ## Instalar QZ Tray
 
 <Steps>
-  <Step title="Descargá QZ Tray">
-    Andá a qz.io/download y descargá la versión para tu sistema operativo (Windows o Mac).
+  <Step title="Descárgalo">
+    En la computadora de la impresora, entra a qz.io/download y baja la versión para Windows o Mac.
   </Step>
-  <Step title="Instalalo">
-    Abrí el instalador y seguí los pasos. Al terminar, QZ Tray queda corriendo en segundo plano — lo ves como un ícono en la barra de tareas.
+  <Step title="Instálalo y ábrelo">
+    Abre el instalador y sigue los pasos. QZ Tray queda corriendo en segundo plano, con un ícono junto al reloj. Si te muestra una ventana pidiendo permiso, acéptala.
   </Step>
-  <Step title="Configuralo para arrancar automático">
-    Activá la opción para que QZ Tray inicie con Windows o Mac. Así no tenés que abrirlo manualmente cada vez.
+  <Step title="Hazlo arrancar solo">
+    Activa la opción para que QZ Tray se inicie con la computadora, así no tienes que abrirlo a mano todos los días.
   </Step>
 </Steps>
 
-## Agregar la impresora en el panel
+## Configurar la impresora en el panel
+
+Hazlo desde **la computadora donde está conectada la impresora**.
 
 <Steps>
-  <Step title="Abrí Impresoras">
-    En el menú lateral andá a <Ui>Mi restaurante → Impresoras</Ui>.
+  <Step title="Abre Impresoras">
+    En el menú lateral ve a <Ui>Mi restaurante → Impresoras</Ui>.
   </Step>
-  <Step title="Conectá QZ Tray">
-    Tocá <Ui>Conectar QZ Tray</Ui>. Si QZ Tray está abierto, la conexión es automática.
+  <Step title="Mira que QZ Tray esté conectado">
+    Arriba tiene que decir <Ui>QZ Tray conectado</Ui> con un tilde verde. Si dice <Ui>QZ Tray no está abierto en este equipo</Ui>, abre QZ Tray y toca <Ui>Reintentar</Ui>.
   </Step>
-  <Step title="Agregá la impresora">
-    Tocá <Ui>+ Nueva impresora</Ui>. Elegí la impresora de la lista (son las mismas que aparecen en Windows/Mac) y asignale un nombre (ej: "Cocina", "Caja").
+  <Step title="Elige tu impresora">
+    En <Ui>Impresoras detectadas</Ui> aparecen las impresoras instaladas en la computadora. Marca la que usas para las comandas.
   </Step>
-  <Step title="Hacé una prueba de impresión">
-    Tocá <Ui>Imprimir prueba</Ui> para confirmar que funciona. Si sale bien, ya podés imprimir comandas desde los pedidos.
+  <Step title="Haz una prueba">
+    Toca <Ui>Probar impresión</Ui> junto a esa impresora. Tiene que salir un ticket corto que dice "PRUEBA". Si ves <Ui>Enviado ✓</Ui> y el papel sale, está bien.
+  </Step>
+  <Step title="Elige el papel">
+    En <Ui>Ancho del papel</Ui> marca <Ui>80 mm (48 caracteres)</Ui> o <Ui>58 mm (32 caracteres)</Ui>, según tu rollo. Si no sabes cuál es, mide el ancho del rollo.
+  </Step>
+  <Step title="Revisa las tildes">
+    En <Ui>Tildes y ñ</Ui> deja <Ui>Con tildes (recomendado)</Ui>. Si en la prueba ves símbolos raros en lugar de á, é o ñ, elige <Ui>Sin tildes</Ui> y vuelve a probar.
+  </Step>
+  <Step title="Guarda">
+    Toca <Ui>Guardar impresora</Ui>. Vas a ver <Ui>Guardado ✓</Ui> y, al lado, la impresora actual con su ancho de papel.
+  </Step>
+  <Step title="Abre la estación">
+    Toca <Ui>Abrir estación de impresión</Ui> (o ve a <Ui>Mi restaurante → Estación de impresión</Ui>) y déjala abierta. Sin este paso, las comandas no salen.
   </Step>
 </Steps>
+
+## Qué pasa después
+
+- El restaurante tiene **una sola impresora guardada**. Los cambios valen para todos los equipos.
+- Desde ese momento, en cada pedido aparece el botón <Ui>Imprimir</Ui>.
+- <Ui>Probar impresión</Ui> imprime directo desde la computadora que estás usando; no pasa por la estación.
+- Las comandas se imprimen cuando alguien toca <Ui>Imprimir</Ui>. **No se imprimen solas** al llegar el pedido.
+
+## ¿Quién puede hacerlo?
+
+| Acción | Permiso |
+| --- | --- |
+| Ver la pantalla y probar la impresión | Ver configuración de impresora |
+| Guardar la impresora | Configurar y probar impresora |
+| Abrir la estación de impresión | Abrir la estación de impresión |
+| Tocar Imprimir en un pedido | Imprimir comanda |
+
+Sin el permiso de configurar, la pantalla se ve en modo lectura: **"Solo lectura: no tienes permiso para cambiar la impresora."**
 
 ## Errores comunes
 
-- **No aparece "Conectar QZ Tray":** QZ Tray no está abierto. Buscalo en el menú de aplicaciones y abrilo.
-- **La impresora no aparece en la lista:** la impresora no está instalada en Windows/Mac. Instalá el driver primero.
-- **La comanda sale en blanco:** la impresora no es térmica o el papel está al revés (en las térmicas el lado brillante va hacia adentro).
+- **Dice "QZ Tray no está abierto en este equipo":** abre QZ Tray (búscalo en las aplicaciones) y toca <Ui>Reintentar</Ui>.
+- **No aparece mi impresora en la lista:** la impresora no está instalada en la computadora. Instala primero el controlador (driver) del fabricante y toca <Ui>Actualizar</Ui>.
+- **Un aviso amarillo dice que la impresora guardada no aparece en este equipo:** estás en una computadora distinta a la de la impresora, o la impresora está apagada. Elige otra y guarda, o abre la pantalla desde la computadora correcta.
+- **La comanda sale en blanco o con símbolos raros:** puede que la impresora no sea térmica de tickets. Si sí lo es, prueba <Ui>Sin tildes</Ui>; si sale en blanco, revisa que el rollo de papel esté bien puesto (al revés no imprime).
+- **Cambié la impresora y la estación sigue usando la anterior:** recarga la página de la estación de impresión.
 
-<GuideCard href="/dashboard/ayuda/problemas-frecuentes/no-imprime" title="No imprime — solución rápida" summary="Si algo falla, seguí esta guía para diagnosticarlo paso a paso." />
+<GuideCard href="/dashboard/ayuda/configuracion/estacion-de-impresion" title="Estación de impresión" summary="La pantalla que se deja abierta para que las comandas salgan." />
+<GuideCard href="/dashboard/ayuda/problemas-frecuentes/no-imprime" title="No imprime — solución rápida" summary="Si algo falla, sigue esta guía para diagnosticarlo paso a paso." />

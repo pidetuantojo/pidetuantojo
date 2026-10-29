@@ -1,39 +1,128 @@
-Cada producto tiene nombre, precio, descripción, categoría e imagen. Con eso ya aparece en el menú de tus clientes.
+Los productos son lo que tus clientes ven y piden en el menú. Un buen producto tiene nombre claro, precio correcto y una foto que dé ganas de pedirlo.
 
 <Callout type="info" title="Quién puede hacerlo">
-  Solo el administrador puede crear y editar productos.
+  Depende de los permisos de cada usuario. Crear, editar (datos, foto, orden y adicionales), marcar disponible/agotado y eliminar son permisos separados. Un cajero o cocinero, por ejemplo, suele poder marcar productos como agotados pero no crearlos. Los permisos se manejan en <Ui>Mi restaurante → Equipo</Ui>.
 </Callout>
 
-## Paso a paso
+**Antes de empezar:** necesitas al menos una <GuideLink href="/dashboard/ayuda/menu/agregar-categorias">categoría</GuideLink>. Si quieres ofrecer extras (salsas, tamaños), crea primero los <GuideLink href="/dashboard/ayuda/menu/adicionales">adicionales</GuideLink>.
+
+## Crear un producto
 
 <Steps>
-  <Step title="Abrí Productos">
-    En el menú lateral andá a <Ui>Productos → Productos</Ui>.
+  <Step title="Abre Productos">
+    En el menú lateral entra a <Ui>Productos</Ui> y después a <Ui>Productos</Ui> (el grupo y la opción se llaman igual).
   </Step>
-  <Step title="Creá uno nuevo">
-    Tocá <Ui>+ Nuevo producto</Ui>.
+  <Step title="Toca Nuevo producto">
+    Toca <Ui>Nuevo producto</Ui>, arriba a la derecha. Se abre una pantalla con el formulario.
   </Step>
-  <Step title="Completá los datos básicos">
-    Escribí el **nombre**, la **descripción** y el **precio**. Elegí la **categoría** a la que pertenece. Estos cuatro datos son obligatorios.
+  <Step title="Elige la categoría">
+    En <Ui>Categoría *</Ui> elige dónde va el producto. **Es obligatoria.** Si la lista está vacía, primero crea una categoría.
   </Step>
-  <Step title="Subí una foto">
-    Tocá <Ui>Subir imagen</Ui> y elegí una foto del producto. Una buena foto puede aumentar las ventas hasta un 30 %. El sistema la recorta automáticamente.
+  <Step title="Escribe el nombre">
+    En <Ui>Nombre del producto</Ui> pon el nombre como lo conocen tus clientes (ej: "Hamburguesa clásica"). Mínimo 2 letras.
   </Step>
-  <Step title="Agregá adicionales (opcional)">
-    Si el producto tiene opciones extra (salsas, tamaños, ingredientes), seleccioná los <Ui>Adicionales</Ui> que ya creaste. Si no tenés adicionales todavía, podés agregarlos después.
+  <Step title="Agrega la descripción">
+    En <Ui>Descripción</Ui> cuenta los ingredientes y qué acompaña al plato. **Es opcional**, pero ayuda a decidir.
   </Step>
-  <Step title="Guardá">
-    Tocá <Ui>Guardar</Ui>. El producto aparece de inmediato en el menú público.
+  <Step title="Pon el precio">
+    En <Ui>Precio</Ui> escribe solo números, **sin puntos ni signo $**: `15000`, no `15.000`. Debajo del campo se muestra cómo lo verá el cliente, para que confirmes que quedó bien. Tiene que ser mayor a 0.
+  </Step>
+  <Step title="Elige el orden">
+    <Ui>Orden</Ui> define qué lugar ocupa dentro de su categoría: el número más bajo sale primero. Al crear, el sistema propone el siguiente número.
+  </Step>
+  <Step title="Elige un tag especial (opcional)">
+    En <Ui>Tag especial</Ui> puedes destacar el producto con una etiqueta que se muestra sobre su foto: "🔥 El más pedido", "💝 El favorito de todos", "⭐ Recomendado hoy", "✨ Nuevo", "🏆 El clásico" o "🌀 Edición especial". Déjalo en "Sin tag especial" si no quieres ninguna.
+  </Step>
+  <Step title="Sube la foto">
+    En <Ui>Imagen del producto</Ui> toca <Ui>Clic para subir imagen</Ui> y elige una foto. La imagen debe medir **al menos 600 × 600 píxeles**. Se abre un recorte para acomodarla; cuando te guste, toca <Ui>Usar foto</Ui>.
+  </Step>
+  <Step title="Marca los adicionales (opcional)">
+    En la sección <Ui>Adicionales</Ui> marca los extras que el cliente puede sumar a este producto. Se ven con su precio, por ejemplo "+$2.000". Si no tienes ninguno creado, toca <Ui>Crear adicionales →</Ui>.
+  </Step>
+  <Step title="Revisa los dos estados">
+    <Ui>Activo en el menú</Ui> y <Ui>Disponible hoy</Ui> vienen marcados. Déjalos así para que el producto se pueda pedir ya (más abajo explicamos la diferencia).
+  </Step>
+  <Step title="Guarda">
+    Toca <Ui>Crear producto</Ui>. Aparece "Producto creado" y vuelves a la lista. El producto ya está en el menú público.
   </Step>
 </Steps>
 
-<Callout type="tip" title="Foto sin fondo">
-  Las imágenes PNG con fondo transparente se ven mejor en el menú — el producto "flota" sobre el color del restaurante.
+<Callout type="tip" title="Fotos que venden">
+  Usa fotos con buena luz y el plato bien centrado. Las imágenes con fondo transparente (PNG) se ven bien porque el producto queda sobre el color de tu menú. Una foto cuadrada o apaisada de 600 px o más es suficiente.
 </Callout>
+
+## Dos estados que se confunden
+
+| Casilla | Si la desmarcas | Cuándo usarla |
+|---|---|---|
+| <Ui>Activo en el menú</Ui> | El producto **desaparece** del menú. Los clientes no lo ven. | Productos que ya no vendes o que todavía no quieres mostrar. |
+| <Ui>Disponible hoy</Ui> | El producto **se sigue viendo, con el cartel "Agotado"**, y no se puede agregar al pedido. | Se te acabó el ingrediente por hoy. |
+
+Para agotar un producto rápido, sin abrir el formulario, usa el ojo de la lista (más abajo).
+
+## Trabajar con la lista de productos
+
+En <Ui>Productos</Ui> ves todos tus productos. Puedes cambiar entre vista de tabla y vista de tarjetas con los dos botones de la derecha; el sistema recuerda tu elección.
+
+- **Buscar:** el cuadro <Ui>Buscar producto...</Ui> filtra por nombre o descripción.
+- **Filtrar:** el selector <Ui>Todas las categorías</Ui> muestra solo una categoría.
+- **Estado:** cada producto muestra <Ui>Activo</Ui> o <Ui>Inactivo</Ui> y, si está activo, también <Ui>Disponible</Ui> o <Ui>No disponible</Ui>.
+
+En cada fila hay íconos (según tus permisos):
+
+| Ícono | Qué hace |
+|---|---|
+| Flechas arriba / abajo (<Ui>Mover arriba</Ui>, <Ui>Mover abajo</Ui>) | Cambian el orden del producto. |
+| Ojo (<Ui>Marcar no disponible</Ui> / <Ui>Marcar disponible</Ui>) | Agota o vuelve a habilitar el producto al instante. |
+| Lápiz (<Ui>Editar</Ui>) | Abre el formulario del producto. Los cambios se guardan con <Ui>Guardar cambios</Ui>. |
+| Papelera (<Ui>Eliminar</Ui>) | Borra el producto. Pide confirmación y **no se puede deshacer**. |
+
+<Callout type="tip" title="Reordena por categoría">
+  Filtra una categoría y usa las flechas para ordenar solo sus productos. Los productos que no ves conservan su lugar.
+</Callout>
+
+## Cargar muchos productos con Excel
+
+Si tienes una carta larga, usa <Ui>Importar Excel</Ui> (junto a <Ui>Nuevo producto</Ui>).
+
+<Steps>
+  <Step title="Descarga la plantilla">
+    Toca <Ui>Descargar</Ui> en "Plantilla de productos". Trae tres hojas: Productos, Categorías e Instrucciones. Necesitas tener al menos una categoría creada.
+  </Step>
+  <Step title="Complétala">
+    Una fila por producto. Obligatorios: `nombre`, `categoria` (igual a un nombre de la hoja Categorías) y `precio`. El resto es opcional. La fila de ejemplo que empieza con `#ejemplo` se ignora.
+  </Step>
+  <Step title="Sube el archivo">
+    Arrástralo a la pantalla o toca para elegirlo. Acepta `.xlsx`, `.xls` o `.csv`, hasta **2 MB** y **500 filas**.
+  </Step>
+  <Step title="Revisa la vista previa">
+    Verás cuántas filas son válidas, con advertencia o duplicadas. Por defecto se omiten los duplicados (mismo nombre en la misma categoría).
+  </Step>
+  <Step title="Importa">
+    Toca <Ui>Importar</Ui> con la cantidad de productos. Si hubo filas con error, puedes bajar un archivo con <Ui>Descargar filas con error (.xlsx)</Ui>, corregirlas y subirlas de nuevo.
+  </Step>
+</Steps>
+
+<Callout type="info" title="Lo que el Excel no hace">
+  Los adicionales no se cargan por Excel: asígnalos después, producto por producto, desde el formulario.
+</Callout>
+
+## Qué ve el cliente
+
+- Una tarjeta con la foto, el nombre, la descripción, el precio y tu tag especial (si pusiste uno).
+- Si el producto está en promoción, el precio aparece tachado con el nuevo precio y una etiqueta como "-20%" o "2x1" (ver <GuideLink href="/dashboard/ayuda/menu/promociones">Promociones</GuideLink>).
+- Si está agotado, un cartel "Agotado" y no se puede pedir.
+- Si tiene adicionales, al tocarlo se abre una ventana con "Elige tus adicionales", donde el cliente marca los que quiere o deja "Sin adicionales", y una caja para instrucciones especiales.
+- Si tu local está cerrado, el botón dice "Restaurante cerrado" (ver <GuideLink href="/dashboard/ayuda/menu/ver-menu-como-cliente">Ver el menú como cliente</GuideLink>).
 
 ## Errores comunes
 
-- **No aparece el producto en el menú:** revisá que la categoría esté activa y que el restaurante esté marcado como abierto.
-- **El precio sale en cero:** el campo precio no acepta puntos, solo números. Escribí `15000` en lugar de `15.000`.
+- **"Selecciona una categoría":** no elegiste categoría. Es obligatoria.
+- **"El precio debe ser mayor a 0":** el precio está vacío o en cero.
+- **El producto no aparece en el menú:** revisa que <Ui>Activo en el menú</Ui> esté marcado y que su categoría esté activa. Si tiene "Agotado", marca <Ui>Disponible hoy</Ui>.
+- **No puedo marcar un adicional:** está inactivo. Actívalo en <Ui>Productos → Adicionales</Ui>.
+- **No veo Nuevo producto o Importar Excel:** tu usuario no tiene permiso para crear productos.
+- **La foto no sube:** puede ser muy chica (menos de 600 × 600 px) o tu conexión es lenta. Prueba con otra foto.
 
-<GuideCard href="/dashboard/ayuda/menu/ver-menu-como-cliente" title="Ver el menú como cliente" summary="Confirmá que todo se ve bien antes de compartirlo." />
+<GuideCard href="/dashboard/ayuda/menu/adicionales" title="Adicionales" summary="Crea extras (salsas, tamaños, ingredientes) para ofrecerlos en tus productos." />
+<GuideCard href="/dashboard/ayuda/menu/ver-menu-como-cliente" title="Ver el menú como cliente" summary="Confirma que todo se ve bien antes de compartirlo." />

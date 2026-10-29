@@ -90,7 +90,7 @@ export default function PlantillasPage() {
           Plantillas de WhatsApp
         </h1>
         <p style={{ fontSize: 14, color: 'var(--t-text-3)', margin: 0 }}>
-          Personalizá el mensaje que recibe el cliente cuando su pedido cambia de estado.
+          Personaliza el mensaje que recibe el cliente cuando su pedido cambia de estado.
         </p>
       </div>
 

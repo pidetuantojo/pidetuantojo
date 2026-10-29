@@ -65,6 +65,8 @@ export function CategoriesManager() {
     try {
       await deleteCategory.mutateAsync(id);
       showToast(`"${name}" eliminada`);
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'No se pudo eliminar la categoría', 'error');
     } finally {
       setDeletingId(null);
     }

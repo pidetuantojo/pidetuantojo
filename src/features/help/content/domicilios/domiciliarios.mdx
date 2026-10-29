@@ -1,33 +1,83 @@
-Los domiciliarios son las personas que hacen las entregas. Al asignar un domiciliario a un pedido podés mandarle por WhatsApp la dirección y el valor a cobrar.
+Aquí registras a las personas (o empresas) que llevan tus pedidos. Después los asignas a cada domicilio y, con un toque, **les mandas por WhatsApp la dirección y cuánto cobrar**.
 
-<Callout type="info" title="Quién puede hacerlo">
-  Solo el administrador puede agregar y editar domiciliarios.
+<Callout type="info" title="No necesitas conectar WhatsApp en el panel">
+  El mensaje al domiciliario se abre en tu propio WhatsApp con el texto ya escrito: solo tienes que tocar enviar. Funciona aunque no hayas conectado WhatsApp en <Ui>Notificaciones → Configuración WhatsApp</Ui>.
 </Callout>
 
-## Paso a paso
+## Registrar un domiciliario
 
 <Steps>
-  <Step title="Abrí Domiciliarios">
-    En el menú lateral andá a <Ui>Gestión de entrega → Domiciliarios</Ui>.
+  <Step title="Abre Domiciliarios">
+    En el menú lateral ve a <Ui>Gestión de entrega → Domiciliarios</Ui>.
   </Step>
-  <Step title="Agregá uno nuevo">
-    Tocá <Ui>+ Nuevo domiciliario</Ui>.
+  <Step title="Toca Nuevo domiciliario">
+    Si la lista está vacía, también puedes tocar <Ui>+ Agregar domiciliario</Ui>.
   </Step>
-  <Step title="Completá los datos">
-    Escribí el nombre y el número de WhatsApp del domiciliario (con código de país, ej: 573001234567). El número es obligatorio para poder enviarle el pedido por WhatsApp.
+  <Step title="Escribe el nombre">
+    En <Ui>Nombre completo</Ui> pon el nombre de la persona. Ejemplo: Juan Pérez.
   </Step>
-  <Step title="Guardá">
-    Tocá <Ui>Guardar</Ui>. El domiciliario ya aparece como opción cuando asignás un pedido.
+  <Step title="Asígnale un código">
+    En <Ui>Código</Ui> pon una clave corta para identificarlo. Ejemplo: D-01. **Es obligatorio** para domiciliarios individuales.
+  </Step>
+  <Step title="Escribe su celular">
+    En <Ui>Número de celular</Ui> pon el número del domiciliario, por ejemplo 3001234567. No hace falta el 57: el sistema agrega el indicativo de Colombia solo.
+  </Step>
+  <Step title="Guarda">
+    Toca <Ui>Agregar</Ui>. El domiciliario queda <Ui>Activo</Ui> y ya aparece cuando asignas un pedido.
   </Step>
 </Steps>
 
-## Cómo asignar un domiciliario a un pedido
+## Registrar una empresa de domicilios
 
-Cuando un pedido de domicilio llega al estado <Ui>Listo</Ui>, abrí el pedido y tocá <Ui>Asignar domiciliario</Ui>. Elegí quién lo lleva y luego tocá <Ui>Enviar a…</Ui> para mandarle por WhatsApp la dirección, el valor y las instrucciones del cliente.
+Si trabajas con una empresa que te presta sus domiciliarios, al abrir <Ui>Nuevo domiciliario</Ui> vas a ver la casilla <Ui>¿Es empresa de domicilios?</Ui>. Márcala y completa:
+
+- <Ui>Nombre de la empresa</Ui>.
+- <Ui>Celular de la empresa</Ui>. A ese número se envía el pedido.
+
+Las empresas **no llevan código**. Esta casilla solo aparece si tu plan incluye empresas de domicilios.
+
+## Asignar un domiciliario a un pedido
+
+<Steps>
+  <Step title="Abre el pedido">
+    Entra al pedido desde <Ui>Gestión de pedidos → Pedidos</Ui>. Esto solo aplica a pedidos a domicilio.
+  </Step>
+  <Step title="Toca Asignar domiciliario">
+    Se abre una lista con tus domiciliarios y empresas **activos**. Puedes buscar por nombre o código en <Ui>Buscar domiciliario o empresa...</Ui>.
+  </Step>
+  <Step title="Elige quién lo lleva">
+    Toca su nombre. Si eliges una empresa, escribe en <Ui>Domiciliario de la empresa</Ui> el nombre o código de quien tomó el pedido y toca <Ui>Asignar</Ui>.
+  </Step>
+  <Step title="Envíale el pedido por WhatsApp">
+    Toca el botón <Ui>Enviar a</Ui> con su nombre. Se abre WhatsApp con el mensaje listo: toca enviar.
+  </Step>
+</Steps>
+
+Para cambiar de domiciliario usa el lápiz junto a su nombre, y para quitarlo usa la **X**.
+
+### Qué lleva el mensaje
+
+- Número del pedido y, si es empresa, quién lo tomó.
+- Nombre, dirección (con barrio) y celular del cliente.
+- **Cuánto cobrar**. Si el cliente ya pagó por transferencia, el mensaje lo indica con un visto y no pide cobrar.
+- La nota interna del pedido, si escribiste una.
+
+## Activar, editar o eliminar
+
+En la lista, cada domiciliario muestra si está <Ui>Activo</Ui> o <Ui>Inactivo</Ui>. Con los botones de la derecha puedes activarlo o desactivarlo, editarlo (<Ui>Guardar cambios</Ui>) o eliminarlo. **Eliminar pide confirmación y no se puede deshacer.**
+
+<Callout type="tip" title="Mejor desactivar que eliminar">
+  Si alguien deja de trabajar contigo por un tiempo, desactívalo. No aparece al asignar pedidos y lo puedes reactivar cuando vuelva.
+</Callout>
 
 ## Errores comunes
 
-- **No aparece el botón "Asignar domiciliario":** el pedido debe ser de tipo domicilio y tener un estado que lo permita.
-- **No llega el mensaje de WhatsApp:** verificá que el número tenga código de país y que WhatsApp esté conectado en <Ui>Notificaciones → WhatsApp</Ui>.
+- **Al guardar me dice "El código es requerido":** los domiciliarios individuales necesitan código. Si es una empresa, marca <Ui>¿Es empresa de domicilios?</Ui>.
+- **Al guardar me dice "El número es requerido":** falta el celular.
+- **No veo la casilla de empresa:** tu plan no incluye empresas de domicilios.
+- **WhatsApp no encuentra el contacto del domiciliario:** revisa que el número esté completo (10 dígitos para un celular). Edita el domiciliario y corrígelo.
+- **No me aparece el domiciliario al asignar:** está <Ui>Inactivo</Ui>. Actívalo desde la lista.
+- **No veo el botón Asignar domiciliario:** el pedido no es a domicilio, o tu usuario no tiene permiso para asignar domiciliarios. Revísalo en <GuideLink href="/dashboard/ayuda/configuracion/equipo-y-permisos">Equipo y permisos</GuideLink>.
 
-<GuideCard href="/dashboard/ayuda/domicilios/zonas-y-tarifas" title="Zonas y tarifas de domicilio" summary="Configurá hasta dónde llegás y cuánto cobrás por el envío." />
+<GuideCard href="/dashboard/ayuda/domicilios/zonas-y-tarifas" title="Zonas y tarifas de domicilio" summary="Define a qué barrios llegas y cuánto cobras por el envío." />
+<GuideCard href="/dashboard/ayuda/pedidos/gestionar-un-pedido" title="Gestionar un pedido" summary="Cambia estados, cobra y asigna desde el detalle del pedido." />

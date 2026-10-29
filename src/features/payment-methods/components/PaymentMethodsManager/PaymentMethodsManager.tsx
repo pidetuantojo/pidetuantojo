@@ -202,7 +202,7 @@ export function PaymentMethodsManager() {
           Métodos de pago
         </h2>
         <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--t-text-3)' }}>
-          Elige cómo te pueden pagar tus clientes. Lo que actives acá es lo que verán al confirmar su pedido. Al menos uno debe quedar activo.
+          Elige cómo te pueden pagar tus clientes. Lo que actives aquí es lo que verán al confirmar su pedido. Al menos uno debe quedar activo.
         </p>
         {!canManage && (
           <p style={{ margin: '8px 0 0', fontSize: 12, color: 'var(--t-text-3)' }}>

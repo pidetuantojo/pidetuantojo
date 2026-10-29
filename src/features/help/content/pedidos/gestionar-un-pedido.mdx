@@ -1,9 +1,11 @@
+Los pedidos de tus clientes llegan al tablero de <Ui>Gestión de pedidos → Pedidos</Ui>. Desde ahí los confirmas, los mandas a cocina, los cobras y los entregas. Si el tablero no está abierto, **nadie se entera de los pedidos nuevos**, así que es la pantalla más importante del panel.
+
 ## Antes de empezar
 
-Deja abierta la pantalla de <Ui>Pedidos</Ui> durante todo el turno. Los pedidos nuevos aparecen solos, sin recargar la página.
+Deja abierta la pantalla de <Ui>Pedidos</Ui> durante todo el turno. Los pedidos nuevos aparecen solos, sin recargar la página. Arriba tiene que verse el aviso verde <Ui>En vivo</Ui>.
 
 <Callout type="warning" title="Activa el sonido">
-  El navegador no deja sonar la alerta hasta que tocas la página. Al iniciar el turno, toca cualquier parte de la pantalla de Pedidos una vez.
+  El navegador no deja sonar la alerta hasta que tocas la página. Al empezar el turno, toca cualquier parte de la pantalla de Pedidos una vez. Puedes probar el sonido con el botón de la campana (🔔) de arriba. **La alerta solo suena con la pantalla de Pedidos abierta**, no desde otras secciones.
 </Callout>
 
 ## Míralo en acción
@@ -12,48 +14,86 @@ Mira la demostración o toca <Ui>Practica tú</Ui> para hacerlo con tus propias 
 
 <OrderFlowSimulator />
 
+## Cómo se ve el tablero
+
+Los pedidos se ordenan en columnas según cómo los pide el cliente:
+
+| Columna | Qué es |
+| --- | --- |
+| <Ui>Para llevar</Ui> | El cliente pasa a recogerlo |
+| <Ui>Domicilio</Ui> | Se lo llevas a su dirección |
+| <Ui>Mesa</Ui> | Consumo en el local (solo si tu plan incluye mesas) |
+
+En cada columna, los más antiguos quedan arriba para que los atiendas por orden de llegada. Arriba puedes cambiar el día que estás viendo (<Ui>Hoy</Ui>, <Ui>Ayer</Ui>, <Ui>Últ. 7 días</Ui>, <Ui>Este mes</Ui> o un rango propio). Los pedidos ya entregados o cancelados se esconden del tablero: toca <Ui>Ver finalizados</Ui> para verlos.
+
 ## Paso a paso
 
 <Steps>
-  <Step title="Llega un pedido nuevo">
-    Suena una alerta y aparece la notificación naranja <Ui>¡Nuevo pedido!</Ui> con su número. El pedido entra a su columna (<Ui>Para llevar</Ui>, <Ui>Domicilio</Ui> o <Ui>Mesa</Ui>) en estado <Ui>Recibido</Ui>.
+  <Step title="Detecta el pedido nuevo">
+    Suena una alerta y aparece arriba a la derecha el aviso naranja <Ui>¡Nuevo pedido!</Ui> con el número. Se cierra solo a los pocos segundos. El pedido entra a su columna con el estado <Ui>Recibido</Ui>.
   </Step>
   <Step title="Abre el pedido">
-    Toca la tarjeta. Se abre el panel con los productos, los adicionales, las notas del cliente y todas las acciones.
+    Toca la tarjeta. Se abre un panel a la derecha con el cliente, el pago, los productos, los adicionales, las notas del cliente y todas las acciones.
   </Step>
   <Step title="Confírmalo">
-    Toca <Ui>Confirmado</Ui> para que todo tu equipo sepa que el pedido sigue adelante. El estado cambia al instante en todas las pantallas.
+    Abajo del panel hay una fila de botones redondos con los estados (<Ui>Recibido</Ui>, <Ui>Confirmado</Ui>, <Ui>En preparación</Ui>, <Ui>Listo</Ui>, <Ui>Entregado</Ui>…). Toca <Ui>Confirmado</Ui>. El estado actual aparece lleno y con una ✓, y el cambio se ve al instante en todas las pantallas.
   </Step>
   <Step title="Imprime la comanda">
-    Toca <Ui>Imprimir</Ui>. La comanda sale en la impresora de cocina con productos, adicionales y notas.
+    Toca <Ui>Imprimir</Ui>. El botón pasa por <Ui>En cola</Ui> e <Ui>Imprimiendo</Ui> y, al terminar, el panel muestra la hora en que se imprimió (y el botón pasa a decir <Ui>Reimprimir</Ui>). La comanda sale por la impresora de la computadora que tiene abierta la <GuideLink href="/dashboard/ayuda/configuracion/estacion-de-impresion">estación de impresión</GuideLink>.
   </Step>
-  <Step title="Pásalo a preparación">
-    Cuando la cocina empiece, toca <Ui>En preparación</Ui>. Cuando esté listo, toca <Ui>Listo</Ui>.
+  <Step title="Pásalo a preparación y a listo">
+    Cuando la cocina empiece, toca <Ui>En preparación</Ui>. Cuando esté terminado, toca <Ui>Listo</Ui>.
   </Step>
   <Step title="Avísale al cliente">
-    Toca <Ui>WhatsApp</Ui>: se abre el chat del cliente con un mensaje que dice en qué estado va su pedido. Solo dale enviar.
+    Toca <Ui>WhatsApp</Ui>: se abre el chat del cliente con un mensaje que dice en qué estado va su pedido. Solo pulsa enviar. Si tienes conectados los mensajes automáticos de WhatsApp, el cliente ya recibe un aviso cuando cambias el estado; el botón sirve igual para escribirle tú.
   </Step>
   <Step title="Asigna el domiciliario (solo domicilios)">
-    Toca <Ui>Asignar domiciliario</Ui> y elige quién lo lleva. Luego toca <Ui>Enviar a…</Ui> para mandarle por WhatsApp la dirección y el valor a cobrar.
+    Toca <Ui>Asignar domiciliario</Ui> y elige quién lo lleva (puedes buscarlo por nombre). Si eliges una empresa de domicilios, te pide el nombre o código de la persona que tomó el pedido. Después toca el botón <Ui>Enviar a…</Ui> (dice "Enviar a" y el nombre del domiciliario): se abre WhatsApp con la dirección y el valor a cobrar. **Esto funciona aunque no tengas WhatsApp conectado.**
   </Step>
   <Step title="Registra el pago">
-    Toca <Ui>Pagar</Ui>, revisa el valor a cobrar y elige el método de pago. Si es en efectivo, escribe cuánto te entregaron y el sistema te muestra el cambio.
+    Toca <Ui>Pagar</Ui>. En <Ui>Registrar pago</Ui> revisa el <Ui>Valor a cobrar</Ui> y elige el <Ui>Método de pago</Ui>. Si es efectivo, escribe cuánto te entregaron en <Ui>Recibido en efectivo</Ui> y el panel te muestra el cambio. Confirma con <Ui>Cobrar</Ui>. Si el cliente paga solo una parte, el pedido queda con lo que falta cobrar. Para repartir la cuenta entre varias personas usa la pestaña <Ui>Dividir</Ui>.
   </Step>
   <Step title="Márcalo entregado">
-    Toca <Ui>Entregado</Ui>. El pedido se atenúa en el tablero y queda en la contabilidad del día.
+    Toca <Ui>Entregado</Ui>. Para llevar y domicilio, el pedido sale del tablero (lo ves en <Ui>Ver finalizados</Ui>). En las mesas el botón dice <Ui>Entregar a mesa</Ui> y el pedido sigue en el tablero hasta que toques <Ui>Liberar mesa</Ui>.
   </Step>
 </Steps>
 
 ## Si necesitas cancelar
 
-Toca <Ui>Cancelar</Ui> y confirma con <Ui>Sí</Ui>. El pedido queda marcado como Cancelado.
+Toca <Ui>Cancelar</Ui> (a la derecha de los estados) y confirma con <Ui>Sí</Ui>. El pedido queda como Cancelado y sale del tablero. **Cancelar no le avisa al cliente**: escríbele tú si hace falta.
 
-<Callout type="tip">
-  ¿El cliente quiere algo más? Usa <Ui>Agregar</Ui> en el mismo pedido en vez de crear uno nuevo.
-</Callout>
+## Otras acciones del panel
+
+- **Agregar productos:** usa <Ui>Agregar</Ui> en el mismo pedido en vez de crear uno nuevo.
+- **Descuento:** <Ui>Descuento</Ui> te deja restar un valor ($) o un porcentaje (%), con un motivo opcional.
+- **Editar:** el lápiz junto al cliente, el pago, la dirección o un producto abre la edición. También puedes quitar un producto con el tacho de basura.
+- **Nota interna:** agrega una nota que ve tu equipo; no es la nota del cliente.
+- **Valor del domicilio:** en los domicilios, el lápiz junto a <Ui>Envío</Ui> cambia lo que se cobra por el envío.
+- **Crear un pedido a mano** (por ejemplo, uno que te hicieron por teléfono): toca <Ui>Nuevo pedido</Ui> arriba.
+- **Eliminar pedido:** solo lo ve el administrador y pide un motivo.
+
+## ¿Quién puede hacer qué?
+
+Cada botón depende del permiso del usuario. Si no ves uno, no es un error: falta el permiso.
+
+| Acción | Permiso |
+| --- | --- |
+| Ver el tablero y los pedidos | Ver pedidos |
+| Cambiar el estado y cancelar | Cambiar estado del pedido |
+| Imprimir comanda | Imprimir comanda (y que el plan incluya impresión) |
+| Pagar y marcar pagado | Marcar pagado / pendiente |
+| Asignar y enviar al domiciliario | Asignar domiciliario |
+| Agregar, editar y dar descuento | Editar pedidos |
+| Cambiar el valor del domicilio | Editar valor de domicilio |
+| Crear un pedido a mano | Crear pedido manual |
 
 ## Errores comunes
 
-- **No suena la alerta:** toca la pantalla de Pedidos una vez para activar el sonido.
-- **No imprime:** revisa que la estación de impresión esté abierta y QZ Tray encendido en el computador de la caja.
+- **No suena la alerta:** toca la pantalla de Pedidos una vez para activar el sonido y confirma que la pantalla de Pedidos está abierta.
+- **No ves un pedido que el cliente hizo:** revisa que el filtro de arriba esté en el día correcto y que no esté escondido en <Ui>Ver finalizados</Ui>. Más ayuda en la guía de pedidos que no llegan.
+- **No imprime:** abre la estación de impresión en la computadora de la impresora. Mira la guía de abajo.
 - **No ves algunos botones:** tu usuario no tiene ese permiso. Pídeselo al administrador del restaurante.
+
+<GuideCard href="/dashboard/ayuda/pedidos/estados-de-pedido" title="Estados de pedido" summary="Cómo ordenar, crear y desactivar los pasos por los que pasa un pedido." />
+<GuideCard href="/dashboard/ayuda/problemas-frecuentes/no-llegan-pedidos" title="No me llegan pedidos" summary="Qué revisar si un cliente dice que pidió y no lo ves." />
+<GuideCard href="/dashboard/ayuda/problemas-frecuentes/no-imprime" title="No imprime" summary="Solución paso a paso si la comanda no sale." />

@@ -96,18 +96,24 @@ export function ProductsManager() {
   }
 
   async function handleMove(index: number, direction: 'up' | 'down') {
-    const sorted = [...filtered];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= sorted.length) return;
-    const current = sorted[index];
-    const target = sorted[targetIndex];
+    if (targetIndex < 0 || targetIndex >= filtered.length) return;
+    const current = filtered[index];
+    const target = filtered[targetIndex];
+    // `index` es la posición en la lista filtrada (búsqueda/categoría): el intercambio se hace en la
+    // lista completa y se renumera por posición, así el orden global no se mezcla ni repite valores.
+    const full = [...products];
+    const from = full.findIndex((p) => p.id === current.id);
+    const to = full.findIndex((p) => p.id === target.id);
+    [full[from], full[to]] = [full[to], full[from]];
+    const changes = full
+      .map((p, i) => ({ id: p.id, sortOrder: i + 1, prev: p.sortOrder }))
+      .filter((c) => c.sortOrder !== c.prev);
     setMovingId(current.id);
     try {
-      // Usar posición en el array como sortOrder para evitar duplicados en Firestore
-      await Promise.all([
-        productsService.update(restaurantId, current.id, { sortOrder: targetIndex + 1 }),
-        productsService.update(restaurantId, target.id, { sortOrder: index + 1 }),
-      ]);
+      await Promise.all(
+        changes.map((c) => productsService.update(restaurantId, c.id, { sortOrder: c.sortOrder })),
+      );
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.products(restaurantId) });
       showToast('Orden actualizado');
     } finally {

@@ -1,7 +1,8 @@
 import createMDX from '@next/mdx';
+import remarkGfm from 'remark-gfm';
 
-// MDX: guías del centro de ayuda (src/features/help/content)
-const withMDX = createMDX();
+// MDX: guías del centro de ayuda (src/features/help/content). remark-gfm habilita tablas.
+const withMDX = createMDX({ options: { remarkPlugins: [remarkGfm] } });
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

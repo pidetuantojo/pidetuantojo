@@ -7,6 +7,8 @@ import {
   deleteDoc,
   query,
   orderBy,
+  where,
+  limit,
 } from 'firebase/firestore';
 
 import { db } from '@/lib/firebase/config';
@@ -52,7 +54,18 @@ export const orderStatusesService = {
     });
   },
 
+  /** Falla si algún pedido usa el estado: esos pedidos quedarían sin estado visible en el tablero. */
   async delete(restaurantId: string, id: string): Promise<void> {
+    let inUse: boolean;
+    try {
+      const ordersRef = collection(db, 'restaurants', restaurantId, 'orders');
+      inUse = !(await getDocs(query(ordersRef, where('statusId', '==', id), limit(1)))).empty;
+    } catch {
+      throw new Error('No se pudo verificar si hay pedidos con este estado. Desactívalo en lugar de eliminarlo.');
+    }
+    if (inUse) {
+      throw new Error('Hay pedidos con este estado, así que no se puede eliminar. Desactívalo para que no se use más.');
+    }
     await deleteDoc(doc(statusesRef(restaurantId), id));
   },
 };

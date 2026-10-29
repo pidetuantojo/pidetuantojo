@@ -168,12 +168,17 @@ function targets(p: Promotion, line: PricingLine): boolean {
   return !!t.productIds?.includes(line.productId);
 }
 
-/** Descuento por unidad de un precio tachado (sobre el precio base, sin adicionales). */
-export function unitDiscount(p: Pick<Promotion, 'discountKind' | 'discountValue'>, base: number): number {
+/**
+ * Descuento por unidad de un precio tachado (sobre el precio base, sin adicionales).
+ * `maxDiscount` topa el porcentaje por unidad: así el precio tachado del menú y el carrito coinciden.
+ */
+export function unitDiscount(p: Pick<Promotion, 'discountKind' | 'discountValue' | 'maxDiscount'>, base: number): number {
   const value = Math.max(0, p.discountValue ?? 0);
   switch (p.discountKind) {
-    case 'percent':
-      return clamp(base - roundCop((base * (100 - clamp(value, 0, 100))) / 100), 0, base);
+    case 'percent': {
+      const amount = clamp(base - roundCop((base * (100 - clamp(value, 0, 100))) / 100), 0, base);
+      return p.maxDiscount ? Math.min(amount, p.maxDiscount) : amount;
+    }
     case 'amount':
       return Math.min(value, base);
     case 'fixed_price':

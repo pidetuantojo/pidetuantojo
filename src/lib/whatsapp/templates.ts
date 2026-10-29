@@ -31,7 +31,7 @@ export const WA_EVENTS: WaEventMeta[] = [
 export const DEFAULT_TEMPLATES: WaTemplates = {
   pedido_nuevo: `Hola {{nombreCliente}}! 👋\nTu pedido *#{{numeroPedido}}* fue recibido ✅\n\n*🛒 Productos:*\n{{productos}}\n\n*💰 Total:* {{total}}\n*💳 Pago:* {{metodoPago}}`,
   pedido_confirmado: `Hola {{nombreCliente}}! 👋\nTu pedido *#{{numeroPedido}}* fue *confirmado* ✅\n\n*🛒 Productos:*\n{{productos}}\n\n*💰 Total:* {{total}}\n*💳 Pago:* {{metodoPago}}`,
-  pedido_en_camino: `Hola {{nombreCliente}}! 🚀\nTu pedido *#{{numeroPedido}}* está *en camino* 🛵\n\n¡Preparate para recibirlo!`,
+  pedido_en_camino: `Hola {{nombreCliente}}! 🚀\nTu pedido *#{{numeroPedido}}* está *en camino* 🛵\n\n¡Prepárate para recibirlo!`,
   pedido_entregado: `Hola {{nombreCliente}}! ✔️\nTu pedido *#{{numeroPedido}}* fue *entregado*.\n\n¡Gracias por tu pedido! 🙌`,
   pedido_estado_actualizado: `Hola {{nombreCliente}}! 📦\nTu pedido *#{{numeroPedido}}* ahora está: *{{estadoPedido}}*`,
   pedido_pagado: `Hola {{nombreCliente}}! 💳\nTu pedido *#{{numeroPedido}}* ya fue *pagado* ✅\n\n*💰 Total:* {{total}}\n*💳 Pago:* {{metodoPago}}\n\n¡Gracias por tu pedido! 🙌`,

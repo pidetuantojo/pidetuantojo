@@ -197,7 +197,7 @@ export function validateProductRow(
   if (!row.categoria) {
     errors.push('La categoría es obligatoria');
   } else if (!cat) {
-    errors.push(`La categoría "${row.categoria}" no existe. Revisá la hoja Categorías.`);
+    errors.push(`La categoría "${row.categoria}" no existe. Revisa la hoja Categorías.`);
   }
 
   // precio

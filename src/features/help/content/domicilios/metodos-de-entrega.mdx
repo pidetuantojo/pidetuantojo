@@ -1,0 +1,103 @@
+Los métodos de entrega son las formas en que tus clientes reciben el pedido: **recoger en el local, domicilio o comer en el local**. Aquí decides cuáles ofreces, si se pueden programar y con qué medios de pago se puede pagar cada uno.
+
+## Los tres métodos
+
+| Método | Qué significa | Viene activado |
+|---|---|---|
+| <Ui>Recoger en Local</Ui> | El cliente retira el pedido en tu local | Sí |
+| <Ui>Domicilio</Ui> | Envias el pedido a la dirección del cliente | Sí |
+| <Ui>Comer en el Local</Ui> | El cliente pide desde su mesa | No. Solo aparece si tu plan lo incluye |
+
+**Siempre tiene que quedar al menos un método activo.** El último que queda prendido no se puede apagar y muestra la etiqueta "mín. 1".
+
+## Activar o desactivar un método
+
+<Steps>
+  <Step title="Abre Métodos de entrega">
+    En el menú lateral ve a <Ui>Gestión de entrega → Métodos de entrega</Ui>.
+  </Step>
+  <Step title="Usa el interruptor del método">
+    Cada método es una tarjeta con un interruptor a la derecha. Préndelo o apágalo.
+  </Step>
+  <Step title="Mira el aviso">
+    El cambio **se guarda solo** y aparece un mensaje, por ejemplo "Domicilio activado". No hay botón de guardar.
+  </Step>
+</Steps>
+
+Cuando un método está activo, la tarjeta se despliega y muestra sus opciones.
+
+## Permitir pedidos programados
+
+Si tu plan incluye pedidos programados, las tarjetas de <Ui>Recoger en Local</Ui> y <Ui>Domicilio</Ui> tienen el interruptor <Ui>Programar pedido</Ui> ("El cliente puede elegir cuándo recibir su pedido").
+
+Con el interruptor prendido, el cliente ve en su pedido la casilla <Ui>Programar para más tarde</Ui> y elige día y hora. Reglas que aplican:
+
+- Mínimo **30 minutos** después de la hora actual.
+- Máximo **7 días** hacia adelante.
+- Tiene que caer **dentro de tu horario de atención**. Si no, le aparece un aviso con tu horario de ese día.
+
+<Callout type="info" title="Programar cuando estás cerrado">
+  Esto es distinto de aceptar pedidos con el local cerrado. Eso se prende en <Ui>Mi restaurante → Configuración</Ui>, sección <Ui>Horario de atención</Ui>. Mira <GuideLink href="/dashboard/ayuda/configuracion/datos-del-restaurante">Datos del restaurante</GuideLink>.
+</Callout>
+
+## Elegir los medios de pago de cada método
+
+Dentro de cada tarjeta activa, en <Ui>Métodos de pago disponibles</Ui>, ves tus medios de pago activos con una casilla. Por defecto están todos marcados. **Desmarca los que no quieres ofrecer en ese método.**
+
+Ejemplo: aceptas efectivo y Nequi para <Ui>Domicilio</Ui>, pero en <Ui>Recoger en Local</Ui> solo efectivo. Desmarcas Nequi en la tarjeta de recoger.
+
+Siempre debe quedar al menos uno marcado: la última casilla marcada no se puede desmarcar.
+
+Para crear o activar medios de pago, mira <GuideLink href="/dashboard/ayuda/cobros/metodos-de-pago">Métodos de pago</GuideLink>.
+
+## Comer en el local: administrar las mesas
+
+Si tu plan incluye <Ui>Comer en el Local</Ui>, al activarlo se despliega la lista <Ui>Mesas</Ui> con su cantidad.
+
+<Steps>
+  <Step title="Activa Comer en el Local">
+    Prende el interruptor de esa tarjeta.
+  </Step>
+  <Step title="Toca Agregar mesa">
+    Se abre la ventana <Ui>Nueva mesa</Ui>.
+  </Step>
+  <Step title="Escribe el nombre">
+    En <Ui>Nombre de la mesa</Ui> pon, por ejemplo, "Mesa 1", "Mesa VIP" o "Terraza". Es obligatorio.
+  </Step>
+  <Step title="Guarda">
+    Toca <Ui>Agregar</Ui>. Repite con cada mesa.
+  </Step>
+</Steps>
+
+Cada mesa tiene un lápiz para cambiarle el nombre y una papelera para eliminarla. Eliminar pide confirmación y **no se puede deshacer**.
+
+## Qué ve el cliente
+
+Al armar su pedido, el cliente ve el título <Ui>Selecciona la forma de entrega</Ui> con un botón por cada método activo. Según lo que elija, el formulario cambia:
+
+| Elige | Qué completa |
+|---|---|
+| <Ui>Recoger en Local</Ui> | Solo su nombre, celular y método de pago |
+| <Ui>Domicilio</Ui> | Su dirección y su barrio o zona (según tu modo de domicilios). Puede tocar <Ui>Compartir mi ubicación</Ui> |
+| <Ui>Comer en el Local</Ui> | La mesa en la que está, con <Ui>Elige tu mesa</Ui> |
+
+Además:
+
+- **Mesas:** si no creaste ninguna, el cliente ve el aviso de que el local no tiene mesas configuradas, que le pregunte al mesero, y puede pedir igual. Si creaste mesas, tiene que elegir una.
+- **Pago:** en <Ui>Método de Pago</Ui> solo ve los medios que habilitaste para el método de entrega que eligió. Si cambia de método y el pago elegido ya no está disponible, lo tiene que elegir de nuevo.
+- **Local cerrado:** no puede elegir <Ui>Comer en el Local</Ui>. Si tienes activada la opción de pedidos programados con el local cerrado, ve solo Recoger y Domicilio y debe elegir fecha y hora. Si no, ve el aviso "Estamos cerrados en este momento y no recibimos pedidos".
+- **Pedidos para comer en el local no se programan.**
+
+Al confirmar, por defecto se le abre su WhatsApp con el pedido ya escrito para enviártelo. Si conectaste WhatsApp en el panel y activaste <Ui>Mensajes automáticos</Ui>, recibe una confirmación automática.
+
+## Errores comunes
+
+- **Un método no le aparece al cliente:** está apagado, o el local está cerrado y no aceptas pedidos programados.
+- **No veo la tarjeta Comer en el Local:** tu plan no la incluye.
+- **No veo el interruptor Programar pedido:** tu plan no incluye pedidos programados. En <Ui>Comer en el Local</Ui> nunca aparece.
+- **No puedo apagar un método:** es el único activo. Prende primero otro.
+- **El cliente no ve Nequi (u otro medio) al pagar:** revisa que esté activo en <Ui>Finanzas → Métodos de pago</Ui> y marcado en la tarjeta del método de entrega que eligió.
+- **Veo todo pero no puedo cambiar nada:** la pantalla dice "Solo lectura". Tu usuario necesita el permiso de activar métodos (y otro distinto para administrar mesas).
+
+<GuideCard href="/dashboard/ayuda/domicilios/zonas-y-tarifas" title="Zonas y tarifas de domicilio" summary="Cobra un envío distinto según el barrio." />
+<GuideCard href="/dashboard/ayuda/cobros/metodos-de-pago" title="Métodos de pago" summary="Activa efectivo, datáfono y cuentas de transferencia." />

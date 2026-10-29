@@ -7,7 +7,7 @@ import { useAuth } from '@/features/auth';
 import { useOrderStatuses } from '@/features/order-statuses/hooks/useOrderStatuses';
 import { cn } from '@/lib/utils';
 
-import { calculateStats, exportToExcel, getPresetRange } from '../../helpers/accounting.helpers';
+import { calculateStats, exportToExcel, getPresetRange, isCancelledOrder } from '../../helpers/accounting.helpers';
 import { useAccountingOrders } from '../../hooks/useAccountingOrders';
 import type { DatePreset, DateRange } from '../../types/accounting.types';
 import { AccountingSummary } from '../AccountingSummary';
@@ -47,7 +47,7 @@ export function AccountingManager() {
 
   const { data: orders = [], isLoading } = useAccountingOrders(restaurantId, activeRange);
 
-  const stats = calculateStats(orders);
+  const stats = calculateStats(orders.filter((o) => !isCancelledOrder(o, statuses)));
 
   function handlePreset(key: DatePreset) {
     setPreset(key);
@@ -140,7 +140,7 @@ export function AccountingManager() {
           <OrdersTable
             orders={orders}
             statuses={statuses}
-            onExport={can('accounting.export') ? () => exportToExcel(orders) : undefined}
+            onExport={can('accounting.export') ? () => exportToExcel(orders, statuses): undefined}
           />
         </div>
       )}

@@ -126,7 +126,7 @@ export default function EditarRestaurantePage() {
               {restaurant ? `Editar: ${restaurant.name}` : 'Editar restaurante'}
             </h1>
             <p style={{ fontSize: 13, color: '#9a8f86', margin: '3px 0 0' }}>
-              Actualizá la información del restaurante.
+              Actualiza la información del restaurante.
             </p>
           </div>
           {restaurant && (

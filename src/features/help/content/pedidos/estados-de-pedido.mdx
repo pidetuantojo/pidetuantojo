@@ -1,0 +1,96 @@
+Los estados son los pasos por los que pasa un pedido: desde que llega hasta que se entrega. Los ves como botones de colores abajo de cada pedido y como etiqueta en cada tarjeta del tablero. Puedes ordenarlos, apagar los que no usas y crear los tuyos (por ejemplo "En camino" o "En caja").
+
+## ¿Te conviene cambiarlos?
+
+Los estados que vienen listos alcanzan para la mayoría de los restaurantes. Tócalos solo si tu cocina tiene un paso propio que quieres ver en el tablero. Cambiar de más puede confundir a tu equipo.
+
+## Los estados que ya tienes
+
+Cuando se crea tu restaurante, el panel arma estos seis estados. Se llaman **estados base**:
+
+| Orden | Estado | Para qué sirve |
+| --- | --- | --- |
+| 1 | <Ui>Recibido</Ui> | El pedido acaba de llegar. Todos los pedidos nuevos empiezan aquí |
+| 2 | <Ui>Confirmado</Ui> | Tu equipo ya lo vio y sigue adelante |
+| 3 | <Ui>En preparación</Ui> | La cocina lo está haciendo |
+| 4 | <Ui>Listo</Ui> | Terminado, esperando entrega o recogida |
+| 5 | <Ui>Entregado</Ui> | El cliente ya lo tiene. **Cierra el pedido** |
+| 6 | <Ui>Cancelado</Ui> | El pedido no sigue. **Cierra el pedido** |
+
+En un estado base **no puedes cambiar el nombre ni el color** (por eso ves un candado), ni eliminarlo. Sí puedes moverlo de lugar y desactivarlo.
+
+## Cómo ver los estados
+
+Ve a <Ui>Gestión de pedidos → Estados</Ui>. Cada fila muestra:
+
+- las flechas para <Ui>Subir</Ui> y <Ui>Bajar</Ui> el estado,
+- su número de orden y su color,
+- el nombre y su código interno,
+- la etiqueta <Ui>Base</Ui> (si es de los que vienen listos) y si está <Ui>Activo</Ui> o <Ui>Inactivo</Ui>,
+- los botones de acciones: el ojo para activar o desactivar, el lápiz para editar y el tacho para eliminar (estos dos solo en los estados que creaste tú).
+
+## Crear un estado nuevo
+
+<Steps>
+  <Step title="Abre Estados">
+    En el menú lateral ve a <Ui>Gestión de pedidos → Estados</Ui>.
+  </Step>
+  <Step title="Toca Nuevo estado">
+    Es el botón de arriba a la derecha. Se abre una ventana.
+  </Step>
+  <Step title="Escribe el nombre">
+    En <Ui>Nombre del estado</Ui> pon algo corto que tu equipo entienda al instante, por ejemplo "En camino". Tiene que tener al menos 2 letras. El <Ui>Código</Ui> se completa solo y **no se puede cambiar después**.
+  </Step>
+  <Step title="Elige el color">
+    En <Ui>Color</Ui> elige uno que se distinga de los demás. Abajo ves cómo va a quedar la etiqueta.
+  </Step>
+  <Step title="Déjalo activo">
+    Deja marcado <Ui>Estado activo</Ui> si quieres usarlo ya. Si lo desmarcas, el estado se crea pero no aparece como botón en los pedidos.
+  </Step>
+  <Step title="Guárdalo">
+    Toca <Ui>Crear estado</Ui>.
+  </Step>
+  <Step title="Ubícalo en el orden correcto">
+    El estado nuevo queda **al final de la lista**, que es después de "Entregado". Usa las flechas <Ui>Subir</Ui> hasta dejarlo en el lugar que le corresponde (por ejemplo, entre "Listo" y "Entregado").
+  </Step>
+</Steps>
+
+<Callout type="tip" title="Usa las flechas para ordenar">
+  El campo <Ui>Orden de aparición</Ui> del formulario existe, pero lo más seguro es mover los estados con las flechas de la lista. Así nunca se repiten números.
+</Callout>
+
+## Editar, reordenar, activar o eliminar
+
+- **Reordenar:** toca las flechas <Ui>Subir</Ui> y <Ui>Bajar</Ui> de cualquier estado, incluso los base. El orden de la lista es el orden de los botones en el pedido.
+- **Editar (solo los tuyos):** toca el lápiz y cambia el nombre, el color, el orden o si está activo. Termina con <Ui>Guardar cambios</Ui>.
+- **Desactivar o activar:** toca el ojo. Un estado inactivo deja de aparecer como botón en los pedidos nuevos, pero los pedidos que ya estaban en ese estado lo siguen mostrando.
+- **Eliminar (solo los tuyos):** toca el tacho y confirma. **No se puede deshacer.**
+
+## Qué pasa después
+
+- Los botones de estado de cada pedido siguen exactamente el orden y los estados activos de esta lista. <Ui>Cancelado</Ui> no se muestra con los demás: tiene su propio botón <Ui>Cancelar</Ui>.
+- **Solo "Entregado" y "Cancelado" cierran un pedido.** Un estado que crees tú no saca el pedido del tablero.
+- Si tienes mensajes automáticos de WhatsApp activos, cada cambio de estado le avisa al cliente. Los estados que creas tú (y también "En preparación" y "Listo") mandan un mensaje general: "Tu pedido #… ahora está: *nombre del estado*". Más detalle en la guía de WhatsApp.
+- Los cambios pueden tardar unos minutos en verse en otros celulares o computadores que ya tenían Pedidos abierto. Si urge, recarga la página.
+
+## Errores comunes
+
+- **Desactivar "Recibido":** los pedidos nuevos siguen entrando como "Recibido" y la alerta de pedido nuevo depende de ese estado. Déjalo siempre activo.
+- **Desactivar "Entregado":** deja de aparecer el botón para entregar y los pedidos no se pueden cerrar. Déjalo siempre activo.
+- **Eliminar un estado que ya se usó:** el sistema no lo permite mientras haya pedidos con ese estado. Desactívalo para que no se use más.
+- **Crear un estado y no verlo en el pedido:** revisa que esté <Ui>Activo</Ui> y recarga la página.
+- **No ves el menú Estados, o los botones están apagados:** tu usuario no tiene permiso.
+
+## ¿Quién puede hacerlo?
+
+| Acción | Permiso |
+| --- | --- |
+| Ver la lista | Ver estados |
+| Crear | Crear estados |
+| Editar, activar y reordenar | Editar, activar y reordenar estados |
+| Eliminar | Eliminar estados |
+
+Estos permisos no vienen en las plantillas de Cajero, Cocina, Mesero ni Domicilios: por lo general solo los tiene el administrador.
+
+<GuideCard href="/dashboard/ayuda/pedidos/gestionar-un-pedido" title="Gestiona un pedido de principio a fin" summary="Dónde ves y usas los estados en el día a día." />
+<GuideCard href="/dashboard/ayuda/configuracion/equipo-y-permisos" title="Equipo y permisos" summary="Cómo darle a un usuario permiso para cambiar los estados." />

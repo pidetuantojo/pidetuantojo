@@ -1,28 +1,49 @@
-Seguí estos pasos en orden hasta que la impresora vuelva a funcionar.
+Sigue estos pasos en orden hasta que la comanda vuelva a salir. La mayoría de las veces el problema está en los primeros dos.
+
+<Callout type="info" title="Cómo se imprime en realidad">
+  Al tocar <Ui>Imprimir</Ui> en un pedido, la comanda va a una fila y la **estación de impresión** (una pantalla abierta en la computadora de la impresora) la imprime. Si algo de esa cadena falla —la estación, QZ Tray o la impresora— la comanda no sale.
+</Callout>
 
 <Steps>
-  <Step title="Verificá que QZ Tray está abierto">
-    Mirá la barra de tareas de la computadora. Tiene que haber un ícono de QZ Tray. Si no está, buscalo en las aplicaciones y abrilo.
+  <Step title="Mira qué dice el botón del pedido">
+    Abre el pedido y fíjate en el botón de imprimir. <Ui>En cola</Ui> o <Ui>En cola de impresión...</Ui> quiere decir que está esperando a la estación. <Ui>Reintentar</Ui> o <Ui>Reintentar impresión</Ui> con un texto rojo quiere decir que falló, y ese texto te da el motivo. Si hace más de un minuto que está en cola, ve al paso 2.
   </Step>
-  <Step title="Reconectá QZ Tray desde el panel">
-    Andá a <Ui>Mi restaurante → Impresoras</Ui> y tocá <Ui>Conectar QZ Tray</Ui>. Si aparece "Conectado", seguí al paso 3.
+  <Step title="Abre la estación de impresión">
+    En la computadora de la impresora, entra a <Ui>Mi restaurante → Estación de impresión</Ui> y mira el mensaje de estado. Tiene que decir <Ui>Escuchando pedidos para imprimir</Ui>. Si no tienes la estación abierta, ábrela y déjala abierta: lo que estaba en cola sale solo. Al pasar el mouse sobre el botón puede aparecer el aviso "La estación de impresión no está activa".
   </Step>
-  <Step title="Verificá que la impresora tiene papel y está encendida">
-    Revisá que el rollo de papel esté bien puesto y que la impresora no tenga un indicador de error encendido.
+  <Step title="Verifica que QZ Tray está abierto">
+    Si la estación dice <Ui>QZ Tray no está abierto en este equipo</Ui>, busca el ícono de QZ Tray junto al reloj de la computadora. Si no está, abre el programa desde las aplicaciones. En unos segundos la estación pasa a <Ui>Escuchando pedidos para imprimir</Ui>.
   </Step>
-  <Step title="Hacé una prueba de impresión">
-    Desde <Ui>Mi restaurante → Impresoras</Ui>, tocá <Ui>Imprimir prueba</Ui> en la impresora que falla. Si sale, el problema era la conexión.
+  <Step title="Verifica la impresora">
+    Revisa que esté prendida, con papel, con la tapa bien cerrada y sin luces de error. Un cable suelto o una impresora apagada son causas muy comunes.
   </Step>
-  <Step title="Reiniciá la impresora">
-    Apagala, esperá 10 segundos y volvé a encenderla. Luego repetí la prueba de impresión.
+  <Step title="Haz una prueba de impresión">
+    Ve a <Ui>Mi restaurante → Impresoras</Ui>. Arriba tiene que decir <Ui>QZ Tray conectado</Ui> (si dice que no está abierto, toca <Ui>Reintentar</Ui>). Toca <Ui>Probar impresión</Ui> junto a tu impresora. Si sale el ticket de prueba, la impresora y QZ Tray están bien y el problema es la estación (paso 2).
   </Step>
-  <Step title="Reiniciá QZ Tray">
-    Cerrá QZ Tray desde la barra de tareas (clic derecho → Cerrar) y volvé a abrirlo. Luego reconectá desde el panel.
+  <Step title="Revisa que la impresora guardada sea la correcta">
+    Si en <Ui>Impresoras</Ui> ves un aviso amarillo diciendo que la impresora guardada no aparece en este equipo, o si la estación dice <Ui>No hay impresora configurada</Ui>, elige la impresora correcta y toca <Ui>Guardar impresora</Ui>. Después recarga la página de la estación.
+  </Step>
+  <Step title="Reinicia QZ Tray y la impresora">
+    Cierra QZ Tray desde el ícono junto al reloj (clic derecho, salir) y ábrelo de nuevo. Apaga la impresora, espera 10 segundos y préndela. Después repite la prueba.
+  </Step>
+  <Step title="Reintenta la comanda">
+    Vuelve al pedido y toca <Ui>Reintentar</Ui> o <Ui>Reimprimir</Ui>. Si la comanda quedó trabada en cola, el botón se habilita de nuevo pasados unos 2 minutos.
   </Step>
 </Steps>
 
+## Si sale mal impresa
+
+- **Símbolos raros en lugar de tildes o ñ:** en <Ui>Mi restaurante → Impresoras</Ui>, en <Ui>Tildes y ñ</Ui> elige <Ui>Sin tildes</Ui>, toca <Ui>Guardar impresora</Ui> y prueba otra vez.
+- **El texto se corta o sale muy angosto o muy ancho:** el <Ui>Ancho del papel</Ui> no coincide con tu rollo. Elige 80 mm o 58 mm según el que uses.
+- **Sale en blanco:** revisa que el rollo esté bien puesto y que tu impresora sea térmica de tickets.
+
+## Si nadie en el equipo ve el botón de imprimir
+
+El botón <Ui>Imprimir</Ui> solo aparece si tu usuario tiene el permiso de imprimir comandas y el plan del restaurante incluye impresión. Si falta, pídeselo al administrador. Si el botón aparece apagado y no responde, puede que todavía no haya una impresora guardada en <Ui>Mi restaurante → Impresoras</Ui>.
+
 <Callout type="warning" title="Si nada de esto funciona">
-  El problema puede ser el driver de la impresora. Desinstalá y reinstalá el driver desde el sitio del fabricante, luego agregá la impresora de nuevo en el panel.
+  Puede ser el controlador (driver) de la impresora. Desinstálalo y vuelve a instalarlo desde el sitio del fabricante. Después toca <Ui>Actualizar</Ui> en <Ui>Mi restaurante → Impresoras</Ui> y elige la impresora de nuevo.
 </Callout>
 
-<GuideCard href="/dashboard/ayuda/configuracion/impresoras" title="Configurar impresoras" summary="Guía completa de instalación de QZ Tray y configuración de impresoras." />
+<GuideCard href="/dashboard/ayuda/configuracion/impresoras" title="Configurar impresoras" summary="Instalación de QZ Tray y configuración de la impresora." />
+<GuideCard href="/dashboard/ayuda/configuracion/estacion-de-impresion" title="Estación de impresión" summary="La pantalla que tiene que estar abierta para que las comandas salgan." />

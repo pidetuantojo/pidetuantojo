@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
+import { toWhatsAppNumber } from '@/lib/customers/phone';
 import { useAuth } from '@/features/auth';
 import { formatScheduledDate } from '@/features/menu/helpers/schedule.helpers';
 import { PrintOrderButton } from '@/features/printers/components/PrintOrderButton';
@@ -50,7 +51,7 @@ type Dialog =
   | { type: 'item'; index: number };
 
 function waLink(phone: string, text?: string) {
-  return `https://wa.me/${phone.replace(/\D/g, '')}${text ? `?text=${encodeURIComponent(text)}` : ''}`;
+  return `https://wa.me/${toWhatsAppNumber(phone)}${text ? `?text=${encodeURIComponent(text)}` : ''}`;
 }
 
 function InfoRow({ icon, children, onEdit }: { icon: React.ReactNode; children: React.ReactNode; onEdit?: () => void }) {

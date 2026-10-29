@@ -469,7 +469,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
                 </div>
                 {!restaurant?.subscriptionStartDate && (
                   <p style={{ margin: 0, fontFamily: sg, fontSize: 12, color: 'var(--t-text-3)' }}>
-                    Sin fecha de inicio registrada — guardá un cambio de plan para activar el conteo.
+                    Sin fecha de inicio registrada — guarda un cambio de plan para activar el conteo.
                   </p>
                 )}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -567,7 +567,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
                   values={data.categoryIds}
                   onChange={(v) => handleChange('categoryIds', v)}
                   options={restaurantCategories.filter((c) => c.isActive).map((c) => ({ value: c.id, label: `${c.icon ? c.icon + ' ' : ''}${c.name}` }))}
-                  placeholder="Seleccioná hasta 3 categorías..."
+                  placeholder="Selecciona hasta 3 categorías..."
                   error={errors.categoryIds}
                   disabled={isPending}
                   max={3}
@@ -593,7 +593,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             disabled={isPending}
             aspectRatio="square"
             objectFit="contain"
-            hint="Usá una imagen cuadrada (800×800 px mínimo). PNG con fondo transparente es ideal — el logo se muestra en círculo en toda la app."
+            hint="Usa una imagen cuadrada (800×800 px mínimo). PNG con fondo transparente es ideal — el logo se muestra en círculo en toda la app."
           />
           {errors.logo && <p className="text-xs text-red-600">{errors.logo}</p>}
           <ImageUpload
@@ -992,7 +992,7 @@ export function RestaurantForm({ restaurant, onSuccess, onCancel, onColorsChange
             background: 'var(--t-surface-2)', border: '1px solid var(--t-border)',
             borderRadius: 11, padding: '12px 14px', whiteSpace: 'pre-line',
           }}>
-            <span style={{ color: 'var(--t-text-2)', fontWeight: 700 }}>openingHours</span> (schema.org){'\n'}
+            <span style={{ color: 'var(--t-text-2)', fontWeight: 700 }}>Resumen de tu horario</span>{'\n'}
             {hoursSummary}
           </div>
         </AccordionSection>}

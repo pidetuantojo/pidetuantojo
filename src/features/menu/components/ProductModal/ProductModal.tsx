@@ -208,7 +208,7 @@ export function ProductModal({ product, adicionales, primaryColor, onClose }: Pr
               {/* Divider */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '10px 0 8px' }}>
                 <div style={{ flex: 1, height: 1, background: '#e5e7eb' }} />
-                <span style={{ fontFamily: sm, fontSize: 11, color: '#9a8f86', flexShrink: 0 }}>o elegí</span>
+                <span style={{ fontFamily: sm, fontSize: 11, color: '#9a8f86', flexShrink: 0 }}>o elige</span>
                 <div style={{ flex: 1, height: 1, background: '#e5e7eb' }} />
               </div>
 

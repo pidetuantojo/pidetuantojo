@@ -1,0 +1,158 @@
+Las promociones te ayudan a **llenar los días flojos, subir el valor de cada pedido y sacar inventario**. Las creas una vez, defines cuándo valen, y el sistema las aplica solo cuando el cliente arma su pedido. Los precios finales los calcula el sistema al recibir el pedido, así que nadie puede "inventarse" un descuento.
+
+<Callout type="info" title="Quién puede hacerlo y qué incluye tu plan">
+  Para **ver** el módulo necesitas el permiso de ver promociones, y para **crear, editar, pausar o eliminar** el permiso de gestionarlas (se asignan en <Ui>Mi restaurante → Equipo</Ui>). Además, el módulo depende de tu plan: si no te aparece <Ui>Promociones</Ui> en el menú, tu plan no lo incluye. Los tipos **Producto en oferta, Descuento en el total y Domicilio gratis** vienen en el plan con promociones. **Lleva más paga menos (2x1), Combo, Regalo, cupones, primer pedido y fidelidad** requieren el plan con promociones avanzadas; en la pantalla verás esos tipos bloqueados con la marca "PLAN AVANZADO".
+</Callout>
+
+## Los 6 tipos de promoción
+
+| Tipo (como aparece al crear) | Qué hace | Ejemplo concreto |
+|---|---|---|
+| **Producto en oferta** | Tacha el precio de productos o categorías y muestra el nuevo. Puedes dar un porcentaje, un monto fijo o un precio final. | "20% en pizzas de lunes a jueves" o "Hamburguesa clásica a $19.900". |
+| **Descuento en el total** | Descuenta un porcentaje o monto del valor del pedido, si llega a un mínimo. | "$5.000 menos en pedidos desde $50.000". |
+| **Domicilio gratis** | El domicilio queda en $0 si el pedido llega a un mínimo. Solo para pedidos a domicilio. | "Domicilio gratis desde $40.000". |
+| **Lleva más, paga menos (2x1)** (avanzado) | El cliente lleva N unidades y paga menos. Las unidades **más baratas** son las que salen gratis. | "2x1 en hamburguesas los martes". |
+| **Combo** (avanzado) | Varios productos juntos por un precio fijo. | "Hamburguesa + papas + gaseosa por $28.000". |
+| **Regalo con la compra** (avanzado) | Se agrega un producto sin costo si el pedido llega a un mínimo. | "Gaseosa de regalo desde $35.000". |
+
+## Crear una promoción
+
+Todas se crean con el mismo asistente de 5 pasos.
+
+<Steps>
+  <Step title="Abre Promociones">
+    En el menú lateral entra a <Ui>Productos</Ui> y después a <Ui>Promociones</Ui>.
+  </Step>
+  <Step title="Toca Nueva promoción">
+    Toca <Ui>+ Nueva promoción</Ui>. Se abre el asistente con los pasos 1. Tipo, 2. Descuento, 3. Cuándo, 4. Condiciones y 5. Cómo se ve.
+  </Step>
+  <Step title="Paso 1: elige el tipo">
+    Toca la tarjeta del tipo que quieres y después <Ui>Siguiente</Ui>. Cada tarjeta trae una explicación corta.
+  </Step>
+  <Step title="Paso 2: define el descuento">
+    Lo que pide depende del tipo (ver el detalle más abajo). Para seguir toca <Ui>Siguiente</Ui>; si falta algo, te avisa en rojo qué completar.
+  </Step>
+  <Step title="Paso 3: elige cuándo vale">
+    Puedes dejarlo todo vacío para que valga **siempre**, o limitarlo por días, horas y fechas (ver "Horarios y fechas").
+  </Step>
+  <Step title="Paso 4: pon las condiciones">
+    Pedido mínimo, formas de entrega y límite de usos (ver "Condiciones y límites").
+  </Step>
+  <Step title="Paso 5: pon nombre y cómo se ve">
+    Escribe el <Ui>Nombre visible para el cliente</Ui> (entre 3 y 60 letras) o toca <Ui>Sugerir</Ui> para que el sistema proponga uno. Abajo ves una <Ui>VISTA PREVIA</Ui> de cómo queda.
+  </Step>
+  <Step title="Crea la promoción">
+    Toca <Ui>Crear promoción</Ui>. Aparece el aviso "Promoción … creada". Si dejaste la casilla <Ui>Activa</Ui> marcada, ya empieza a valer.
+  </Step>
+</Steps>
+
+### Detalle del paso 2, tipo por tipo
+
+**Producto en oferta**
+
+- <Ui>¿A qué aplica?</Ui>: <Ui>Todo el menú</Ui>, <Ui>Categorías</Ui> o <Ui>Productos</Ui>. Si eliges categorías o productos, marca cuáles.
+- <Ui>Tipo de descuento</Ui>: <Ui>Porcentaje (%)</Ui>, <Ui>Monto fijo ($)</Ui> o <Ui>Precio final</Ui> (el producto pasa a costar exactamente ese valor).
+- Con porcentaje puedes poner un <Ui>Tope del descuento</Ui>, que aquí se aplica **por unidad**. Por ejemplo, "50% con tope de $8.000" en un plato de $40.000 descuenta $8.000 por cada plato, no $20.000. El precio tachado del menú ya muestra el descuento con el tope aplicado.
+
+**Descuento en el total**
+
+- <Ui>Tipo de descuento</Ui>: <Ui>Porcentaje (%)</Ui> o <Ui>Monto fijo ($)</Ui>. Con porcentaje puedes poner un <Ui>Tope del descuento</Ui> (opcional): por ejemplo, "10% con tope de $8.000".
+- El interruptor <Ui>Se suma a los productos en oferta</Ui>: apagado (lo normal), el descuento **no** se aplica sobre productos que ya tienen precio tachado, 2x1 o combo. Encendido, sí se suma.
+- El mínimo del pedido se pone en el paso 4.
+
+**Domicilio gratis**
+
+- No hay nada que configurar en este paso. En el paso 4 pon desde qué valor aplica (te conviene un poco por encima de tu pedido promedio).
+
+**Lleva más, paga menos (2x1)**
+
+- <Ui>Promoción</Ui>: atajos <Ui>2x1</Ui>, <Ui>3x2</Ui>, <Ui>4x3</Ui>, o escribe tus números en "Lleva" y "Paga". Se puede llevar entre 2 y 10, y lo que paga tiene que ser menos de lo que lleva.
+- <Ui>¿A qué aplica?</Ui> igual que en producto en oferta.
+- Se mezclan los productos elegidos: de cada grupo, salen gratis los más baratos. No hace falta que sean el mismo producto.
+
+**Combo**
+
+- <Ui>Productos del combo</Ui>: marca los productos y ajusta cuántas unidades de cada uno lleva. Un combo necesita al menos 2 unidades en total.
+- <Ui>Precio del combo</Ui>: el valor fijo. El sistema te muestra cuánto ahorra el cliente, o te avisa si el precio no es menor al normal (no habría descuento).
+
+**Regalo con la compra**
+
+- <Ui>Producto de regalo</Ui>: elige el producto y su <Ui>Cantidad</Ui>. En la lista los agotados aparecen con "(agotado)": si el regalo está agotado, el cliente no lo recibe.
+
+## Horarios y fechas (paso 3)
+
+Deja todo vacío para que la promoción valga siempre. Los atajos <Ui>Todos los días</Ui>, <Ui>Lun a Jue (días flojos)</Ui>, <Ui>Fin de semana</Ui> y <Ui>Happy hour 3–6 p. m.</Ui> llenan los campos por ti.
+
+| Campo | Para qué sirve |
+|---|---|
+| <Ui>Días de la semana</Ui> | Elige los días (Lun, Mar, Mié…). Sin días marcados vale todos los días. |
+| <Ui>Desde (hora)</Ui> y <Ui>Hasta (hora)</Ui> | Franja horaria. Hay que completar las dos o ninguna. Si "Hasta" es menor que "Desde", cruza la medianoche (ej: 22:00 a 02:00). |
+| <Ui>Fecha de inicio</Ui> y <Ui>Fecha de fin</Ui> | Rango de fechas, ambas incluidas. Sirve para campañas con fecha límite. |
+
+Todo se mide con la **hora de Colombia**. Si un cliente arma su carrito justo antes de que la promoción termine, se le respeta unos 10 minutos más.
+
+## Condiciones y límites (paso 4)
+
+- <Ui>Pedido mínimo</Ui>: valor que debe alcanzar el pedido. Vacío = sin mínimo.
+- <Ui>Formas de entrega</Ui>: <Ui>Recoger</Ui>, <Ui>Domicilio</Ui> y <Ui>En el local</Ui>. Sin marcar = todas. (El domicilio gratis solo puede aplicar a domicilio.)
+- <Ui>Límite total de usos</Ui>: por ejemplo "las primeras 50". Cuando se llega al número, la promoción pasa a **Agotada** sola.
+- Más abajo, en la zona "CUPÓN Y CLIENTES" (plan avanzado): <Ui>Código de cupón (opcional)</Ui>, <Ui>Solo para el primer pedido</Ui> y <Ui>Usos por cliente</Ui>. Se explican en <GuideLink href="/dashboard/ayuda/menu/cupones-y-fidelizacion">Cupones y fidelización</GuideLink>.
+
+<Callout type="info" title="Cómo se cuenta el pedido mínimo">
+  En Descuento en el total, Domicilio gratis y Regalo, el mínimo se compara con lo que **realmente paga** el cliente por los productos, después de los descuentos de cada producto. En Producto en oferta, 2x1 y Combo se compara con el valor de lista, antes de descontar. Los adicionales cuentan dentro del valor del pedido.
+</Callout>
+
+## Cómo se ve para el cliente
+
+- **Banner "🔥 Promociones"** arriba del menú: un carrusel con tus promociones activas y vigentes. En los combos aparece el botón <Ui>+ Agregar combo</Ui> para sumarlo con un toque. Para que una promoción salga ahí tiene que estar marcado <Ui>Mostrar en el banner del menú</Ui> (paso 5). Aunque no salga en el banner, el precio tachado y el 2x1 se siguen viendo en cada producto.
+- **En cada producto:** el precio tachado con el nuevo precio y una etiqueta como "-20%" o "2x1", o la etiqueta "Combo".
+- **Pestaña "🔥 Promociones":** si hay productos con oferta vigente, el menú agrega esta categoría al principio con ellos. Desaparece sola cuando termina el horario.
+- **En el carrito:** cada producto con su descuento, avisos del tipo "Te faltan $X para domicilio gratis" (o descuento, o regalo), el desglose con los descuentos restando, "GRATIS" en el domicilio, "🎁 Regalo: …" y el total final. Debajo dice que el restaurante confirma las promociones al recibir el pedido.
+- Si cuando el cliente confirma la promoción ya se agotó o venció, ve el motivo en pantalla y **el pedido no se envía**.
+
+Lo que se cobró queda guardado en el pedido: aunque después edites o borres la promoción, el pedido sigue mostrando el descuento real.
+
+## Reglas para no llevarte sorpresas
+
+1. **Un producto, un solo descuento.** Si una hamburguesa califica para 2x1 y también para 10%, se aplica la que más ahorra al cliente; no se acumulan sobre la misma unidad.
+2. **En el total, gana la mejor.** Si hay varios descuentos al total, se aplica solo el que más descuenta.
+3. **Domicilio gratis y regalos se suman** a lo anterior.
+4. **Los adicionales se cobran completos.** Los descuentos se calculan solo sobre el precio del producto.
+5. Los descuentos en porcentaje se **redondean a $50**.
+6. **Los pedidos que cargas a mano desde el panel no llevan promociones:** se crean a precio de lista.
+
+## Administrar tus promociones
+
+La lista muestra cada promoción con su tipo, un resumen (ej: "Lleva 2, paga 1 en Hamburguesas · Mar"), y cuántos usos lleva ("3 usos de 50"). Los filtros de arriba son <Ui>Todas</Ui>, <Ui>Activas</Ui>, <Ui>Programadas</Ui>, <Ui>Pausadas</Ui> y <Ui>Vencidas / agotadas</Ui>.
+
+| Estado | Qué significa |
+|---|---|
+| **Activa** | Está valiendo ahora mismo. |
+| **Fuera de horario** | Está encendida, pero hoy o a esta hora no corresponde. |
+| **Programada** | Todavía no llegó su fecha de inicio. |
+| **Pausada** | La apagaste (o está desmarcada la casilla Activa). |
+| **Vencida** | Pasó su fecha de fin. |
+| **Agotada** | Llegó a su límite total de usos. |
+
+Los íconos de cada fila:
+
+| Ícono | Qué hace |
+|---|---|
+| <Ui>Pausar</Ui> / <Ui>Activar</Ui> | La apaga o enciende sin borrarla. |
+| <Ui>Duplicar</Ui> | Crea una **copia pausada** (con "(copia)" en el nombre y sin código de cupón). Ideal para repetir "el 2x1 del martes" en otro día. |
+| <Ui>Editar</Ui> | Abre el asistente directo en el paso del descuento; puedes saltar a cualquier paso y guardar con <Ui>Guardar</Ui> o <Ui>Guardar cambios</Ui>. |
+| <Ui>Eliminar</Ui> | La borra. Los pedidos que ya la usaron conservan el descuento. Si solo quieres detenerla, mejor páusala. |
+
+## Errores comunes
+
+- **"Elige al menos una categoría / un producto":** marcaste "Categorías" o "Productos" pero no elegiste ninguna.
+- **"Lo que paga debe ser menor que lo que lleva":** en el 2x1 los números están al revés o son iguales.
+- **"Un combo necesita al menos 2 productos":** suma más unidades al combo.
+- **"El porcentaje no puede ser mayor a 100":** corrige el número.
+- **"Indica la hora de inicio y la de fin":** completaste solo una de las dos horas.
+- **"Este tipo de promoción requiere el plan con promociones avanzadas":** tu plan no incluye 2x1, combos ni regalos.
+- **La promoción dice Activa pero el cliente no la ve:** revisa que no esté **fuera de horario**, que el producto esté activo, y que no tenga cupón (las promociones con cupón nunca se muestran en el menú).
+- **El descuento no aplica en el carrito:** puede que no llegue al pedido mínimo, que sea solo para otra forma de entrega, o que haya otra promoción que le ahorra más al cliente.
+
+<GuideCard href="/dashboard/ayuda/menu/cupones-y-fidelizacion" title="Cupones y fidelización" summary="Códigos de descuento, primer pedido, límites por cliente y programa de sellos." />
+<GuideCard href="/dashboard/ayuda/menu/agregar-productos" title="Agregar productos" summary="Las promociones se aplican sobre los productos de tu menú." />

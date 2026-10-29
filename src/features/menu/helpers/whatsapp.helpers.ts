@@ -1,5 +1,6 @@
 import type { AppliedPromotion } from '@/types';
 import { formatCurrency } from '@/lib/utils';
+import { toWhatsAppNumber } from '@/lib/customers/phone';
 
 export type DeliveryType = 'domicilio' | 'recoger' | 'mesa' | '';
 // id del método de pago configurado por el restaurante ('' = sin elegir)
@@ -160,6 +161,5 @@ export function buildWhatsAppMessage(
 }
 
 export function buildWhatsAppUrl(phone: string, message: string): string {
-  const cleanPhone = phone.replace(/\D/g, '');
-  return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+  return `https://wa.me/${toWhatsAppNumber(phone)}?text=${encodeURIComponent(message)}`;
 }

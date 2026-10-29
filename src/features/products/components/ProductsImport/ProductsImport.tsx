@@ -83,7 +83,7 @@ export function ProductsImport({ restaurantId, restaurantSlug, onClose }: Props)
       setRows(validated);
       setStep(2);
     } catch {
-      setFileError('No se pudo leer el archivo. Verificá que sea un Excel válido.');
+      setFileError('No se pudo leer el archivo. Verifica que sea un Excel válido.');
     } finally {
       setParsing(false);
     }
@@ -156,9 +156,9 @@ export function ProductsImport({ restaurantId, restaurantSlug, onClose }: Props)
               {step === 1 ? 'Importar productos desde Excel' : step === 2 ? 'Vista previa de importación' : 'Importando…'}
             </h2>
             <p style={{ margin: '3px 0 0', fontSize: 13, color: 'var(--t-text-3)' }}>
-              {step === 1 && 'Descargá la plantilla, completala y subila.'}
+              {step === 1 && 'Descarga la plantilla, complétala y súbela.'}
               {step === 2 && `${rows.length} fila${rows.length !== 1 ? 's' : ''} leídas del archivo.`}
-              {step === 3 && (importResult ? 'Importación completada.' : 'No cerrés esta ventana.')}
+              {step === 3 && (importResult ? 'Importación completada.' : 'No cierres esta ventana.')}
             </p>
           </div>
           <button
@@ -185,7 +185,7 @@ export function ProductsImport({ restaurantId, restaurantSlug, onClose }: Props)
                   <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--t-text-1)', marginBottom: 2 }}>Plantilla de productos</div>
                   <div style={{ fontSize: 13, color: 'var(--t-text-3)' }}>
                     Incluye hojas de Categorías e Instrucciones.
-                    {categories.length === 0 && <span style={{ color: '#d97706', fontWeight: 600 }}> Creá al menos una categoría primero.</span>}
+                    {categories.length === 0 && <span style={{ color: '#d97706', fontWeight: 600 }}> Crea al menos una categoría primero.</span>}
                   </div>
                 </div>
                 <button
@@ -220,7 +220,7 @@ export function ProductsImport({ restaurantId, restaurantSlug, onClose }: Props)
                   <Upload size={32} color={ORANGE} style={{ margin: '0 auto' }} />
                 </div>
                 <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--t-text-1)', marginBottom: 4 }}>
-                  {parsing ? 'Leyendo archivo…' : 'Arrastrá el archivo acá o hacé clic'}
+                  {parsing ? 'Leyendo archivo…' : 'Arrastra el archivo aquí o haz clic'}
                 </div>
                 <div style={{ fontSize: 13, color: 'var(--t-text-3)' }}>.xlsx · .xls · .csv · máx. 2 MB</div>
                 <input ref={fileRef} type="file" accept={ACCEPT} onChange={handleFileInput} style={{ display: 'none' }} />

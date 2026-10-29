@@ -7,6 +7,8 @@ import {
   deleteDoc,
   query,
   orderBy,
+  where,
+  limit,
 } from 'firebase/firestore';
 
 import { db } from '@/lib/firebase/config';
@@ -48,7 +50,13 @@ export const categoriesService = {
     });
   },
 
+  /** Falla si la categoría tiene productos: quedarían huérfanos y desaparecerían del menú. */
   async delete(restaurantId: string, id: string): Promise<void> {
+    const productsRef = collection(db, 'restaurants', restaurantId, 'products');
+    const inUse = !(await getDocs(query(productsRef, where('categoryId', '==', id), limit(1)))).empty;
+    if (inUse) {
+      throw new Error('Esta categoría tiene productos. Muévelos a otra categoría o elimínalos antes de borrarla.');
+    }
     await deleteDoc(doc(categoriesRef(restaurantId), id));
   },
 };

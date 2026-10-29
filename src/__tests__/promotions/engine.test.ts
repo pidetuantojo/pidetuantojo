@@ -42,6 +42,12 @@ describe('unitDiscount', () => {
     // 15% de 23.900 = 20.315 → 20.300 → descuento 3.600
     expect(unitDiscount({ discountKind: 'percent', discountValue: 15 }, 23900)).toBe(3600);
   });
+  it('porcentaje con tope por unidad', () => {
+    // 50% de 40.000 = 20.000, topado a 8.000
+    expect(unitDiscount({ discountKind: 'percent', discountValue: 50, maxDiscount: 8000 }, 40000)).toBe(8000);
+    // Si el descuento no llega al tope, no cambia
+    expect(unitDiscount({ discountKind: 'percent', discountValue: 10, maxDiscount: 8000 }, 40000)).toBe(4000);
+  });
   it('monto fijo no supera el precio', () => {
     expect(unitDiscount({ discountKind: 'amount', discountValue: 50000 }, 20000)).toBe(20000);
   });

@@ -3,10 +3,12 @@ import { Download } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { formatCurrency, formatDate } from '@/lib/utils';
 
+import { isCancelledOrder } from '../../helpers/accounting.helpers';
 import type { OrdersTableProps } from './OrdersTable.types';
 
 export function OrdersTable({ orders, statuses, onExport }: OrdersTableProps) {
   const statusMap = new Map(statuses.map((s) => [s.id, s]));
+  const total = orders.reduce((acc, o) => (isCancelledOrder(o, statuses) ? acc : acc + o.total), 0);
 
   return (
     <div className="space-y-3">
@@ -59,11 +61,13 @@ export function OrdersTable({ orders, statuses, onExport }: OrdersTableProps) {
             >
               {orders.map((order) => {
                 const status = statusMap.get(order.statusId);
+                const cancelled = status?.code === 'cancelled';
                 return (
                   <tr
                     key={order.id}
                     className="transition-colors"
-                    style={{ ['--tw-divide-opacity' as string]: 1 }}
+                    style={{ ['--tw-divide-opacity' as string]: 1, opacity: cancelled ? 0.5 : 1 }}
+                    title={cancelled ? 'Cancelado: no suma en los totales' : undefined}
                     onMouseEnter={(e) =>
                       (e.currentTarget.style.background = 'var(--t-surface-2)')
                     }
@@ -93,7 +97,10 @@ export function OrdersTable({ orders, statuses, onExport }: OrdersTableProps) {
                     </td>
                     <td className="px-4 py-3" style={{ color: 'var(--t-text-2)' }}>{order.paymentMethod}</td>
                     <td className="px-4 py-3 text-center" style={{ color: 'var(--t-text-2)' }}>{order.items.length}</td>
-                    <td className="px-4 py-3 text-right font-semibold" style={{ color: 'var(--t-text-1)' }}>
+                    <td
+                      className="px-4 py-3 text-right font-semibold"
+                      style={{ color: 'var(--t-text-1)', textDecoration: cancelled ? 'line-through' : undefined }}
+                    >
                       {formatCurrency(order.total)}
                     </td>
                   </tr>
@@ -106,7 +113,7 @@ export function OrdersTable({ orders, statuses, onExport }: OrdersTableProps) {
                   Total
                 </td>
                 <td className="px-4 py-3 text-right text-sm font-bold" style={{ color: 'var(--t-text-1)' }}>
-                  {formatCurrency(orders.reduce((acc, o) => acc + o.total, 0))}
+                  {formatCurrency(total)}
                 </td>
               </tr>
             </tfoot>

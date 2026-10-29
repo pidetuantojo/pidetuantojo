@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useAuth } from '@/features/auth';
 import { useConfirmStore } from '@/store/confirm.store';
+import { useToastStore } from '@/store/toast.store';
 import type { OrderStatus } from '@/types';
 
 import { useOrderStatuses } from '../../hooks/useOrderStatuses';
@@ -36,6 +37,7 @@ export function OrderStatusesManager() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [movingId, setMovingId] = useState<string | null>(null);
   const { showConfirm } = useConfirmStore();
+  const { showToast } = useToastStore();
 
   function handleEdit(status: OrderStatus) {
     setEditing(status);
@@ -66,6 +68,8 @@ export function OrderStatusesManager() {
     setDeletingId(id);
     try {
       await deleteStatus.mutateAsync(id);
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'No se pudo eliminar el estado', 'error');
     } finally {
       setDeletingId(null);
     }
@@ -116,7 +120,7 @@ export function OrderStatusesManager() {
         <div>
           <h2 className="text-2xl font-bold" style={{ color: 'var(--t-text-1)' }}>Estados de pedido</h2>
           <p className="mt-0.5 text-sm" style={{ color: 'var(--t-text-3)' }}>
-            Definí el orden del flujo combinando estados base y personalizados
+            Define el orden del flujo combinando estados base y personalizados
           </p>
         </div>
         {can('order_statuses.create') && (
