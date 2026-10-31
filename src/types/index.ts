@@ -148,6 +148,8 @@ export interface Restaurant {
   deliveryMethods?: DeliveryMethods;
   // Métodos de pago (efectivo, datáfono y cuentas para transferir)
   paymentMethods?: PaymentMethodConfig[];
+  /** Solo servidor (POST /api/cash/activation): con caja activa, los pagos pasan por la API. */
+  cashModuleEnabled?: boolean;
   // Plan contratado (sin planId = restaurante anterior al sistema de planes: acceso completo)
   planId?: string;
   planName?: string;

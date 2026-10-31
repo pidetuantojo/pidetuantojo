@@ -128,8 +128,12 @@ service cloud.firestore {
       // El menú público necesita leer el restaurante (sin auth)
       allow read: if true;
 
-      allow create, delete: if isSuperAdmin();
-      allow update: if isSuperAdmin() || restaurantUpdateAllowed(restaurantId);
+      // `cashModuleEnabled` (activar caja) lo escribe SOLO el servidor (POST /api/cash/activation):
+      // ni el restaurante (no está en la lista de restaurantUpdateAllowed) ni el super admin desde el cliente.
+      allow create: if isSuperAdmin() && !('cashModuleEnabled' in request.resource.data);
+      allow delete: if isSuperAdmin();
+      allow update: if (isSuperAdmin() && !changedKeys().hasAny(['cashModuleEnabled']))
+        || restaurantUpdateAllowed(restaurantId);
 
       // ─── Order Statuses ──────────────────────────────────────────────────────
 
@@ -275,14 +279,34 @@ service cloud.firestore {
               || hasPerm(restaurantId, 'orders.edit'));
       }
 
+      // Con la caja activa, los pagos pasan por /api/cash (turno, comprobante y asiento contable):
+      // el cliente ya no puede tocar `payments` ni `isPaid`. `refunds` solo lo escribe el servidor.
+      function cashModuleEnabled() {
+        return get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.get('cashModuleEnabled', false) == true;
+      }
+
+      function cashOrderUpdateAllowed() {
+        return !changedKeys().hasAny(['refunds'])
+          && (!cashModuleEnabled() || !changedKeys().hasAny(['payments', 'isPaid']));
+      }
+
+      // Un pedido manual no puede nacer pagado (ni con pagos ni con refunds) si la caja está activa
+      function cashOrderCreateAllowed() {
+        return !('refunds' in request.resource.data)
+          && (!cashModuleEnabled()
+              || (request.resource.data.get('isPaid', false) == false
+                  && request.resource.data.get('payments', []).size() == 0));
+      }
+
       match /orders/{orderId} {
         // Los pedidos del menú público los crea el servidor (/api/orders: valida precios y promociones).
         // Desde el cliente solo se crean pedidos manuales del panel.
         allow create: if request.resource.data.restaurantId == restaurantId
-          && hasPerm(restaurantId, 'orders.create');
+          && hasPerm(restaurantId, 'orders.create')
+          && cashOrderCreateAllowed();
         // Contabilidad y la estación de impresión también leen pedidos
         allow read: if hasAnyPerm(restaurantId, ['orders.view', 'accounting.view', 'print_station.run']);
-        allow update: if isSuperAdmin() || orderUpdateAllowed();
+        allow update: if cashOrderUpdateAllowed() && (isSuperAdmin() || orderUpdateAllowed());
         // Nadie elimina pedidos — solo se cambia el estado
         allow delete: if isSuperAdmin();
       }
@@ -318,6 +342,12 @@ service cloud.firestore {
 
       match /cashSettings/{settingsId} {
         allow read: if hasPerm(restaurantId, 'cash.view');
+        allow write: if false;
+      }
+
+      // Saldo materializado por caja (efectivo y demás medios): solo supervisores
+      match /cashRegisterBalances/{registerId} {
+        allow read: if hasPerm(restaurantId, 'cash.approve');
         allow write: if false;
       }
 

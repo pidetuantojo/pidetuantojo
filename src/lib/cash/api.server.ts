@@ -10,7 +10,10 @@ export { parseBody } from '@/lib/ledger/api.server';
 /** Errores de caja → JSON `{ error, code }`; el resto (zod, ledger, auth) lo resuelve el libro. */
 export function cashErrorResponse(error: unknown, context: string): NextResponse {
   if (error instanceof CashError) {
-    return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });
+    return NextResponse.json(
+      { error: error.message, code: error.code, ...error.extra },
+      { status: error.status }
+    );
   }
   return ledgerErrorResponse(error, context);
 }

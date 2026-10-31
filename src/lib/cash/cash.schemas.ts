@@ -154,3 +154,5 @@ export const settlementSchema = z
       .optional(),
   })
   .strict();
+
+export const setActivationSchema = z.object({ enabled: z.boolean() }).strict();

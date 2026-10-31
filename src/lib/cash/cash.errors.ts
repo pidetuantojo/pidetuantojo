@@ -29,7 +29,8 @@ export type CashErrorCode =
   | 'LEGACY_PAYMENT'
   | 'REFUND_LIMIT'
   | 'METHOD_NOT_ALLOWED'
-  | 'INVALID_RECEIVED';
+  | 'INVALID_RECEIVED'
+  | 'ACTIVATION_PREREQUISITES';
 
 const NOT_FOUND: readonly CashErrorCode[] = [
   'REGISTER_NOT_FOUND',
@@ -54,12 +55,15 @@ const CONFLICT: readonly CashErrorCode[] = [
   'INSUFFICIENT_CASH',
   'LEGACY_PAYMENT',
   'REFUND_LIMIT',
+  'ACTIVATION_PREREQUISITES',
 ];
 
 export class CashError extends Error {
   constructor(
     readonly code: CashErrorCode,
-    message: string
+    message: string,
+    /** Datos extra para la respuesta (p. ej. la lista de requisitos faltantes). */
+    readonly extra?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'CashError';
