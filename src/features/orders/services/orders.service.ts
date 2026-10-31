@@ -1,5 +1,6 @@
 import { arrayUnion, collection, deleteField, doc, updateDoc, setDoc, writeBatch } from 'firebase/firestore';
 
+import { assertLegacyPaymentsAllowed } from '@/features/cash/helpers/cash-module-flag';
 import { db } from '@/lib/firebase/config';
 import { generateOrderNumber } from '@/lib/orders/orderNumber';
 import { statusChange, type StatusActor } from '@/lib/orders/statusHistory';
@@ -67,6 +68,7 @@ export const ordersService = {
   },
 
   async updateIsPaid(restaurantId: string, id: string, isPaid: boolean): Promise<void> {
+    assertLegacyPaymentsAllowed();
     await updateDoc(doc(ordersRef(restaurantId), id), {
       isPaid,
       updatedAt: new Date().toISOString(),
@@ -104,6 +106,7 @@ export const ordersService = {
 
   /** Registra pagos en caja (uno con "Pagar", varios al dividir). Queda pagado cuando cubren el total. */
   async addPayments(restaurantId: string, order: Order, payments: OrderPayment[]): Promise<void> {
+    assertLegacyPaymentsAllowed();
     const all = [...(order.payments ?? []), ...payments];
     await updateDoc(doc(ordersRef(restaurantId), order.id), {
       // arrayUnion: dos cobros seguidos (cuenta dividida) no se pisan aunque el pedido aún no se haya refrescado
@@ -114,6 +117,7 @@ export const ordersService = {
   },
 
   async removePayment(restaurantId: string, order: Order, paymentId: string): Promise<void> {
+    assertLegacyPaymentsAllowed();
     const rest = (order.payments ?? []).filter((p) => p.id !== paymentId);
     await updateDoc(doc(ordersRef(restaurantId), order.id), {
       payments: rest,

@@ -11,6 +11,7 @@ import { formatCurrency } from '@/lib/utils';
 import { toWhatsAppNumber } from '@/lib/customers/phone';
 import { toStatusActor } from '@/lib/orders/statusHistory';
 import { useAuth } from '@/features/auth';
+import { useCashModule } from '@/features/cash/hooks/useCashModule';
 import { formatScheduledDate } from '@/features/menu/helpers/schedule.helpers';
 import { PrintOrderButton } from '@/features/printers/components/PrintOrderButton';
 import type { Domiciliario, Mesa, Order, OrderStatus, PaymentMethodConfig } from '@/types';
@@ -25,6 +26,7 @@ import { ordersService } from '../../services/orders.service';
 import { useWaConfig } from '@/lib/whatsapp/useWaConfig';
 import { ROUTES } from '@/constants/routes';
 import { StatusBadge } from '../OrderCard/OrderCard';
+import { OrderPaymentsList } from '../OrderPayments';
 import { DiscountDialog, DriverDialog, TransferItemDialog, TransferTableDialog } from './dialogs';
 import { PaymentDialog } from './PaymentDialog';
 import { ActionTile } from './ui';
@@ -93,6 +95,10 @@ function DrawerContent({
   const canChangeStatus = can('orders.change_status');
   const canSetFee = can('orders.set_delivery_fee');
   const canMarkPaid = can('orders.mark_paid');
+  // Con caja activa los pagos pasan por la API (turno + asiento): sin interruptor isPaid manual
+  const { enabled: cashEnabled } = useCashModule(restaurantId);
+  const canReverse = can('cash.reverse');
+  const canCollect = canMarkPaid && (!cashEnabled || can('cash.operate'));
   const canManageNotes = can('orders.manage_notes');
   const canAssignDriver = can('orders.assign_driver');
   const companiesEnabled = can('features.delivery_companies');
@@ -255,7 +261,7 @@ function DrawerContent({
                   {order.paymentMethod}
                   {order.paymentAccount && <span className="text-xs text-[var(--t-text-4)]"> · {order.paymentAccount}</span>}
                 </span>
-                {canMarkPaid ? (
+                {canMarkPaid && !cashEnabled ? (
                   <button
                     type="button"
                     disabled={busy}
@@ -464,22 +470,15 @@ function DrawerContent({
             <div className="flex justify-between pt-1 text-base font-extrabold text-[var(--t-text-1)]">
               <span>Total</span><span>{formatCurrency(totals.total)}</span>
             </div>
-            {(order.payments ?? []).map((p) => (
-              <div key={p.id} className="flex items-center justify-between text-xs text-emerald-700">
-                <span className="flex items-center gap-1">
-                  <Check className="h-3 w-3" /> {p.method}{p.label ? ` · ${p.label}` : ''}
-                  {p.received && p.received > p.amount ? <span className="text-[var(--t-text-4)]"> (cambio {formatCurrency(p.received - p.amount)})</span> : null}
-                </span>
-                <span className="flex items-center gap-1">
-                  {formatCurrency(p.amount)}
-                  {canMarkPaid && (
-                    <button type="button" onClick={() => run(() => ordersService.removePayment(restaurantId, order, p.id))} aria-label="Anular pago" className="text-emerald-300 hover:text-red-500">
-                      <XCircle className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </span>
-              </div>
-            ))}
+            <OrderPaymentsList
+              order={order}
+              restaurantId={restaurantId}
+              paymentMethods={paymentMethods}
+              cashEnabled={cashEnabled}
+              canMarkPaid={canMarkPaid}
+              canReverse={canReverse}
+              onRemoveLegacy={(paymentId) => run(() => ordersService.removePayment(restaurantId, order, paymentId))}
+            />
             {paid > 0 && remaining > 0 && (
               <div className="flex justify-between text-xs font-bold text-[#FF6A1A]"><span>Pendiente</span><span>{formatCurrency(remaining)}</span></div>
             )}
@@ -514,7 +513,7 @@ function DrawerContent({
             </button>
           )}
 
-          {isMesa && canMarkPaid && remaining > 0 && (
+          {isMesa && canCollect && remaining > 0 && (
             <button
               type="button"
               onClick={() => setDialog({ type: 'split' })}
@@ -627,7 +626,7 @@ function DrawerContent({
 
           {/* Pago y mesa */}
           <div className="flex gap-2">
-            {canMarkPaid && (
+            {canCollect && (
               remaining > 0 ? (
                 <button
                   type="button"

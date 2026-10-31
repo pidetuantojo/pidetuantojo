@@ -5,6 +5,9 @@ import { Check, Minus, Plus } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
 import { useAuth } from '@/features/auth';
+import { useCashModule } from '@/features/cash/hooks/useCashModule';
+import { useCashOrderActions } from '@/features/cash/hooks/useCashOrderActions';
+import { useToastStore } from '@/store/toast.store';
 import { PaymentMethodPicker } from '@/features/payment-methods/components/PaymentMethodPicker';
 import { getActivePaymentMethods, getPaymentLabel } from '@/features/payment-methods/helpers/payment-methods.helpers';
 import type { Order, OrderPayment, PaymentMethodConfig } from '@/types';
@@ -52,6 +55,10 @@ interface SplitRow {
 
 export function PaymentDialog({ order, restaurantId, paymentMethods, mode: initialMode, onClose }: PaymentDialogProps) {
   const { user } = useAuth();
+  // Con caja activa el cobro pasa por la API (turno, comprobante, asiento); si no, Firestore directo
+  const { enabled: cashEnabled } = useCashModule(restaurantId);
+  const cash = useCashOrderActions();
+  const showToast = useToastStore((s) => s.showToast);
   const methods = getActivePaymentMethods(paymentMethods);
   const remaining = remainingAmount(order);
   const [mode, setMode] = useState(initialMode);
@@ -94,8 +101,22 @@ export function PaymentDialog({ order, restaurantId, paymentMethods, mode: initi
     }
   }
 
+  async function payWithCash(m: PaymentMethodConfig, amount: number, extra: { received?: number; label?: string }) {
+    const result = await cash.payOrder({
+      orderId: order.id,
+      payments: [{ paymentMethodId: m.id, amount, ...extra }],
+    });
+    if (!result) return false;
+    showToast(result.change && result.change > 0 ? `Cobro registrado · Cambio: ${formatCurrency(result.change)}` : 'Cobro registrado');
+    return true;
+  }
+
   async function handlePay() {
     if (!method || payValue <= 0) return;
+    if (cashEnabled) {
+      if (await payWithCash(method, payValue, isCash && received ? { received: toInt(received) } : {})) onClose();
+      return;
+    }
     const ok = await register([buildPayment(method, payValue, isCash && received ? { received: toInt(received) } : {}, user?.uid)]);
     if (ok) onClose();
   }
@@ -105,11 +126,16 @@ export function PaymentDialog({ order, restaurantId, paymentMethods, mode: initi
     const m = methods.find((x) => x.id === row.methodId);
     const value = toInt(row.amount);
     if (!m || value <= 0) return;
+    if (cashEnabled) {
+      if (await payWithCash(m, value, { label: `Persona ${index + 1}` })) setRows((prev) => prev.map((r, i) => (i === index ? { ...r, paid: true } : r)));
+      return;
+    }
     const ok = await register([buildPayment(m, value, { label: `Persona ${index + 1}` }, user?.uid)]);
     if (ok) setRows((prev) => prev.map((r, i) => (i === index ? { ...r, paid: true } : r)));
   }
 
   const allRowsPaid = rows.every((r) => r.paid);
+  const busy = saving || cash.isPending;
 
   return (
     <DrawerDialog
@@ -120,8 +146,8 @@ export function PaymentDialog({ order, restaurantId, paymentMethods, mode: initi
         mode === 'pay' ? (
           <>
             <DialogButton tone="ghost" onClick={onClose}>Cancelar</DialogButton>
-            <DialogButton tone="success" onClick={handlePay} disabled={saving || !method || payValue <= 0}>
-              {saving ? 'Guardando...' : `Cobrar ${formatCurrency(payValue)}`}
+            <DialogButton tone="success" onClick={handlePay} disabled={busy || !method || payValue <= 0}>
+              {busy ? 'Guardando...' : `Cobrar ${formatCurrency(payValue)}`}
             </DialogButton>
           </>
         ) : (
@@ -211,7 +237,7 @@ export function PaymentDialog({ order, restaurantId, paymentMethods, mode: initi
                       <option key={m.id} value={m.id}>{getPaymentLabel(m)}{m.account ? ` · ${m.account}` : ''}</option>
                     ))}
                   </select>
-                  <DialogButton tone="success" className="w-full" onClick={() => handlePayRow(i)} disabled={saving || toInt(row.amount) <= 0}>
+                  <DialogButton tone="success" className="w-full" onClick={() => handlePayRow(i)} disabled={busy || toInt(row.amount) <= 0}>
                     Cobrar {formatCurrency(toInt(row.amount))}
                   </DialogButton>
                 </>
