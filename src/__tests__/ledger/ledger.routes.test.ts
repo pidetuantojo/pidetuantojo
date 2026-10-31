@@ -101,6 +101,13 @@ describe('autenticación, permisos y plan', () => {
     expect(requirePermission).toHaveBeenLastCalledWith(expect.anything(), 'ledger.view');
   });
 
+  it('gate estricto: sin planFeatures tampoco pasa (el super admin sí)', async () => {
+    db.set('restaurants/r1', {});
+    expect((await call('GET', 'accounts', { method: 'GET' })).status).toBe(403);
+    requirePermission.mockResolvedValue({ ...caller, role: 'super_admin' });
+    expect((await call('GET', 'accounts', { method: 'GET' })).status).toBe(200);
+  });
+
   it('403 si el plan no incluye features.cash (todas las rutas)', async () => {
     db.set('restaurants/r1', { planFeatures: ['features.printing'] });
     const p = { params: { accountId: 'a', ruleId: 'r', entryId: 'e' } };

@@ -2,7 +2,6 @@
 import type { Permission } from '@/constants/permissions';
 import { AuthError, requirePermission, type Caller } from '@/lib/auth/serverAuth';
 import { adminDb } from '@/lib/firebase/admin';
-import { hasPlanFeature } from '@/lib/permissions/planFeatures';
 import type { Restaurant } from '@/types';
 
 export interface LedgerAccess {
@@ -10,11 +9,19 @@ export interface LedgerAccess {
   restaurantId: string;
 }
 
-/** El restaurante debe tener la funcionalidad `features.cash` en su plan. */
-export async function assertCashFeature(restaurantId: string): Promise<void> {
+/**
+ * El restaurante debe tener `features.cash` en su plan. Gate ESTRICTO: sin `planFeatures` (restaurante
+ * anterior al sistema de planes) NO pasa; el super admin sí.
+ */
+export async function assertCashFeature(
+  restaurantId: string,
+  role?: Caller['role']
+): Promise<void> {
   const snap = await adminDb.collection('restaurants').doc(restaurantId).get();
   if (!snap.exists) throw new AuthError('Restaurante no encontrado', 404);
-  if (!hasPlanFeature(snap.data() as Pick<Restaurant, 'planFeatures'>, 'features.cash')) {
+  if (role === 'super_admin') return;
+  const { planFeatures } = snap.data() as Pick<Restaurant, 'planFeatures'>;
+  if (!planFeatures?.includes('features.cash')) {
     throw new AuthError('Tu plan no incluye caja y libro contable', 403);
   }
 }
@@ -32,6 +39,6 @@ export async function requireLedgerAccess(
   const restaurantId =
     caller.role === 'super_admin' ? (requested ?? caller.restaurantId) : caller.restaurantId;
   if (!restaurantId) throw new AuthError('restaurantId requerido', 400);
-  await assertCashFeature(restaurantId);
+  await assertCashFeature(restaurantId, caller.role);
   return { caller, restaurantId };
 }
