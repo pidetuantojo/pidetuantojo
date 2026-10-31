@@ -38,4 +38,18 @@ export const QUERY_KEYS = {
 
   cashSettings: (restaurantId: string) => ['cash', 'settings', restaurantId] as const,
   cashActivation: (restaurantId: string) => ['cash', 'activation', restaurantId] as const,
+  cashCurrentShift: (restaurantId: string) => ['cash', 'current-shift', restaurantId] as const,
+  cashShiftMovements: (restaurantId: string, shiftId: string) =>
+    ['cash', 'shift-movements', restaurantId, shiftId] as const,
+  cashRegisters: (restaurantId: string) => ['cash', 'registers', restaurantId] as const,
+  cashRegisterBalance: (restaurantId: string, registerId: string) =>
+    ['cash', 'register-balance', restaurantId, registerId] as const,
+  cashShifts: (restaurantId: string, status: string) =>
+    ['cash', 'shifts', restaurantId, status] as const,
+  cashPendingApprovals: (restaurantId: string) => ['cash', 'pending', restaurantId] as const,
+  cashClosing: (restaurantId: string, shiftId: string) =>
+    ['cash', 'closing', restaurantId, shiftId] as const,
+  cashOwnPendingClose: (restaurantId: string, uid: string) =>
+    ['cash', 'own-pending-close', restaurantId, uid] as const,
+  ledgerAccounts: (restaurantId: string) => ['ledger', 'accounts', restaurantId] as const,
 } as const;

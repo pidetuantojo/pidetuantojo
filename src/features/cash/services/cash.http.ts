@@ -1,15 +1,6 @@
 import { authFetch } from '@/lib/auth/authFetch';
 
-import type {
-  ActivationStatus,
-  CashApiErrorBody,
-  CashSettings,
-  OrderPaymentResult,
-  PayOrderInput,
-  RefundInput,
-  RefundResult,
-  ReversePaymentInput,
-} from '../types/cash.types';
+import type { CashApiErrorBody } from '../types/cash.types';
 
 /** Error de la API de caja con el código de dominio (`SHIFT_REQUIRED`, `OVERPAYMENT`...). */
 export class CashApiError extends Error {
@@ -25,10 +16,10 @@ export class CashApiError extends Error {
   }
 }
 
-interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PUT';
+export interface RequestOptions {
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH';
   body?: unknown;
-  /** Obligatorio en todo POST/PUT: una llave por intención del usuario. */
+  /** Obligatorio en todo POST/PUT/PATCH: una llave por intención del usuario. */
   idempotencyKey?: string;
 }
 
@@ -40,7 +31,7 @@ async function readErrorBody(response: Response): Promise<CashApiErrorBody> {
   }
 }
 
-async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, idempotencyKey } = options;
   const headers: Record<string, string> = {};
   if (body !== undefined) headers['Content-Type'] = 'application/json';
@@ -64,33 +55,3 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   }
   return (await response.json()) as T;
 }
-
-export const cashApi = {
-  payOrder: (input: PayOrderInput, idempotencyKey: string) =>
-    request<OrderPaymentResult>('/api/cash/order-payments', {
-      method: 'POST',
-      body: input,
-      idempotencyKey,
-    }),
-
-  reversePayment: ({ orderId, paymentId, reason }: ReversePaymentInput, idempotencyKey: string) =>
-    request<Omit<OrderPaymentResult, 'change'>>(
-      `/api/cash/order-payments/${encodeURIComponent(orderId)}/payments/${encodeURIComponent(paymentId)}/reverse`,
-      { method: 'POST', body: { reason }, idempotencyKey }
-    ),
-
-  refund: (input: RefundInput, idempotencyKey: string) =>
-    request<RefundResult>('/api/cash/refunds', { method: 'POST', body: input, idempotencyKey }),
-
-  getSettings: async () =>
-    (await request<{ settings: CashSettings }>('/api/cash/settings')).settings,
-
-  getActivation: () => request<ActivationStatus>('/api/cash/activation'),
-
-  setActivation: (enabled: boolean, idempotencyKey: string) =>
-    request<ActivationStatus>('/api/cash/activation', {
-      method: 'POST',
-      body: { enabled },
-      idempotencyKey,
-    }),
-};
