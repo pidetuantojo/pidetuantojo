@@ -339,6 +339,23 @@ describe('CartDrawer', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Comer en el Local' }));
       expect(screen.getByRole('button', { name: 'Mesa 1' })).toBeInTheDocument();
     });
+
+    it('con el QR de la mesa la preselecciona fija, con opción de cambiarla', () => {
+      useCartStore.setState({ isCartOpen: true, items: [mockItem] });
+      render(<CartDrawer {...defaultProps} deliveryMethods={methods} mesas={[mesa]} qrMesaId="m1" />);
+      expect(screen.getByText(/Estás en/)).toHaveTextContent('Estás en Mesa 1');
+      // Sin pasar por el selector: la mesa ya está elegida
+      expect(screen.queryByRole('button', { name: 'Mesa 1' })).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Cambiar' }));
+      expect(screen.getByRole('button', { name: 'Mesa 1' })).toBeInTheDocument();
+    });
+
+    it('un QR de una mesa que ya no existe no preselecciona nada', () => {
+      useCartStore.setState({ isCartOpen: true, items: [mockItem] });
+      render(<CartDrawer {...defaultProps} deliveryMethods={methods} mesas={[mesa]} qrMesaId="borrada" />);
+      expect(screen.queryByText(/Estás en/)).not.toBeInTheDocument();
+    });
   });
 
   describe('local cerrado', () => {

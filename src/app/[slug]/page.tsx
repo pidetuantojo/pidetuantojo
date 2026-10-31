@@ -10,6 +10,7 @@ import { restaurantsService } from '@/features/restaurants/services/restaurants.
 import { orderStatusesService } from '@/features/order-statuses/services/order-statuses.service';
 import { deliveryZonesService } from '@/features/delivery-zones/services/delivery-zones.service';
 import { mesasService } from '@/features/delivery-methods/services/mesas.service';
+import { MESA_QUERY_PARAM, resolveMesaParam } from '@/features/delivery-methods/helpers/mesaQr.helpers';
 import { applyPlanFeatures } from '@/lib/permissions/planFeatures';
 import { loadActivePromotions, menuPromotions, promotionFeatures } from '@/lib/promotions/promotions.server';
 import { isRestaurantSuspended } from '@/lib/restaurants/restaurant.server';
@@ -20,6 +21,8 @@ export const dynamic = 'force-dynamic';
 
 interface Props {
   params: { slug: string };
+  // ?mesa={mesaId} viene del QR pegado en la mesa
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -37,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function RestaurantMenuPage({ params }: Props) {
+export default async function RestaurantMenuPage({ params, searchParams }: Props) {
   const stored = await restaurantsService.getBySlug(params.slug);
 
   if (!stored || !stored.isActive) {
@@ -80,6 +83,8 @@ export default async function RestaurantMenuPage({ params }: Props) {
   const receivedStatusId = statuses.find((s) => s.code === 'received')?.id ?? '';
   const deliveryZones = allZones.filter((z) => z.isActive);
   const mesas = allMesas.filter((m) => m.isActive);
+  // Con el método mesa apagado (o sin la función en el plan) `mesas` llega vacío: el QR se ignora
+  const initialMesa = resolveMesaParam(searchParams?.[MESA_QUERY_PARAM], mesas);
 
   return (
     <MenuPage
@@ -91,6 +96,7 @@ export default async function RestaurantMenuPage({ params }: Props) {
       deliveryZones={deliveryZones}
       deliveryMode={restaurant.deliveryMode ?? 'manual'}
       mesas={mesas}
+      initialMesaId={initialMesa?.id}
       promotions={promotions}
       couponsEnabled={promotionFeatures(restaurant).advanced}
     />

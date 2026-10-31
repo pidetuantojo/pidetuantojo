@@ -192,6 +192,8 @@ interface CartDrawerProps {
   allowScheduledWhenClosed?: boolean;
   paymentMethods?: PaymentMethodConfig[];
   mesas?: Mesa[];
+  // Mesa del QR (ya validada): se preselecciona "Comer en el Local" con esa mesa
+  qrMesaId?: string;
   // Promociones (vista previa; el servidor recalcula todo al confirmar)
   products?: Product[];
   promotions?: Promotion[];
@@ -201,7 +203,7 @@ interface CartDrawerProps {
 }
 
 // receivedStatusId: el estado inicial ahora lo asigna el servidor (se mantiene la prop por compatibilidad)
-export function CartDrawer({ primaryColor, secondaryColor, deliveryZones, deliveryMode, deliveryMethods, openingHours, restaurantClosed = false, allowScheduledWhenClosed = false, paymentMethods, mesas = [], products = [], promotions = [], loyalty, couponsEnabled = false }: CartDrawerProps) {
+export function CartDrawer({ primaryColor, secondaryColor, deliveryZones, deliveryMode, deliveryMethods, openingHours, restaurantClosed = false, allowScheduledWhenClosed = false, paymentMethods, mesas = [], qrMesaId, products = [], promotions = [], loyalty, couponsEnabled = false }: CartDrawerProps) {
   const items = useCartStore((s) => s.items);
   const isCartOpen = useCartStore((s) => s.isCartOpen);
   const setCartOpen = useCartStore((s) => s.setCartOpen);
@@ -231,6 +233,10 @@ export function CartDrawer({ primaryColor, secondaryColor, deliveryZones, delive
   const [barrio, setBarrio] = useState('');
   const [selectedZoneId, setSelectedZoneId] = useState('');
   const [selectedMesaId, setSelectedMesaId] = useState('');
+  // "Bloqueo suave": la mesa del QR se muestra fija, con un "Cambiar" por si se movió de mesa
+  const [mesaLockedFromQr, setMesaLockedFromQr] = useState(false);
+  // Sube tras cada pedido: vuelve a aplicar la mesa del QR (en la misma mesa suelen pedir otra ronda)
+  const [qrReapply, setQrReapply] = useState(0);
   const [isScheduled, setIsScheduled] = useState(false);
   const [scheduleDate, setScheduleDate] = useState('');
   const [scheduleTime, setScheduleTime] = useState('');
@@ -321,6 +327,19 @@ export function CartDrawer({ primaryColor, secondaryColor, deliveryZones, delive
     }, 600);
     return () => { active = false; clearTimeout(t); };
   }, [phoneKey, restaurantId, usesPromotions]);
+
+  // Preselección por QR. Si el local está cerrado, "Comer en el Local" no se ofrece: no se preselecciona
+  useEffect(() => {
+    if (!qrMesaId || !mesaActive || !mesas.some((m) => m.id === qrMesaId)) {
+      setMesaLockedFromQr(false);
+      return;
+    }
+    selectDeliveryType('mesa');
+    setSelectedMesaId(qrMesaId);
+    setMesaLockedFromQr(true);
+    // selectDeliveryType lee el estado actual del pago; solo importa cuándo cambia la mesa del QR
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qrMesaId, mesaActive, mesas, qrReapply]);
 
   if (!isCartOpen && !waSuccessModal) return null;
 
@@ -507,6 +526,7 @@ export function CartDrawer({ primaryColor, secondaryColor, deliveryZones, delive
     setBarrio('');
     setSelectedZoneId('');
     setSelectedMesaId('');
+    setQrReapply((n) => n + 1);
     setIsScheduled(false);
     setScheduleDate('');
     setScheduleTime('');
@@ -980,9 +1000,26 @@ export function CartDrawer({ primaryColor, secondaryColor, deliveryZones, delive
                       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M3 6h18M3 12h18M8 18h8M12 6v12" />
                       </svg>
-                      {mesas.length > 0 ? 'Elige tu mesa' : 'Tu mesa'}
+                      {mesas.length > 0 && !(mesaLockedFromQr && selectedMesa) ? 'Elige tu mesa' : 'Tu mesa'}
                     </p>
-                    {mesas.length === 0 ? (
+                    {mesaLockedFromQr && selectedMesa ? (
+                      <div style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+                        padding: '10px 14px', borderRadius: 12,
+                        border: `2px solid ${secondaryColor}`, background: `${secondaryColor}10`,
+                      }}>
+                        <span style={{ fontFamily: sg, fontSize: 14, color: '#1B1512' }}>
+                          📍 Estás en <strong>{selectedMesa.name}</strong>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setMesaLockedFromQr(false)}
+                          style={{ fontFamily: sg, fontSize: 12, fontWeight: 700, color: secondaryColor, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px' }}
+                        >
+                          Cambiar
+                        </button>
+                      </div>
+                    ) : mesas.length === 0 ? (
                       <p style={{ margin: 0, fontSize: 12, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '8px 12px', lineHeight: 1.5 }}>
                         🙋 Este local no tiene mesas configuradas. Pregúntale al mesero tu número de mesa o déjalo vacío y continúa con tu pedido.
                       </p>

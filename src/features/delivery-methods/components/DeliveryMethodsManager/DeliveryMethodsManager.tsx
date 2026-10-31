@@ -14,6 +14,7 @@ import type { DeliveryMethodConfig, DeliveryMethods, Mesa, PaymentMethodConfig }
 
 import { useMesas } from '../../hooks/useMesas';
 import { useCreateMesa, useUpdateMesa, useDeleteMesa } from '../../hooks/useMesaMutations';
+import { MesaQrModal } from '../MesaQrModal';
 
 const sg = "var(--font-sans, sans-serif)";
 const sm = "var(--font-mono, monospace)";
@@ -114,6 +115,8 @@ export function DeliveryMethodsManager() {
 
   // Mesa form modal
   const [mesaModal, setMesaModal] = useState<{ open: boolean; editing?: Mesa }>({ open: false });
+  // QR de una mesa o de todas las activas
+  const [qrMesas, setQrMesas] = useState<Mesa[] | null>(null);
   const [mesaName, setMesaName] = useState('');
   const [mesaError, setMesaError] = useState('');
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -419,6 +422,15 @@ export function DeliveryMethodsManager() {
                       <span style={{ fontFamily: sm, fontSize: 10, fontWeight: 700, letterSpacing: '.08em', color: 'var(--t-text-3)', textTransform: 'uppercase' }}>
                         Mesas ({mesas.length})
                       </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      {mesas.some((m) => m.isActive) && restaurant?.slug && (
+                        <button
+                          onClick={() => setQrMesas(mesas.filter((m) => m.isActive))}
+                          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 999, border: '1.5px solid var(--t-border)', background: 'transparent', color: 'var(--t-text-2)', fontFamily: sg, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+                        >
+                          Imprimir todos los QR
+                        </button>
+                      )}
                       {canManageTables && (
                       <button
                         onClick={() => openMesaModal()}
@@ -428,6 +440,7 @@ export function DeliveryMethodsManager() {
                         Agregar mesa
                       </button>
                       )}
+                      </div>
                     </div>
 
                     {mesasLoading ? (
@@ -447,6 +460,16 @@ export function DeliveryMethodsManager() {
                               <IcoMesa />
                             </div>
                             <span style={{ flex: 1, fontWeight: 600, fontSize: 14, color: 'var(--t-text-1)' }}>{mesa.name}</span>
+                            {mesa.isActive && restaurant?.slug && (
+                              <button
+                                onClick={() => setQrMesas([mesa])}
+                                title={`QR de ${mesa.name}`}
+                                style={{ display: 'flex', alignItems: 'center', gap: 4, height: 28, padding: '0 10px', borderRadius: 7, border: '1.5px solid var(--t-border)', background: 'var(--t-surface)', cursor: 'pointer', color: 'var(--t-text-2)', fontFamily: sg, fontSize: 12, fontWeight: 700 }}
+                              >
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h4v4" /></svg>
+                                QR
+                              </button>
+                            )}
                             {canManageTables && (<>
                             <button onClick={() => openMesaModal(mesa)} style={{ width: 28, height: 28, borderRadius: 7, border: 'none', background: 'none', cursor: 'pointer', display: 'grid', placeItems: 'center', color: 'var(--t-text-3)' }}>
                               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
@@ -466,6 +489,15 @@ export function DeliveryMethodsManager() {
           </div>
         );
       })}
+
+      {qrMesas && restaurant?.slug && (
+        <MesaQrModal
+          mesas={qrMesas}
+          restaurantSlug={restaurant.slug}
+          restaurantName={restaurant.name}
+          onClose={() => setQrMesas(null)}
+        />
+      )}
 
       {/* Mesa modal */}
       {mesaModal.open && (

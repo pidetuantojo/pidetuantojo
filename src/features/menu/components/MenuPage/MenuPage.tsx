@@ -14,6 +14,7 @@ import { PromotionsBanner } from '../PromotionsBanner';
 import { CartDrawer } from '../CartDrawer';
 import { CategoryTabs } from '../CategoryTabs';
 import { ClosedScheduleBanner } from '../ClosedScheduleBanner';
+import { clearMesaSession, readMesaSession, saveMesaSession } from '../../helpers/mesaSession';
 import { MenuHeader } from '../MenuHeader';
 import { MenuListLayout } from '../MenuListLayout';
 import { MenuProductCard } from '../MenuProductCard';
@@ -31,6 +32,8 @@ interface MenuPageProps {
   deliveryZones: DeliveryZone[];
   deliveryMode: 'manual' | 'zones';
   mesas?: Mesa[];
+  // Mesa del QR (?mesa=), ya validada en el servidor contra las mesas activas
+  initialMesaId?: string;
   // Promociones vigentes sin cupón (filtradas en el servidor)
   promotions?: Promotion[];
   // El plan incluye cupones
@@ -64,7 +67,7 @@ function checkRestaurantOpen(openingHours?: Restaurant['openingHours']): boolean
 // Categoría virtual con los productos en promoción (primera del menú)
 const PROMO_CATEGORY_ID = '__promociones';
 
-export function MenuPage({ restaurant, categories: baseCategories, products: baseProducts, adicionales, receivedStatusId, deliveryZones, deliveryMode, mesas = [], promotions = [], couponsEnabled = false }: MenuPageProps) {
+export function MenuPage({ restaurant, categories: baseCategories, products: baseProducts, adicionales, receivedStatusId, deliveryZones, deliveryMode, mesas = [], initialMesaId, promotions = [], couponsEnabled = false }: MenuPageProps) {
   const initCart = useCartStore((s) => s.initCart);
   const setCartOpen = useCartStore((s) => s.setCartOpen);
   const items = useCartStore((s) => s.items);
@@ -105,6 +108,21 @@ export function MenuPage({ restaurant, categories: baseCategories, products: bas
   const [closedModalOpen, setClosedModalOpen] = useState(true);
   const [isDesktop, setIsDesktop] = useState(false);
 
+  // Mesa del QR: la URL manda; si no viene, la de esta visita (sessionStorage). Siempre se valida
+  // contra las mesas activas: una mesa borrada o inactiva se descarta y el menú sigue normal
+  const [qrMesa, setQrMesa] = useState<Mesa | null>(null);
+  useEffect(() => {
+    const candidate = initialMesaId ?? readMesaSession(restaurant.slug);
+    const valid = candidate ? mesas.find((m) => m.id === candidate) ?? null : null;
+    if (!valid) {
+      clearMesaSession(restaurant.slug);
+      setQrMesa(null);
+      return;
+    }
+    if (initialMesaId) saveMesaSession(restaurant.slug, valid.id);
+    setQrMesa(valid);
+  }, [initialMesaId, mesas, restaurant.slug]);
+
   const { primaryColor: pri, secondaryColor: sec, accentColor: acc, bgColor } = restaurant.theme;
   const bg = bgColor ?? '#FBF8F5';
 
@@ -130,6 +148,25 @@ export function MenuPage({ restaurant, categories: baseCategories, products: bas
   const categoryMap = new Map(categories.map((c) => [c.id, c]));
   const isOpen = checkRestaurantOpen(restaurant.openingHours);
   const restaurantClosed = !isOpen;
+
+  // Confirma que el QR funcionó antes de armar el carrito
+  const mesaBanner = qrMesa ? (
+    <div
+      role="status"
+      style={{
+        display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 14,
+        background: `${sec}12`, border: `1px solid ${sec}30`, color: sec,
+        fontFamily: sg, fontSize: 14, fontWeight: 600,
+      }}
+    >
+      <span aria-hidden="true">🍽️</span>
+      <span>
+        {restaurantClosed
+          ? <>Estás en <strong>{qrMesa.name}</strong>, pero el local está cerrado en este momento.</>
+          : <>Pidiendo desde <strong>{qrMesa.name}</strong></>}
+      </span>
+    </div>
+  ) : null;
   // Cerrado + el restaurante acepta pedidos programados fuera de horario (check en "Horario de atención")
   // + algún método programable activo → se puede pedir para cuando abra
   const methods = restaurant.deliveryMethods;
@@ -299,6 +336,8 @@ export function MenuPage({ restaurant, categories: baseCategories, products: bas
 
           <div id="menu" />
 
+          {mesaBanner && <div style={{ padding: '12px 16px 0' }}>{mesaBanner}</div>}
+
           {showScheduleBanner && (
             <div style={{ padding: '12px 16px 0' }}>
               <ClosedScheduleBanner />
@@ -387,7 +426,7 @@ export function MenuPage({ restaurant, categories: baseCategories, products: bas
           )}
 
           <ProductModal product={selectedProduct} adicionales={adicionales} primaryColor={pri} onClose={() => setSelectedProduct(null)} />
-          <CartDrawer primaryColor={pri} secondaryColor={sec} receivedStatusId={receivedStatusId} deliveryZones={deliveryZones} deliveryMode={deliveryMode} deliveryMethods={restaurant.deliveryMethods} openingHours={restaurant.openingHours} restaurantClosed={restaurantClosed} allowScheduledWhenClosed={canScheduleWhileClosed} paymentMethods={restaurant.paymentMethods} mesas={mesas} products={baseProducts} promotions={promotions} loyalty={restaurant.loyalty} couponsEnabled={couponsEnabled} />
+          <CartDrawer primaryColor={pri} secondaryColor={sec} receivedStatusId={receivedStatusId} deliveryZones={deliveryZones} deliveryMode={deliveryMode} deliveryMethods={restaurant.deliveryMethods} openingHours={restaurant.openingHours} restaurantClosed={restaurantClosed} allowScheduledWhenClosed={canScheduleWhileClosed} paymentMethods={restaurant.paymentMethods} mesas={mesas} qrMesaId={qrMesa?.id} products={baseProducts} promotions={promotions} loyalty={restaurant.loyalty} couponsEnabled={couponsEnabled} />
         </div>
       </div>
     );
@@ -570,6 +609,8 @@ export function MenuPage({ restaurant, categories: baseCategories, products: bas
         {/* Main content */}
         <div style={{ flex: 1, minWidth: 0, padding: '32px 0 80px 24px' }}>
 
+          {mesaBanner && <div style={{ marginBottom: 24, maxWidth: 720 }}>{mesaBanner}</div>}
+
           {showScheduleBanner && (
             <div style={{ marginBottom: 24, maxWidth: 720 }}>
               <ClosedScheduleBanner />
@@ -639,7 +680,7 @@ export function MenuPage({ restaurant, categories: baseCategories, products: bas
       )}
 
       <ProductModal product={selectedProduct} adicionales={adicionales} primaryColor={pri} onClose={() => setSelectedProduct(null)} />
-      <CartDrawer primaryColor={pri} secondaryColor={sec} receivedStatusId={receivedStatusId} deliveryZones={deliveryZones} deliveryMode={deliveryMode} deliveryMethods={restaurant.deliveryMethods} openingHours={restaurant.openingHours} restaurantClosed={restaurantClosed} allowScheduledWhenClosed={canScheduleWhileClosed} paymentMethods={restaurant.paymentMethods} mesas={mesas} products={baseProducts} promotions={promotions} loyalty={restaurant.loyalty} couponsEnabled={couponsEnabled} />
+      <CartDrawer primaryColor={pri} secondaryColor={sec} receivedStatusId={receivedStatusId} deliveryZones={deliveryZones} deliveryMode={deliveryMode} deliveryMethods={restaurant.deliveryMethods} openingHours={restaurant.openingHours} restaurantClosed={restaurantClosed} allowScheduledWhenClosed={canScheduleWhileClosed} paymentMethods={restaurant.paymentMethods} mesas={mesas} qrMesaId={qrMesa?.id} products={baseProducts} promotions={promotions} loyalty={restaurant.loyalty} couponsEnabled={couponsEnabled} />
     </div>
   );
 }
