@@ -10,7 +10,7 @@ import { writeAuditLog } from '@/lib/shared/audit.server';
 import { checkIdempotency } from '@/lib/shared/idempotency.server';
 
 import { CashError } from './cash.errors';
-import { cashCollectionPath, cashDocPath } from './cash.paths';
+import { cashCollectionPath, cashDocPath, cashierLockId } from './cash.paths';
 import type { CashClosing, CashMovement, CountMap, MoneyByMethod, ShiftStatus } from './cash.types';
 import { compactCount, computeCountTotal } from './denominations.helpers';
 import { prepareFinalizeClose } from './closing.finalize.server';
@@ -186,6 +186,12 @@ export async function submitCount(
         closingId: shiftId,
         ...(shift.closeStartedAt ? {} : { closeStartedAt: audit.at, closeStartedBy: audit.uid }),
       });
+      // El cajero queda libre (puede abrir otro turno); la caja sigue bloqueada hasta la aprobación
+      tx.delete(
+        adminDb.doc(
+          cashDocPath(restaurantId, 'locks', cashierLockId(shift.cashierUid))
+        ) as DocumentReference
+      );
       status = 'CERRADO_PENDIENTE_APROBACION';
     }
     writeAuditLog(tx, restaurantId, {

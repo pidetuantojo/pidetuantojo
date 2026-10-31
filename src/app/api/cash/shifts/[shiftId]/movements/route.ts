@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 
-import { requireCashAccess } from '@/lib/cash/access.server';
+import { hasCallerPermission, requireCashAccess } from '@/lib/cash/access.server';
 import { cashErrorResponse, omitAudit, parseBody } from '@/lib/cash/api.server';
+import { listShiftMovements } from '@/lib/cash/balance.server';
 import { createMovementSchema } from '@/lib/cash/cash.schemas';
 import { createManualMovement } from '@/lib/cash/movements.server';
 import { buildAuditContext } from '@/lib/shared/audit.server';
@@ -27,5 +28,19 @@ export async function POST(request: Request, { params }: Params) {
     return NextResponse.json(omitAudit(movement), { status: 201 });
   } catch (error) {
     return cashErrorResponse(error, 'cash/shifts movements POST');
+  }
+}
+
+// El cajero del turno ve la lista SIN totales; un supervisor la ve con totales por medio
+export async function GET(request: Request, { params }: Params) {
+  try {
+    const access = await requireCashAccess(request, 'cash.view');
+    const view = await listShiftMovements(access.restaurantId, params.shiftId, {
+      uid: access.caller.uid,
+      canApprove: hasCallerPermission(access, 'cash.approve'),
+    });
+    return NextResponse.json(view);
+  } catch (error) {
+    return cashErrorResponse(error, 'cash/shifts movements GET');
   }
 }

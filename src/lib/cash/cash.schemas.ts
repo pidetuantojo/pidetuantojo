@@ -107,3 +107,50 @@ export const approveCloseSchema = z
 export const shiftStatusQuerySchema = z
   .enum(['ABIERTO', 'EN_CIERRE', 'CERRADO_PENDIENTE_APROBACION', 'CERRADO'])
   .optional();
+
+const orderPaymentItem = z
+  .object({
+    paymentMethodId: id,
+    amount: positiveMoneySchema,
+    received: positiveMoneySchema.optional(),
+    label: z.string().trim().min(1).max(40).optional(),
+    externalRef: z.string().trim().min(1).max(80).optional(),
+  })
+  .strict();
+
+export const payOrderSchema = z
+  .object({ orderId: id, payments: z.array(orderPaymentItem).min(1).max(10) })
+  .strict();
+
+export const refundSchema = z
+  .object({ orderId: id, paymentMethodId: id, amount: positiveMoneySchema, reason })
+  .strict();
+
+const externalRef = z.string().trim().min(1, 'Escribe la referencia').max(80);
+
+export const generalMovementSchema = z
+  .object({
+    type: z.enum(['INGRESO_VARIO', 'EGRESO']),
+    amount: positiveMoneySchema,
+    reason,
+    externalRef: externalRef.optional(),
+    accountOverrideId: id.optional(),
+  })
+  .strict();
+
+export const depositSchema = z
+  .object({ registerId: id, bankAccountId: id, amount: positiveMoneySchema, externalRef })
+  .strict();
+
+export const settlementSchema = z
+  .object({
+    paymentMethodId: id,
+    bankAccountId: id,
+    amount: positiveMoneySchema,
+    externalRef,
+    accountingDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida')
+      .optional(),
+  })
+  .strict();

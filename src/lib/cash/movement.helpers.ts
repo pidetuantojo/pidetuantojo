@@ -4,6 +4,7 @@ import type { AccountingEvent } from '@/lib/ledger/ledger.types';
 import { CashError } from './cash.errors';
 import type {
   CashMovement,
+  CashRegister,
   CashShift,
   MovementDirection,
   MovementType,
@@ -54,6 +55,7 @@ export const MOVEMENT_META: Record<MovementType, MovementMeta> = {
     event: 'CASH_TRANSFER',
     shiftStatuses: CLOSING_PHASE,
   },
+  CONSIGNACION: { direction: 'OUT', family: 'TR', event: 'BANK_DEPOSIT', shiftStatuses: [] },
   REVERSO: { direction: null, family: 'RV', event: null, shiftStatuses: ['ABIERTO', 'EN_CIERRE'] },
 };
 
@@ -81,11 +83,17 @@ export function oppositeDirection(direction: MovementDirection): MovementDirecti
  * reversado y su turno sigue sin cerrarse (después se corrige con una DEVOLUCION).
  */
 export function assertReversible(
-  movement: Pick<CashMovement, 'status' | 'type' | 'reversedByMovementId'>,
+  movement: Pick<CashMovement, 'status' | 'type' | 'reversedByMovementId' | 'mirrorOfMovementId'>,
   shift: Pick<CashShift, 'status'> | null
 ): void {
   if (movement.reversedByMovementId) {
     throw new CashError('ALREADY_REVERSED', 'El movimiento ya fue reversado');
+  }
+  if (movement.mirrorOfMovementId) {
+    throw new CashError(
+      'NOT_REVERSIBLE',
+      'El espejo de un traslado se reversa desde el traslado original'
+    );
   }
   if (movement.status !== 'APLICADO') {
     throw new CashError('NOT_REVERSIBLE', 'Solo se reversan movimientos aplicados');
@@ -99,4 +107,32 @@ export function assertReversible(
       'El turno ya cerró: registra una devolución en lugar de reversar'
     );
   }
+}
+
+/**
+ * Política de turno: las registradoras siempre exigen turno; en cajas sin turno (general/menor)
+ * las ventas y devoluciones en efectivo siguen necesitando el turno de quien cobra.
+ */
+export function assertShiftPolicy(
+  input: Pick<CashMovement, 'type' | 'methodType' | 'shiftId'>,
+  register: Pick<CashRegister, 'type'>
+): void {
+  if (input.shiftId) return;
+  if (register.type === 'REGISTRADORA') {
+    throw new CashError('SHIFT_REQUIRED', 'Las cajas registradoras exigen un turno abierto');
+  }
+  const cashSale = input.type === 'VENTA' || input.type === 'DEVOLUCION';
+  if (cashSale && input.methodType === 'efectivo') {
+    throw new CashError('SHIFT_REQUIRED', 'Los pagos en efectivo exigen tu turno abierto');
+  }
+}
+
+/** Tipos que, ya aplicados, se reflejan también como movimiento espejo en la caja contraparte. */
+export function needsMirror(
+  input: Pick<CashMovement, 'type' | 'status'>,
+  reverses?: Pick<CashMovement, 'transferId'>
+): boolean {
+  if (input.status !== 'APLICADO') return false;
+  if (input.type === 'REVERSO') return Boolean(reverses?.transferId);
+  return TRANSFER_TYPES.includes(input.type);
 }

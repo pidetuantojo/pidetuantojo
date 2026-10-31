@@ -311,6 +311,27 @@ export interface OrderPayment {
   received?: number;
   paidAt: string;
   paidBy?: string;
+  // Id del PaymentMethodConfig usado (pagos hechos por el módulo de caja)
+  paymentMethodId?: string;
+  // Movimiento de caja que respalda este pago (los pagos anteriores al módulo de caja no lo tienen)
+  movementId?: string;
+  // Pago reversado: se conserva en el arreglo pero ya no cuenta como pagado
+  reversedAt?: string;
+  reversedBy?: string;
+  reversalMovementId?: string;
+  reversalReason?: string;
+}
+
+/** Devolución de dinero al cliente registrada por el módulo de caja. No cambia `isPaid`. */
+export interface OrderRefund {
+  id: string;
+  movementId: string;
+  amount: number;
+  methodType: PaymentMethodType;
+  paymentMethodId?: string;
+  reason: string;
+  refundedAt: string;
+  refundedBy: string;
 }
 
 /** Un cambio de estado del pedido (línea de tiempo). Sin `by` = lo hizo el sistema o el cliente desde la carta. */
@@ -368,6 +389,7 @@ export interface Order {
   manualDiscountReason?: string;
   // Pagos registrados en caja ("Pagar" o "Dividir"). isPaid = la suma cubre el total
   payments?: OrderPayment[];
+  refunds?: OrderRefund[];
   // Mesa: el pedido sigue en el tablero hasta liberar la mesa (aunque ya esté entregado)
   tableReleasedAt?: string;
   // Impresión de comanda (QZ Tray). 'printing' actúa como candado contra doble click.

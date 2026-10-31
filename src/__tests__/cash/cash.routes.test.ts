@@ -226,15 +226,9 @@ describe('cierre a ciegas por API', () => {
     expect(body).toEqual({ shiftId: shift.id, status: 'CERRADO_PENDIENTE_APROBACION' });
     expect(JSON.stringify(body)).not.toMatch(/expected|difference|cashDifference/i);
 
-    // el turno vigente tampoco trae totales
+    // el cajero queda libre: ya no tiene turno vigente (la caja sigue bloqueada hasta aprobar)
     const current = await (await call('current', 'GET')).json();
-    expect(current.shift).toEqual({
-      id: shift.id,
-      registerId: world.ids.reg1,
-      status: 'CERRADO_PENDIENTE_APROBACION',
-      openedAt: expect.any(String),
-      openingAccountingDate: expect.any(String),
-    });
+    expect(current.shift).toBeNull();
   });
 
   it('aprobación: el cajero recibe 403; el supervisor cierra; solo supervisores ven el cierre', async () => {

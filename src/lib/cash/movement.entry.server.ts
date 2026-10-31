@@ -30,6 +30,8 @@ export interface EntryOptions {
   accountingDate: string;
   /** Reemplaza la cuenta del débito (p. ej. el supervisor reasigna un faltante). */
   debitAccountOverrideId?: string;
+  /** Reemplaza la cuenta del crédito (contrapartida elegida por el contador, p. ej. saldo inicial). */
+  creditAccountOverrideId?: string;
   /** Movimiento original cuando esto es un reverso. */
   reverses?: Pick<CashMovement, 'journalEntryId' | 'reason'>;
   /** Motivo del reverso. */
@@ -138,7 +140,11 @@ export async function prepareEntryForMovement(
         debit: movement.amount,
         credit: 0,
       },
-      { accountId: resolveAccountRef(rule.credit, resolution), debit: 0, credit: movement.amount },
+      {
+        accountId: options.creditAccountOverrideId ?? resolveAccountRef(rule.credit, resolution),
+        debit: 0,
+        credit: movement.amount,
+      },
     ],
   };
   const entry = await preparePostEntry(tx, restaurantId, draft, audit, { sequences });

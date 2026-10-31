@@ -12,6 +12,7 @@ const USER_AGENT_MAX = 200;
 export interface AuditExtra {
   registerId?: string;
   shiftId?: string;
+  orderId?: string;
   reason?: string;
 }
 

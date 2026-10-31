@@ -54,7 +54,8 @@ export type MovementType =
   | 'AJUSTE_FALTANTE'
   | 'REVERSO'
   | 'BASE_APERTURA'
-  | 'TRASLADO_CIERRE';
+  | 'TRASLADO_CIERRE'
+  | 'CONSIGNACION';
 
 export type MovementDirection = 'IN' | 'OUT';
 export type MovementStatus = 'APLICADO' | 'PENDIENTE_APROBACION' | 'RECHAZADO';
@@ -72,6 +73,12 @@ export interface CashMovement {
   /** Se guarda en el movimiento para que las reglas de Firestore lean por cajero. */
   cashierUid: string;
   counterpartRegisterId?: string;
+  /** Id compartido por un traslado y su espejo en la caja contraparte. */
+  transferId?: string;
+  /** Solo en el espejo: el movimiento original en la otra caja (no cuenta en ningún turno). */
+  mirrorOfMovementId?: string;
+  /** Solo CONSIGNACION: cuenta bancaria destino. */
+  bankAccountId?: string;
   orderId?: string;
   externalRef?: string;
   reason?: string;

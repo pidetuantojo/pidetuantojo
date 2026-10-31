@@ -59,7 +59,9 @@ const move = (
   );
 const doc = (path: string) => db.get(path) as Record<string, unknown> | undefined;
 const shiftDoc = (id: string) => doc(`restaurants/${RID}/cashShifts/${id}`)!;
-const movDocs = () => collectionDocs(db, 'cashMovements');
+const allMovDocs = () => collectionDocs(db, 'cashMovements');
+// Los espejos de traslados viven en la caja general y no son del turno
+const movDocs = () => allMovDocs().filter((m) => !m.mirrorOfMovementId);
 const entries = () => collectionDocs(db, 'journalEntries');
 const lines = () => collectionDocs(db, 'journalLines');
 const net = (accountId: string) =>
@@ -431,7 +433,9 @@ describe('cierre a ciegas', () => {
       metaFor('cashier1')
     );
     expect(ack).toEqual({ shiftId: shift.id, status: 'CERRADO_PENDIENTE_APROBACION' });
-    expect(lockPaths()).toHaveLength(2);
+    // Se libera el candado del cajero; el de la caja se mantiene hasta la aprobación
+    expect(lockPaths()).toHaveLength(1);
+    expect(lockPaths()[0]).toContain('register_');
     expect(movDocs()).toHaveLength(1);
   });
 

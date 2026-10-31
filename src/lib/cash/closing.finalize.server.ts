@@ -33,6 +33,13 @@ export async function prepareFinalizeClose(input: FinalizeInput): Promise<Prepar
   const { restaurantId, audit } = ctx;
   assertTransition(shift.status, 'CERRADO');
 
+  // El candado del cajero se libera al enviar el conteo: puede haber abierto otro turno desde entonces
+  const cashierLockRef = adminDb.doc(
+    cashDocPath(restaurantId, 'locks', cashierLockId(shift.cashierUid))
+  ) as DocumentReference;
+  const cashierLock = await ctx.tx.get(cashierLockRef);
+  const ownsCashierLock = cashierLock.exists && cashierLock.data()?.shiftId === shift.id;
+
   const { cashDifference, countedCash } = input.closing;
   const base = { registerId: shift.registerId, shiftId: shift.id, methodType: 'efectivo' as const };
   if (shortageAccountId && shortageAccountId === register.ledgerAccountId) {
@@ -86,11 +93,7 @@ export async function prepareFinalizeClose(input: FinalizeInput): Promise<Prepar
         cashDocPath(restaurantId, 'locks', registerLockId(shift.registerId))
       ) as DocumentReference
     );
-    tx.delete(
-      adminDb.doc(
-        cashDocPath(restaurantId, 'locks', cashierLockId(shift.cashierUid))
-      ) as DocumentReference
-    );
+    if (ownsCashierLock) tx.delete(cashierLockRef);
     tx.update(adminDb.doc(cashDocPath(restaurantId, 'shifts', shift.id)) as DocumentReference, {
       status: 'CERRADO',
       closedAt: audit.at,

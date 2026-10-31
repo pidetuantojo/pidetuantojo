@@ -33,3 +33,16 @@ export function computeDifferences(expected: MoneyByMethod, counted: MoneyByMeth
   }
   return result;
 }
+
+/**
+ * Saldo por medio de una caja sin turno (general/menor): Σ entradas − Σ salidas aplicadas.
+ * Incluye los espejos de traslados; un movimiento reversado y su reverso se anulan solos.
+ */
+export function computeRegisterBalance(
+  movements: readonly (ExpectedInput & { registerId?: string })[],
+  registerId?: string
+): MoneyByMethod {
+  return computeExpectedByMethod(
+    registerId ? movements.filter((m) => m.registerId === registerId) : movements
+  );
+}

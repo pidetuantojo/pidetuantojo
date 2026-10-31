@@ -11,11 +11,12 @@ import { checkIdempotency } from '@/lib/shared/idempotency.server';
 import type { PaymentMethodType } from '@/types';
 
 import { CashError } from './cash.errors';
-import { cashDocPath } from './cash.paths';
+import { cashCollectionPath, cashDocPath } from './cash.paths';
 import type { CashMovement } from './cash.types';
 import { createMovementContext, type MovementContext } from './movement.context.server';
 import { prepareEntryForMovement } from './movement.entry.server';
 import { assertReversible } from './movement.helpers';
+import { buildMirrorMovement } from './movement.mirror';
 import { prepareRegisterMovement } from './movement.server';
 
 export interface ManualMovementInput {
@@ -134,6 +135,9 @@ export async function decideWithdrawal(
         })
       : null;
 
+    const counterpartId = movement.counterpartRegisterId ?? ctx.settings.defaultGeneralRegisterId;
+    if (approve && counterpartId) await ctx.registerOf(counterpartId);
+
     const patch = stripUndefined({
       status: approve ? ('APLICADO' as const) : ('RECHAZADO' as const),
       approvedBy: audit.uid,
@@ -143,11 +147,19 @@ export async function decideWithdrawal(
             accountingDate: audit.accountingDate,
             journalEntryId: prepared?.entry?.entryId ?? null,
             journalSkippedReason: prepared?.skippedReason,
+            counterpartRegisterId: counterpartId,
+            transferId: movement.id,
           }
         : {}),
     });
     prepared?.entry?.commit(tx);
     tx.update(ref, patch);
+    if (approve && counterpartId) {
+      const mirrorRef = adminDb
+        .collection(cashCollectionPath(restaurantId, 'movements'))
+        .doc() as DocumentReference;
+      tx.create(mirrorRef, buildMirrorMovement({ ...movement, ...patch }, mirrorRef.id));
+    }
     writeAuditLog(tx, restaurantId, {
       action: approve ? 'cash.withdrawal.approved' : 'cash.withdrawal.rejected',
       entityType: 'cashMovement',

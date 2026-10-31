@@ -15,7 +15,14 @@ import { cashCollectionPath, cashDocPath, MOVEMENT_SEQUENCES } from './cash.path
 import type { CashMovement, MovementStatus, MovementType } from './cash.types';
 import type { MovementContext } from './movement.context.server';
 import { prepareEntryForMovement } from './movement.entry.server';
-import { MOVEMENT_META, oppositeDirection } from './movement.helpers';
+import {
+  assertShiftPolicy,
+  MOVEMENT_META,
+  needsMirror,
+  oppositeDirection,
+  TRANSFER_TYPES,
+} from './movement.helpers';
+import { buildMirrorMovement } from './movement.mirror';
 
 export interface RegisterMovementInput {
   type: MovementType;
@@ -37,6 +44,10 @@ export interface RegisterMovementInput {
   accountingDate?: string;
   /** Reasigna la cuenta del débito del asiento (faltante aprobado por el supervisor). */
   debitAccountOverrideId?: string;
+  /** Reasigna la cuenta del crédito (contrapartida elegida por el contador). */
+  creditAccountOverrideId?: string;
+  /** Solo CONSIGNACION: cuenta bancaria destino (queda en el movimiento). */
+  bankAccountId?: string;
   /** Solo REVERSO: el movimiento que se anula. */
   reverses?: CashMovement;
 }
@@ -44,6 +55,8 @@ export interface RegisterMovementInput {
 export interface PreparedMovement {
   /** Documento completo, ya con id, comprobante y asiento reservados (aún sin escribir). */
   movement: CashMovement;
+  /** Espejo en la caja contraparte (traslados aplicados), si corresponde. */
+  mirror?: CashMovement;
   /** Escribe movimiento, asiento, consecutivos y auditoría. Solo tras TODAS las lecturas. */
   commit: (tx: Transaction) => CashMovement;
 }
@@ -77,7 +90,25 @@ export async function prepareRegisterMovement(
 
   const register = await ctx.registerOf(input.registerId);
   if (!register.isActive) throw new CashError('INVALID_REGISTER', 'La caja está inactiva');
+  assertShiftPolicy(
+    { type: input.type, methodType: input.methodType, shiftId: input.shiftId },
+    register
+  );
   await assertPaymentMethod(ctx, input);
+  const isTransfer = TRANSFER_TYPES.includes(input.type);
+  let counterpartRegisterId = input.counterpartRegisterId ?? input.reverses?.counterpartRegisterId;
+  if (isTransfer) {
+    counterpartRegisterId ??= ctx.settings.defaultGeneralRegisterId;
+    if (!counterpartRegisterId) {
+      throw new CashError(
+        'NO_GENERAL_REGISTER',
+        'Configura la caja general en los ajustes de caja'
+      );
+    }
+    if (counterpartRegisterId === input.registerId) {
+      throw new CashError('INVALID_REGISTER', 'La caja contraparte debe ser distinta');
+    }
+  }
 
   let cashierUid = audit.uid;
   if (input.shiftId) {
@@ -112,7 +143,7 @@ export async function prepareRegisterMovement(
     methodType: input.methodType,
     paymentMethodId: input.paymentMethodId,
     registerId: input.registerId,
-    counterpartRegisterId: input.counterpartRegisterId,
+    counterpartRegisterId,
     reason: input.reason,
   };
   const prepared =
@@ -120,6 +151,7 @@ export async function prepareRegisterMovement(
       ? await prepareEntryForMovement(ctx, draft, {
           accountingDate,
           debitAccountOverrideId: input.debitAccountOverrideId,
+          creditAccountOverrideId: input.creditAccountOverrideId,
           reverses: input.reverses,
           reversalReason: input.reason,
         })
@@ -132,6 +164,7 @@ export async function prepareRegisterMovement(
     orderId: input.orderId,
     externalRef: input.externalRef,
     reversesMovementId: input.reverses?.id,
+    bankAccountId: input.bankAccountId,
     status,
     receiptNumber: formatSequence(meta.family, sequence.value),
     accountingDate,
@@ -141,9 +174,25 @@ export async function prepareRegisterMovement(
     createdAt: audit.at,
   });
 
+  let mirror: CashMovement | undefined;
+  if (needsMirror({ type: input.type, status }, input.reverses) && counterpartRegisterId) {
+    await ctx.registerOf(counterpartRegisterId);
+    movement.transferId = movement.id;
+    mirror = buildMirrorMovement(
+      movement,
+      adminDb.collection(cashCollectionPath(restaurantId, 'movements')).doc().id
+    );
+  }
+
   const commit = (tx: Transaction): CashMovement => {
     prepared.entry?.commit(tx);
     tx.create(movementRef as DocumentReference, movement);
+    if (mirror) {
+      tx.create(
+        adminDb.doc(cashDocPath(restaurantId, 'movements', mirror.id)) as DocumentReference,
+        mirror
+      );
+    }
     sequence.commit(tx);
     if (input.reverses) {
       tx.update(
@@ -168,5 +217,5 @@ export async function prepareRegisterMovement(
     return movement;
   };
 
-  return { movement, commit };
+  return { movement, mirror, commit };
 }

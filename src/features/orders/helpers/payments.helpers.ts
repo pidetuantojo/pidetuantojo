@@ -4,8 +4,13 @@ import { getOrderTotals } from './totals.helpers';
 
 type PaymentsSource = Pick<Order, 'subtotal' | 'discount' | 'deliveryFee' | 'payments'>;
 
+/** Pagos vigentes: los reversados se conservan en el pedido pero no cuentan. */
+export function activePayments(order: Pick<Order, 'payments'>): OrderPayment[] {
+  return (order.payments ?? []).filter((p) => !p.reversedAt);
+}
+
 export function paidAmount(order: Pick<Order, 'payments'>): number {
-  return (order.payments ?? []).reduce((s, p) => s + p.amount, 0);
+  return activePayments(order).reduce((s, p) => s + p.amount, 0);
 }
 
 /** Lo que falta por pagar (nunca negativo). */
@@ -60,7 +65,7 @@ export function buildPaymentMessage(
  * falte se atribuye al método elegido por el cliente; sin pagos, todo va a ese método.
  */
 export function paymentsByMethod(order: Pick<Order, 'paymentMethod' | 'total' | 'payments'>): { method: string; amount: number }[] {
-  const payments: Pick<OrderPayment, 'method' | 'amount'>[] = [...(order.payments ?? [])];
+  const payments: Pick<OrderPayment, 'method' | 'amount'>[] = [...activePayments(order)];
   const pending = order.total - paidAmount(order);
   if (pending > 0) payments.push({ method: order.paymentMethod, amount: pending });
   const map = new Map<string, number>();

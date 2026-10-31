@@ -10,7 +10,7 @@ import { writeAuditLog } from '@/lib/shared/audit.server';
 import { checkIdempotency } from '@/lib/shared/idempotency.server';
 
 import { CashError } from './cash.errors';
-import { cashCollectionPath, cashDocPath } from './cash.paths';
+import { cashCollectionPath, cashDocPath, registerLockId } from './cash.paths';
 import type { CashRegister, RegisterType } from './cash.types';
 
 export interface CreateRegisterInput {
@@ -121,8 +121,24 @@ export async function updateRegister(
     ) as DocumentReference;
     const snap = await tx.get(ref);
     if (!snap.exists) throw new CashError('REGISTER_NOT_FOUND', 'La caja no existe');
-    if (input.ledgerAccountId)
+    if (input.ledgerAccountId) {
+      const current = snap.data() as CashRegister;
+      if (input.ledgerAccountId !== current.ledgerAccountId) {
+        // El candado vive mientras el turno no esté CERRADO
+        const lock = await tx.get(
+          adminDb.doc(
+            cashDocPath(restaurantId, 'locks', registerLockId(registerId))
+          ) as DocumentReference
+        );
+        if (lock.exists) {
+          throw new CashError(
+            'REGISTER_HAS_OPEN_SHIFT',
+            'No puedes cambiar la cuenta contable de una caja con turno abierto'
+          );
+        }
+      }
       await assertCashLedgerAccount(tx, restaurantId, input.ledgerAccountId);
+    }
 
     const updated: CashRegister = {
       ...(snap.data() as CashRegister),
