@@ -23,6 +23,14 @@ import {
   TRANSFER_TYPES,
 } from './movement.helpers';
 import { buildMirrorMovement } from './movement.mirror';
+import type { BalanceDelta } from './register-balance.server';
+
+export const balanceDeltaOf = (m: CashMovement): BalanceDelta => ({
+  movementId: m.id,
+  methodType: m.methodType,
+  direction: m.direction,
+  amount: m.amount,
+});
 
 export interface RegisterMovementInput {
   type: MovementType;
@@ -174,9 +182,12 @@ export async function prepareRegisterMovement(
     createdAt: audit.at,
   });
 
+  // Saldo materializado: se lee ahora (fase de lectura) y se escribe en `commit`
+  if (status === 'APLICADO') await ctx.balances.load(input.registerId);
   let mirror: CashMovement | undefined;
   if (needsMirror({ type: input.type, status }, input.reverses) && counterpartRegisterId) {
     await ctx.registerOf(counterpartRegisterId);
+    await ctx.balances.load(counterpartRegisterId);
     movement.transferId = movement.id;
     mirror = buildMirrorMovement(
       movement,
@@ -194,6 +205,10 @@ export async function prepareRegisterMovement(
       );
     }
     sequence.commit(tx);
+    if (status === 'APLICADO') {
+      ctx.balances.apply(movement.registerId, balanceDeltaOf(movement), audit.at);
+      if (mirror) ctx.balances.apply(mirror.registerId, balanceDeltaOf(mirror), audit.at);
+    }
     if (input.reverses) {
       tx.update(
         adminDb.doc(cashDocPath(restaurantId, 'movements', input.reverses.id)) as DocumentReference,

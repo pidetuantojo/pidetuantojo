@@ -9,7 +9,6 @@ import { ledgerCollectionPath } from '@/lib/ledger/ledger.paths';
 import type { LedgerAccount } from '@/lib/ledger/ledger.types';
 import { checkIdempotency } from '@/lib/shared/idempotency.server';
 
-import { readCashBalance } from './balance.server';
 import { CashError } from './cash.errors';
 import type { CashMovement } from './cash.types';
 import { createMovementContext, type MovementContext } from './movement.context.server';
@@ -78,7 +77,7 @@ export async function createGeneralMovement(
     const ctx = await createMovementContext(tx, restaurantId, audit);
     await requireGeneralRegister(ctx, registerId);
     if (input.type === 'EGRESO') {
-      assertSufficientCash(await readCashBalance(tx, restaurantId, registerId), input.amount);
+      assertSufficientCash(await ctx.balances.cashOf(registerId), input.amount);
     }
 
     const prepared = await prepareRegisterMovement(
@@ -137,7 +136,7 @@ export async function depositToBank(
         'La cuenta bancaria debe ser un activo activo que admita movimientos'
       );
     }
-    assertSufficientCash(await readCashBalance(tx, restaurantId, input.registerId), input.amount);
+    assertSufficientCash(await ctx.balances.cashOf(input.registerId), input.amount);
 
     const prepared = await prepareRegisterMovement(
       { ...ctx, audit: { ...audit, registerId: input.registerId } },

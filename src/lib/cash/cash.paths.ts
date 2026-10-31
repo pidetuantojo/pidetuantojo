@@ -6,6 +6,7 @@ export const CASH_COLLECTIONS = {
   closings: 'cashClosings',
   locks: 'cashShiftLocks',
   settings: 'cashSettings',
+  balances: 'cashRegisterBalances',
 } as const;
 
 export const SETTINGS_DOC_ID = 'default';

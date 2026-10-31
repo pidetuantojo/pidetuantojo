@@ -17,7 +17,7 @@ import { createMovementContext, type MovementContext } from './movement.context.
 import { prepareEntryForMovement } from './movement.entry.server';
 import { assertReversible } from './movement.helpers';
 import { buildMirrorMovement } from './movement.mirror';
-import { prepareRegisterMovement } from './movement.server';
+import { balanceDeltaOf, prepareRegisterMovement } from './movement.server';
 
 export interface ManualMovementInput {
   type: 'INGRESO_VARIO' | 'EGRESO' | 'RETIRO_PARCIAL';
@@ -137,6 +137,10 @@ export async function decideWithdrawal(
 
     const counterpartId = movement.counterpartRegisterId ?? ctx.settings.defaultGeneralRegisterId;
     if (approve && counterpartId) await ctx.registerOf(counterpartId);
+    if (approve) {
+      await ctx.balances.load(movement.registerId);
+      if (counterpartId) await ctx.balances.load(counterpartId);
+    }
 
     const patch = stripUndefined({
       status: approve ? ('APLICADO' as const) : ('RECHAZADO' as const),
@@ -158,8 +162,12 @@ export async function decideWithdrawal(
       const mirrorRef = adminDb
         .collection(cashCollectionPath(restaurantId, 'movements'))
         .doc() as DocumentReference;
-      tx.create(mirrorRef, buildMirrorMovement({ ...movement, ...patch }, mirrorRef.id));
+      const mirror = buildMirrorMovement({ ...movement, ...patch }, mirrorRef.id);
+      tx.create(mirrorRef, mirror);
+      ctx.balances.apply(mirror.registerId, balanceDeltaOf(mirror), audit.at);
     }
+    // El retiro pendiente no contaba; al aprobarse sale de la caja del turno
+    if (approve) ctx.balances.apply(movement.registerId, balanceDeltaOf(movement), audit.at);
     writeAuditLog(tx, restaurantId, {
       action: approve ? 'cash.withdrawal.approved' : 'cash.withdrawal.rejected',
       entityType: 'cashMovement',

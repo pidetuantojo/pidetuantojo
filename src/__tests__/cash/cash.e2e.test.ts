@@ -209,6 +209,15 @@ describe('integración 2b', () => {
     expect(balance.cash).toBe(expectedGeneral);
     expect(expectedGeneral).toBe(309500);
 
+    // El saldo materializado coincide con la suma de movimientos en TODAS las cajas
+    for (const registerId of [ids.general, ids.reg1, ids.reg2]) {
+      const doc = db.get(`restaurants/${RID}/cashRegisterBalances/${registerId}`) as {
+        byMethod: Record<string, number>;
+      };
+      const recomputed = await mods.balance.recomputeRegisterBalance(RID, registerId);
+      expect(doc.byMethod).toEqual(recomputed);
+    }
+
     // Σ líneas contables por cuenta de caja = saldo de cada caja
     expect(net(ids.accGeneral)).toBe(balance.cash);
     expect(net(ids.accReg1)).toBe(0);

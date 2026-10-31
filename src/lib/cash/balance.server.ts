@@ -1,30 +1,14 @@
 // SOLO servidor: saldos de cajas sin turno (general/menor) y listado de movimientos de un turno.
-import type { Transaction } from 'firebase-admin/firestore';
-
 import { adminDb } from '@/lib/firebase/admin';
 
 import { CashError } from './cash.errors';
 import { cashCollectionPath, cashDocPath } from './cash.paths';
 import type { CashMovement, CashRegister, CashShift, MoneyByMethod } from './cash.types';
 import { computeExpectedByMethod, computeRegisterBalance } from './expected.helpers';
+import type { RegisterBalanceDoc } from './register-balance.server';
 
 const toMovement = (d: { id: string; data: () => unknown }) =>
   ({ ...(d.data() as CashMovement), id: d.id }) as CashMovement;
-
-/** Efectivo de la caja = Σ movimientos aplicados (incluye espejos). Lectura dentro de la transacción. */
-export async function readCashBalance(
-  tx: Transaction,
-  restaurantId: string,
-  registerId: string
-): Promise<number> {
-  const snap = await tx.get(
-    adminDb
-      .collection(cashCollectionPath(restaurantId, 'movements'))
-      .where('registerId', '==', registerId)
-      .where('methodType', '==', 'efectivo')
-  );
-  return computeRegisterBalance(snap.docs.map(toMovement)).efectivo ?? 0;
-}
 
 export interface RegisterBalance {
   registerId: string;
@@ -42,12 +26,21 @@ export async function getRegisterBalance(
   if ((regSnap.data() as CashRegister).type !== 'GENERAL') {
     throw new CashError('INVALID_REGISTER', 'El saldo se consulta solo en cajas generales');
   }
+  const snap = await adminDb.doc(cashDocPath(restaurantId, 'balances', registerId)).get();
+  const balanceByMethod = snap.exists ? (snap.data() as RegisterBalanceDoc).byMethod : {};
+  return { registerId, balanceByMethod, cash: balanceByMethod.efectivo ?? 0 };
+}
+
+/** Conciliación: recalcula el saldo sumando todos los movimientos (no es la ruta caliente). */
+export async function recomputeRegisterBalance(
+  restaurantId: string,
+  registerId: string
+): Promise<MoneyByMethod> {
   const snap = await adminDb
     .collection(cashCollectionPath(restaurantId, 'movements'))
     .where('registerId', '==', registerId)
     .get();
-  const balanceByMethod = computeRegisterBalance(snap.docs.map(toMovement));
-  return { registerId, balanceByMethod, cash: balanceByMethod.efectivo ?? 0 };
+  return computeRegisterBalance(snap.docs.map(toMovement));
 }
 
 export interface ShiftMovementsView {

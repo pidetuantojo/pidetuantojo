@@ -14,6 +14,7 @@ import { CashError } from './cash.errors';
 import { cashDocPath, SETTINGS_DOC_ID } from './cash.paths';
 import type { CashRegister, CashSettings, CashShift } from './cash.types';
 import { DEFAULT_DENOMINATIONS } from './denominations.helpers';
+import { createBalanceStore, type BalanceStore } from './register-balance.server';
 
 export interface MovementContext {
   tx: Transaction;
@@ -27,6 +28,8 @@ export interface MovementContext {
   /** Turno recién armado en esta misma transacción (aún no existe en Firestore). */
   seedShift: (shift: CashShift) => void;
   paymentMethods: () => Promise<PaymentMethodConfig[]>;
+  /** Saldos materializados por caja (lectura en prepare, escritura en commit). */
+  balances: BalanceStore;
 }
 
 export function defaultSettings(): CashSettings {
@@ -99,6 +102,7 @@ export async function createMovementContext(
       }
       return cached;
     },
+    balances: createBalanceStore(tx, restaurantId),
     seedShift: (shift) => {
       shifts.set(shift.id, Promise.resolve(shift));
     },
