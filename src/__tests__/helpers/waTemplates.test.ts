@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import {
-  DEFAULT_TEMPLATES, parseTemplateStore, paymentSummary, statusNotifiesAny, statusTemplateId, templateBody, templateName,
+  applyTemplate, DEFAULT_TEMPLATES, isCustomizedSystemTemplate, parseTemplateStore, paymentSummary, statusNotifiesAny, statusTemplateId, templateBody, templateName,
 } from '@/lib/whatsapp/templates.core';
 
 describe('statusTemplateId', () => {
@@ -82,5 +82,38 @@ describe('resumen de pago', () => {
     expect(DEFAULT_TEMPLATES.pedido_nuevo).toContain('{{resumenPago}}');
     expect(DEFAULT_TEMPLATES.pedido_confirmado).toContain('{{resumenPago}}');
     expect(DEFAULT_TEMPLATES.pedido_pagado).toContain('{{resumenPago}}');
+  });
+});
+
+describe('plantillas guardadas por cada restaurante', () => {
+  // Texto por defecto ANTERIOR, tal cual quedó guardado en restaurantes que tocaron "Guardar" sin cambiar nada
+  const LEGACY_NUEVO = `Hola {{nombreCliente}}! 👋\nTu pedido *#{{numeroPedido}}* fue recibido ✅\n\n*🛒 Productos:*\n{{productos}}\n\n*💰 Total:* {{total}}\n*💳 Pago:* {{metodoPago}}`;
+
+  it('una plantilla vieja sin personalizar recibe el texto nuevo (con el resumen de pago)', () => {
+    const store = parseTemplateStore({ pedido_nuevo: LEGACY_NUEVO });
+    expect(store.system.pedido_nuevo).toBe(DEFAULT_TEMPLATES.pedido_nuevo);
+    expect(isCustomizedSystemTemplate('pedido_nuevo', LEGACY_NUEVO)).toBe(false);
+    // También si se guardó con saltos de línea de Windows
+    expect(isCustomizedSystemTemplate('pedido_nuevo', LEGACY_NUEVO.replace(/\n/g, '\r\n'))).toBe(false);
+  });
+
+  it('lo personalizado de verdad se respeta', () => {
+    const mine = 'Hola {{nombreCliente}}, recibimos tu pedido 🍔';
+    expect(parseTemplateStore({ pedido_nuevo: mine }).system.pedido_nuevo).toBe(mine);
+    expect(isCustomizedSystemTemplate('pedido_nuevo', mine)).toBe(true);
+    expect(isCustomizedSystemTemplate('pedido_nuevo', undefined)).toBe(false);
+  });
+});
+
+describe('{{productos}}', () => {
+  it('muestra el precio de cada línea, adicionales y regalos', () => {
+    const text = applyTemplate('{{productos}}', {
+      items: [
+        { productName: 'Hamburguesa', quantity: 2, subtotal: 36000, additionals: ['Queso'] },
+        { productName: 'Gaseosa', quantity: 1, isGift: true },
+        { productName: 'Agua', quantity: 1 },
+      ],
+    });
+    expect(text).toBe('  • 2x Hamburguesa (+ Queso) · $36.000\n  • 1x Gaseosa · Regalo 🎁\n  • 1x Agua');
   });
 });

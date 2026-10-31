@@ -43,7 +43,8 @@ export interface WaTemplateData {
   deliveryFee?: number;
   freeDelivery?: boolean;
   paymentMethod?: string;
-  items?: { productName: string; quantity: number }[];
+  // subtotal = precio de la línea (con adicionales); sin él solo se lista cantidad y nombre
+  items?: { productName: string; quantity: number; subtotal?: number; additionals?: string[]; isGift?: boolean }[];
   statusName?: string;
 }
 
@@ -63,7 +64,13 @@ export function templateDataFromOrder(
     freeDelivery: order.freeDelivery,
     total: totals.total,
     paymentMethod: order.paymentMethod,
-    items: order.items.map((i) => ({ productName: i.productName, quantity: i.quantity })),
+    items: order.items.map((i) => ({
+      productName: i.productName,
+      quantity: i.quantity,
+      subtotal: i.subtotal,
+      additionals: i.additionals.map((a) => a.name),
+      isGift: i.isGift,
+    })),
     statusName,
   };
 }
@@ -89,6 +96,29 @@ export const DEFAULT_TEMPLATES: WaTemplates = {
   pedido_estado_actualizado: `Hola {{nombreCliente}}! 📦\nTu pedido *#{{numeroPedido}}* ahora está: *{{estadoPedido}}*`,
   pedido_pagado: `Hola {{nombreCliente}}! 💳\nTu pedido *#{{numeroPedido}}* ya fue *pagado* ✅\n\n{{resumenPago}}\n*💳 Pago:* {{metodoPago}}\n\n¡Gracias por tu pedido! 🙌`,
 };
+
+/**
+ * Textos por defecto ANTERIORES. Un restaurante que tocó "Guardar" sin cambiar nada dejó guardado
+ * este texto: se trata como "no personalizado" y recibe el por defecto actual (con el resumen de pago).
+ */
+const LEGACY_DEFAULTS: Partial<Record<WaEventCode, string[]>> = {
+  pedido_nuevo: [`Hola {{nombreCliente}}! 👋\nTu pedido *#{{numeroPedido}}* fue recibido ✅\n\n*🛒 Productos:*\n{{productos}}\n\n*💰 Total:* {{total}}\n*💳 Pago:* {{metodoPago}}`],
+  pedido_confirmado: [`Hola {{nombreCliente}}! 👋\nTu pedido *#{{numeroPedido}}* fue *confirmado* ✅\n\n*🛒 Productos:*\n{{productos}}\n\n*💰 Total:* {{total}}\n*💳 Pago:* {{metodoPago}}`],
+  pedido_pagado: [`Hola {{nombreCliente}}! 💳\nTu pedido *#{{numeroPedido}}* ya fue *pagado* ✅\n\n*💰 Total:* {{total}}\n*💳 Pago:* {{metodoPago}}\n\n¡Gracias por tu pedido! 🙌`],
+};
+
+// Compara sin importar saltos de línea \r\n ni espacios al final
+function sameText(a: string, b: string): boolean {
+  const norm = (s: string) => s.replace(/\r\n/g, '\n').trim();
+  return norm(a) === norm(b);
+}
+
+/** ¿El restaurante personalizó esta plantilla del sistema? (un texto igual al por defecto, actual o viejo, no cuenta) */
+export function isCustomizedSystemTemplate(code: WaEventCode, stored: string | undefined): boolean {
+  if (stored === undefined) return false;
+  if (sameText(stored, DEFAULT_TEMPLATES[code])) return false;
+  return !(LEGACY_DEFAULTS[code] ?? []).some((legacy) => sameText(stored, legacy));
+}
 
 // ─── Campos disponibles ───────────────────────────────────────────────────────
 
@@ -179,7 +209,9 @@ export function templateName(store: WaTemplateStore, id: string): string {
 export function parseTemplateStore(data: Record<string, unknown> | undefined): WaTemplateStore {
   const system = { ...DEFAULT_TEMPLATES };
   for (const code of Object.keys(DEFAULT_TEMPLATES) as WaEventCode[]) {
-    if (typeof data?.[code] === 'string') system[code] = data[code] as string;
+    const stored = data?.[code];
+    // Solo lo personalizado de verdad reemplaza al por defecto (así recibe las mejoras de los textos)
+    if (typeof stored === 'string' && isCustomizedSystemTemplate(code, stored)) system[code] = stored;
   }
   const customMap = (data?.custom ?? {}) as Record<string, Omit<CustomWaTemplate, 'id'>>;
   const custom = Object.entries(customMap)
@@ -217,7 +249,11 @@ export function paymentSummary(data: WaTemplateData): string {
 }
 
 export function applyTemplate(template: string, data: WaTemplateData): string {
-  const products = data.items?.map((i) => `  • ${i.quantity}x ${i.productName}`).join('\n') ?? '';
+  const products = data.items?.map((i) => {
+    const extras = i.additionals?.length ? ` (+ ${i.additionals.join(', ')})` : '';
+    const price = i.isGift ? ' · Regalo 🎁' : i.subtotal !== undefined ? ` · ${formatCOP(i.subtotal)}` : '';
+    return `  • ${i.quantity}x ${i.productName}${extras}${price}`;
+  }).join('\n') ?? '';
   return template
     .replace(/{{nombreCliente}}/g, data.customerName ?? '')
     .replace(/{{numeroPedido}}/g, data.orderNumber ?? '')

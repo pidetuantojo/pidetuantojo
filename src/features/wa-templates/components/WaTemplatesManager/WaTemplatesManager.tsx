@@ -7,6 +7,11 @@ import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/features/auth';
 import { useOrderStatuses } from '@/features/order-statuses/hooks/useOrderStatuses';
 import { DEFAULT_TEMPLATES, statusNotifiesAny, statusTemplateChoice, WA_EVENTS, type WaEventCode } from '@/lib/whatsapp/templates.core';
+
+const badge = (custom: boolean): React.CSSProperties => ({
+  fontSize: 10, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', borderRadius: 999, padding: '2px 8px', marginLeft: 8,
+  background: custom ? 'rgba(255,106,26,.1)' : 'var(--t-surface-2)', color: custom ? '#FF6A1A' : 'var(--t-text-3)',
+});
 import { useWaTemplates } from '@/lib/whatsapp/useWaTemplates';
 import { useConfirmStore } from '@/store/confirm.store';
 import { useToastStore } from '@/store/toast.store';
@@ -141,7 +146,8 @@ export function WaTemplatesManager() {
       <div>
         <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--t-text-1)', margin: '0 0 6px' }}>Plantillas de WhatsApp</h1>
         <p style={{ fontSize: 14, color: 'var(--t-text-3)', margin: 0 }}>
-          El mensaje que recibe el cliente cuando su pedido cambia de estado. Para elegir qué plantilla usa cada estado, o apagar el aviso,
+          El mensaje que recibe el cliente cuando su pedido cambia de estado. Los cambios son solo de tu restaurante.
+          Las plantillas que no edites se mantienen al día con las mejoras que hagamos. Para elegir qué plantilla usa cada estado, o apagar el aviso,
           ve a <Link href={ROUTES.dashboard.estados} style={{ color: '#FF6A1A', fontWeight: 600 }}>Estados</Link>.
         </p>
       </div>
@@ -200,6 +206,10 @@ export function WaTemplatesManager() {
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                 <div style={{ minWidth: 0 }}>
                   <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--t-text-1)' }}>{event.emoji} {event.label}</span>
+                  {/* parseTemplateStore ya descarta lo guardado igual al por defecto (actual o viejo) */}
+                  <span style={badge(store.system[event.code] !== DEFAULT_TEMPLATES[event.code])}>
+                    {store.system[event.code] !== DEFAULT_TEMPLATES[event.code] ? 'Personalizada' : 'Por defecto'}
+                  </span>
                   <UsedBy statuses={usedBy(event.code)} extra={event.code === 'pedido_pagado' ? 'Al marcar como pagado' : undefined} />
                 </div>
                 {!isEditing && (

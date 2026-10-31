@@ -2,7 +2,7 @@ import { deleteField, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
 
 import { db } from '@/lib/firebase/config';
 
-import { parseTemplateStore, type WaEventCode, type WaTemplateStore } from './templates.core';
+import { DEFAULT_TEMPLATES, parseTemplateStore, type WaEventCode, type WaTemplateStore } from './templates.core';
 
 export * from './templates.core';
 
@@ -19,8 +19,13 @@ export async function getWaTemplateStore(restaurantId: string): Promise<WaTempla
   return parseTemplateStore(snap.exists() ? snap.data() : undefined);
 }
 
+/**
+ * Guarda una plantilla del sistema SOLO para este restaurante. Si el texto es igual al por defecto se borra
+ * el campo: así el restaurante no la "congela" y sigue recibiendo las mejoras de los textos por defecto.
+ */
 export async function saveSystemTemplate(restaurantId: string, code: WaEventCode, body: string): Promise<void> {
-  await setDoc(templatesRef(restaurantId), { [code]: body }, { merge: true });
+  const isDefault = body.replace(/\r\n/g, '\n').trim() === DEFAULT_TEMPLATES[code].trim();
+  await setDoc(templatesRef(restaurantId), { [code]: isDefault ? deleteField() : body }, { merge: true });
 }
 
 /** Crea o actualiza una plantilla propia. */

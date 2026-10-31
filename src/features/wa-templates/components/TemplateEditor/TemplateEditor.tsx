@@ -16,8 +16,9 @@ export const EXAMPLE_DATA = {
   paymentMethod: 'Efectivo',
   statusName: 'En camino',
   items: [
-    { productName: 'Hamburguesa clásica', quantity: 2 },
-    { productName: 'Papas medianas', quantity: 1 },
+    { productName: 'Hamburguesa clásica', quantity: 2, subtotal: 36000, additionals: ['Queso extra'] },
+    { productName: 'Papas medianas', quantity: 1, subtotal: 10000 },
+    { productName: 'Gaseosa', quantity: 1, isGift: true },
   ],
 };
 
