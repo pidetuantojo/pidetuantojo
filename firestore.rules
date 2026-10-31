@@ -286,6 +286,43 @@ service cloud.firestore {
         // Nadie elimina pedidos — solo se cambia el estado
         allow delete: if isSuperAdmin();
       }
+
+      // --- Libro contable y caja ---
+      // Todo lo escribe SOLO el servidor (/api/ledger/*, casos de uso de caja con Admin SDK).
+
+      match /ledgerAccounts/{accountId} {
+        allow read: if hasAnyPerm(restaurantId, ['ledger.view', 'cash.operate']);
+        allow write: if false;
+      }
+
+      match /accountingRules/{ruleId} {
+        allow read: if hasAnyPerm(restaurantId, ['ledger.view', 'cash.operate']);
+        allow write: if false;
+      }
+
+      match /journalEntries/{entryId} {
+        allow read: if hasPerm(restaurantId, 'ledger.view');
+        allow write: if false;
+      }
+
+      match /journalLines/{lineId} {
+        allow read: if hasPerm(restaurantId, 'ledger.view');
+        allow write: if false;
+      }
+
+      match /auditLog/{logId} {
+        allow read: if hasPerm(restaurantId, 'ledger.manage');
+        allow write: if false;
+      }
+
+      // Consecutivos e idempotencia: ni siquiera se leen desde el cliente
+      match /sequences/{sequenceId} {
+        allow read, write: if false;
+      }
+
+      match /idempotencyKeys/{keyId} {
+        allow read, write: if false;
+      }
     }
 
     // ─── Restaurant Categories ──────────────────────────────────────────────────
