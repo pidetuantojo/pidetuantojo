@@ -209,7 +209,7 @@ export function Sidebar({ open = false, onClose, collapsed = false, onToggleColl
     }
   }
 
-  const flyoutGroup = flyoutId ? RESTAURANT_NAV.find(i => i.type === 'group' && i.id === flyoutId) as NavGroup | undefined : undefined;
+  const flyoutGroup = flyoutId ? navItems.find(i => i.type === 'group' && i.id === flyoutId) as NavGroup | undefined : undefined;
 
   const linkStyle = (active: boolean): React.CSSProperties => ({
     display: 'flex', alignItems: 'center',

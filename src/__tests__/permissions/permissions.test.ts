@@ -251,3 +251,27 @@ describe('editor: togglePermission / dependentsOf / isSelectable', () => {
     expect(dependentsOf('features.printing')).toEqual(expect.arrayContaining(['orders.print', 'printers.view', 'printers.manage', 'print_station.run']));
   });
 });
+
+describe('rutas de caja', () => {
+  const cashPerms = (...extra: string[]) => ['features.cash', 'cash.view', ...extra];
+
+  it('cada subruta exige su permiso', () => {
+    expect(requiredPermissionForPath('/dashboard/caja')).toBe('cash.operate');
+    expect(requiredPermissionForPath('/dashboard/caja/cierre')).toBe('cash.operate');
+    expect(requiredPermissionForPath('/dashboard/caja/aprobaciones')).toBe('cash.approve');
+    expect(requiredPermissionForPath('/dashboard/caja/general')).toBe('cash.approve');
+    expect(requiredPermissionForPath('/dashboard/caja/configuracion')).toBe('cash.registers.manage');
+  });
+
+  it('canAccessPath respeta cada permiso', () => {
+    expect(canAccessPath(cashPerms('cash.operate'), '/dashboard/caja')).toBe(true);
+    expect(canAccessPath(cashPerms('cash.operate'), '/dashboard/caja/aprobaciones')).toBe(false);
+    expect(canAccessPath(cashPerms('cash.approve'), '/dashboard/caja/general')).toBe(true);
+    expect(canAccessPath(cashPerms('cash.approve'), '/dashboard/caja')).toBe(false);
+  });
+
+  it('firstAllowedRoute no manda a /caja a quien solo tiene cash.view', () => {
+    expect(firstAllowedRoute(cashPerms())).toBeNull();
+    expect(firstAllowedRoute(cashPerms('cash.operate'))).toBe('/dashboard/caja');
+  });
+});

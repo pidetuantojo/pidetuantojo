@@ -1,7 +1,7 @@
 import { REVERSIBLE_TYPES } from '@/lib/cash/movement.helpers';
 import type { PaymentMethodType } from '@/types';
 
-import { CashApiError } from '../services/cash.http';
+import { CashApiError } from '../services/cash.api';
 import type { MovementRow, MovementStatus, MovementType, ShiftStatus } from '../types/cash.types';
 
 const MOVEMENT_LABELS: Record<MovementType, string> = {
