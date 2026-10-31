@@ -37,9 +37,10 @@ describe('/api/whatsapp/connect', () => {
     disconnect.mockReset();
   });
 
-  it('sin sesión: solo estado y autoNotify, nunca el QR', async () => {
+  it('sin sesión: solo estado, autoNotify y número conectado; nunca el QR', async () => {
     const data = await (await route.GET(req('GET'))).json();
-    expect(data).toEqual({ status: 'qr', autoNotify: true });
+    // Estado 'qr' (no conectado): todavía no hay número que mostrar
+    expect(data).toEqual({ status: 'qr', autoNotify: true, connectedNumber: null });
   });
 
   it('con permiso: incluye el QR', async () => {

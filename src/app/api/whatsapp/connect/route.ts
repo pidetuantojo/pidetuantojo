@@ -29,7 +29,8 @@ async function canManage(req: NextRequest, rid: string): Promise<boolean> {
 }
 
 // GET /api/whatsapp/connect?restaurantId= — estado + autoNotify (público: lo usa la carta).
-// El QR, el número y el error solo con sesión y permiso: con el QR cualquiera podría vincular su teléfono.
+// El número conectado también es público (es el que le escribe al cliente: la carta abre ese chat).
+// El QR y el error solo con sesión y permiso: con el QR cualquiera podría vincular su teléfono.
 export async function GET(req: NextRequest) {
   const rid = restaurantId(req);
   if (!rid) return NextResponse.json({ error: 'restaurantId requerido' }, { status: 400 });
@@ -45,7 +46,10 @@ export async function GET(req: NextRequest) {
     state = { status, qr: qr ? await QRCode.toDataURL(qr, { width: 256, margin: 2 }) : null, connectedNumber, lastError };
   }
 
-  if (!full) return NextResponse.json({ status: state.status, autoNotify });
+  if (!full) {
+    const connectedNumber = state.status === 'connected' ? state.connectedNumber ?? null : null;
+    return NextResponse.json({ status: state.status, autoNotify, connectedNumber });
+  }
   return NextResponse.json({ ...state, autoNotify });
 }
 
