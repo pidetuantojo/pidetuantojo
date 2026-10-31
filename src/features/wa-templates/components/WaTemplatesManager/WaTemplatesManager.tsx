@@ -163,7 +163,7 @@ export function WaTemplatesManager() {
 
         {store.custom.length === 0 && !creatingNew && (
           <div style={{ ...card, borderStyle: 'dashed', textAlign: 'center', color: 'var(--t-text-3)', fontSize: 14 }}>
-            Todavía no tienes plantillas propias. Crea una para tus estados personalizados (por ejemplo "Pedido empacado").
+            Todavía no tienes plantillas propias. Crea una para tus estados personalizados (por ejemplo “Pedido empacado”).
           </div>
         )}
 
