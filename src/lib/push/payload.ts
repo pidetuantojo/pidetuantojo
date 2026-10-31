@@ -1,4 +1,5 @@
 // Contenido de los avisos push (lógica pura). El service worker (public/sw.js) los muestra.
+import { formatCOP } from '@/lib/shared/money';
 import type { OrderDeliveryType } from '@/types';
 
 export const ORDERS_PATH = '/dashboard/pedidos';
@@ -24,9 +25,7 @@ const DELIVERY_LABEL: Record<OrderDeliveryType, string> = {
 };
 
 function money(amount: number): string {
-  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })
-    .format(amount)
-    .replace(/\s/g, '');
+  return formatCOP(amount).replace(/\s/g, '');
 }
 
 export interface NewOrderInfo {

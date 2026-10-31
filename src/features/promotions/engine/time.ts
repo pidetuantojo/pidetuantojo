@@ -1,10 +1,11 @@
+import { BOGOTA_TZ } from '@/lib/shared/bogotaDate';
 import type { Promotion, PromotionSchedule } from '@/types';
 
 /**
  * Las promociones se evalúan en la hora del restaurante, no en la del navegador ni la del servidor
  * (Vercel corre en UTC). Todos los restaurantes están en Colombia (UTC−5, sin horario de verano).
  */
-export const RESTAURANT_TIMEZONE = 'America/Bogota';
+export const RESTAURANT_TIMEZONE = BOGOTA_TZ;
 
 // Minutos de gracia: si la promoción vence mientras el cliente arma el carrito, se respeta
 export const PROMOTION_GRACE_MINUTES = 10;
