@@ -17,6 +17,7 @@ export function cashErrorResponse(error: unknown, context: string): NextResponse
 
 /** Quita la auditoría (IP, user agent) de lo que se devuelve al cliente. */
 export function omitAudit<T extends { audit?: unknown }>(doc: T): Omit<T, 'audit'> {
-  const { audit: _audit, ...rest } = doc;
-  return rest;
+  const copy = { ...doc };
+  delete copy.audit;
+  return copy;
 }
