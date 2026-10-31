@@ -41,13 +41,30 @@ const accountRef = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('expenseCategory') }).strict(),
 ]);
 
-const methodType = z.enum(['efectivo', 'datafono', 'nequi', 'daviplata', 'breb', 'bancolombia', 'otro_banco']);
+const methodType = z.enum([
+  'efectivo',
+  'datafono',
+  'nequi',
+  'daviplata',
+  'breb',
+  'bancolombia',
+  'otro_banco',
+]);
 
 export const createRuleSchema = z
   .object({
     event: z.enum([
-      'SALE', 'REFUND', 'OTHER_INCOME', 'EXPENSE', 'CASH_TRANSFER', 'BANK_DEPOSIT', 'CASH_SURPLUS',
-      'CASH_SHORTAGE', 'PETTY_CASH_EXPENSE', 'PETTY_CASH_REPLENISH', 'GATEWAY_SETTLEMENT',
+      'SALE',
+      'REFUND',
+      'OTHER_INCOME',
+      'EXPENSE',
+      'CASH_TRANSFER',
+      'BANK_DEPOSIT',
+      'CASH_SURPLUS',
+      'CASH_SHORTAGE',
+      'PETTY_CASH_EXPENSE',
+      'PETTY_CASH_REPLENISH',
+      'GATEWAY_SETTLEMENT',
     ]),
     methodType: methodType.nullable(),
     debit: accountRef,
@@ -60,9 +77,6 @@ export const updateRuleSchema = z.object({ debit: accountRef, credit: accountRef
 export const reverseEntrySchema = z
   .object({
     reason: z.string().trim().min(5, 'El motivo debe tener al menos 5 caracteres').max(500),
-    accountingDate: z
-      .string()
-      .refine(isValidAccountingDate, 'Fecha contable inválida')
-      .optional(),
+    accountingDate: z.string().refine(isValidAccountingDate, 'Fecha contable inválida').optional(),
   })
   .strict();

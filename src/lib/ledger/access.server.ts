@@ -23,10 +23,14 @@ export async function assertCashFeature(restaurantId: string): Promise<void> {
  * Exige el permiso, resuelve el restaurante (el super admin puede indicar `?restaurantId=`)
  * y verifica que el plan incluya `features.cash`.
  */
-export async function requireLedgerAccess(request: Request, permission: Permission): Promise<LedgerAccess> {
+export async function requireLedgerAccess(
+  request: Request,
+  permission: Permission
+): Promise<LedgerAccess> {
   const caller = await requirePermission(request, permission);
   const requested = new URL(request.url).searchParams.get('restaurantId');
-  const restaurantId = caller.role === 'super_admin' ? (requested ?? caller.restaurantId) : caller.restaurantId;
+  const restaurantId =
+    caller.role === 'super_admin' ? (requested ?? caller.restaurantId) : caller.restaurantId;
   if (!restaurantId) throw new AuthError('restaurantId requerido', 400);
   await assertCashFeature(restaurantId);
   return { caller, restaurantId };

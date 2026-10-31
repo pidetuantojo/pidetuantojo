@@ -38,9 +38,13 @@ async function assertFixedAccountsPostable(
   snaps.forEach((snap, i) => {
     if (!snap.exists) throw new LedgerError('ACCOUNT_NOT_FOUND', `La cuenta ${ids[i]} no existe`);
     const account = snap.data() as LedgerAccount;
-    if (!account.isActive) throw new LedgerError('ACCOUNT_INACTIVE', `La cuenta ${account.code} está inactiva`);
+    if (!account.isActive)
+      throw new LedgerError('ACCOUNT_INACTIVE', `La cuenta ${account.code} está inactiva`);
     if (!isPostable(account)) {
-      throw new LedgerError('ACCOUNT_NOT_POSTABLE', `La cuenta ${account.code} no admite movimientos`);
+      throw new LedgerError(
+        'ACCOUNT_NOT_POSTABLE',
+        `La cuenta ${account.code} no admite movimientos`
+      );
     }
   });
 }
@@ -62,7 +66,11 @@ export async function createRule(
 
   return adminDb.runTransaction(async (tx) => {
     const idem = await checkIdempotency<AccountingRule>(tx, {
-      restaurantId, scope: 'ledger.rule.create', key: meta.idempotencyKey, uid: audit.uid, payload: input,
+      restaurantId,
+      scope: 'ledger.rule.create',
+      key: meta.idempotencyKey,
+      uid: audit.uid,
+      payload: input,
     });
     if (idem.status === 'replay') return idem.result;
 
@@ -71,7 +79,10 @@ export async function createRule(
       (r) => r.methodType === input.methodType
     );
     if (sameEvent.some((r) => r.isActive)) {
-      throw new LedgerError('DUPLICATE_RULE', 'Ya hay una regla activa para este evento y medio de pago; edítala para crear una nueva versión');
+      throw new LedgerError(
+        'DUPLICATE_RULE',
+        'Ya hay una regla activa para este evento y medio de pago; edítala para crear una nueva versión'
+      );
     }
 
     const ref = adminDb.collection(col).doc();
@@ -88,7 +99,10 @@ export async function createRule(
     };
     tx.create(ref as DocumentReference, rule);
     writeAuditLog(tx, restaurantId, {
-      action: 'ledger.rule.created', entityType: 'accountingRule', entityId: ref.id, context: audit,
+      action: 'ledger.rule.created',
+      entityType: 'accountingRule',
+      entityId: ref.id,
+      context: audit,
       data: { event: rule.event, methodType: rule.methodType, version: rule.version },
     });
     idem.save(tx, rule);
@@ -108,7 +122,11 @@ export async function updateRule(
 
   return adminDb.runTransaction(async (tx) => {
     const idem = await checkIdempotency<AccountingRule>(tx, {
-      restaurantId, scope: `ledger.rule.update:${ruleId}`, key: meta.idempotencyKey, uid: audit.uid, payload: input,
+      restaurantId,
+      scope: `ledger.rule.update:${ruleId}`,
+      key: meta.idempotencyKey,
+      uid: audit.uid,
+      payload: input,
     });
     if (idem.status === 'replay') return idem.result;
 
@@ -116,7 +134,8 @@ export async function updateRule(
     const snap = await tx.get(oldRef);
     if (!snap.exists) throw new LedgerError('RULE_NOT_FOUND', 'La regla no existe');
     const old = { ...(snap.data() as AccountingRule), id: snap.id };
-    if (!old.isActive) throw new LedgerError('RULE_INACTIVE', 'Solo se puede editar la versión activa de la regla');
+    if (!old.isActive)
+      throw new LedgerError('RULE_INACTIVE', 'Solo se puede editar la versión activa de la regla');
 
     await assertFixedAccountsPostable(tx, restaurantId, [input.debit, input.credit]);
     const versions = await rulesOfEvent(tx, restaurantId, old.event);
@@ -139,7 +158,10 @@ export async function updateRule(
     tx.create(newRef as DocumentReference, next);
     tx.update(oldRef, { isActive: false, supersededAt: audit.at, supersededBy: newRef.id });
     writeAuditLog(tx, restaurantId, {
-      action: 'ledger.rule.versioned', entityType: 'accountingRule', entityId: newRef.id, context: audit,
+      action: 'ledger.rule.versioned',
+      entityType: 'accountingRule',
+      entityId: newRef.id,
+      context: audit,
       data: { previousRuleId: ruleId, event: next.event, version: next.version },
     });
     idem.save(tx, next);
@@ -157,7 +179,11 @@ export async function deactivateRule(
 
   return adminDb.runTransaction(async (tx) => {
     const idem = await checkIdempotency<AccountingRule>(tx, {
-      restaurantId, scope: `ledger.rule.deactivate:${ruleId}`, key: meta.idempotencyKey, uid: audit.uid, payload: { ruleId },
+      restaurantId,
+      scope: `ledger.rule.deactivate:${ruleId}`,
+      key: meta.idempotencyKey,
+      uid: audit.uid,
+      payload: { ruleId },
     });
     if (idem.status === 'replay') return idem.result;
 
@@ -169,7 +195,10 @@ export async function deactivateRule(
 
     tx.update(ref, { isActive: false });
     writeAuditLog(tx, restaurantId, {
-      action: 'ledger.rule.deactivated', entityType: 'accountingRule', entityId: ruleId, context: audit,
+      action: 'ledger.rule.deactivated',
+      entityType: 'accountingRule',
+      entityId: ruleId,
+      context: audit,
       data: { event: rule.event, version: rule.version },
     });
     const result = { ...rule, isActive: false };

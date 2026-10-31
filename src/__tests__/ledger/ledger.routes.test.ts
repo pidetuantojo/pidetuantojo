@@ -20,7 +20,8 @@ const { requirePermission, AuthError } = vi.hoisted(() => {
 vi.mock('@/lib/auth/serverAuth', () => ({
   AuthError,
   requirePermission,
-  errorResponse: (e: InstanceType<typeof AuthError>) => Response.json({ error: e.message }, { status: e.status }),
+  errorResponse: (e: InstanceType<typeof AuthError>) =>
+    Response.json({ error: e.message }, { status: e.status }),
 }));
 
 type Handler = (req: Request, ctx: { params: Record<string, string> }) => Promise<Response>;
@@ -35,15 +36,28 @@ beforeAll(async () => {
   routes.reverse = (await import('@/app/api/ledger/entries/[entryId]/reverse/route')) as never;
 });
 
-const caller = { uid: 'u1', role: 'restaurant_admin', restaurantId: 'r1', isActive: true, permissions: [] };
+const caller = {
+  uid: 'u1',
+  role: 'restaurant_admin',
+  restaurantId: 'r1',
+  isActive: true,
+  permissions: [],
+};
 let keySeq = 0;
 const call = (
   handler: keyof (typeof routes)[string],
   group: string,
-  opts: { method?: string; body?: unknown; params?: Record<string, string>; key?: boolean; query?: string } = {}
+  opts: {
+    method?: string;
+    body?: unknown;
+    params?: Record<string, string>;
+    key?: boolean;
+    query?: string;
+  } = {}
 ) => {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (opts.key !== false && opts.method !== 'GET') headers['Idempotency-Key'] = `route-key-${String(++keySeq).padStart(6, '0')}`;
+  if (opts.key !== false && opts.method !== 'GET')
+    headers['Idempotency-Key'] = `route-key-${String(++keySeq).padStart(6, '0')}`;
   const req = new Request(`http://localhost/api/ledger/x${opts.query ?? ''}`, {
     method: opts.method ?? 'POST',
     headers,
@@ -67,7 +81,9 @@ const setupLedger = async () => {
 };
 const accountByCode = async (code: string) => {
   const res = await call('GET', 'accounts', { method: 'GET' });
-  return ((await res.json()).accounts as { id: string; code: string }[]).find((a) => a.code === code)!;
+  return ((await res.json()).accounts as { id: string; code: string }[]).find(
+    (a) => a.code === code
+  )!;
 };
 
 describe('autenticación, permisos y plan', () => {
@@ -114,7 +130,11 @@ describe('autenticación, permisos y plan', () => {
 
     db.docs.clear();
     db.set('restaurants/r2', { planFeatures: ['features.cash'] });
-    requirePermission.mockResolvedValue({ ...caller, role: 'super_admin', restaurantId: undefined });
+    requirePermission.mockResolvedValue({
+      ...caller,
+      role: 'super_admin',
+      restaurantId: undefined,
+    });
     expect((await call('POST', 'setup')).status).toBe(400);
     expect((await call('POST', 'setup', { query: '?restaurantId=r2' })).status).toBe(201);
     expect(has('r2')).toBe(true);
@@ -125,20 +145,54 @@ describe('validación del cuerpo', () => {
   beforeEach(setupLedger);
 
   it('400 con cuenta inválida, código extra o sin Idempotency-Key', async () => {
-    expect((await call('POST', 'accounts', { body: { code: '11a', name: 'X cuenta', class: 'GASTO' } })).status).toBe(400);
-    expect((await call('POST', 'accounts', { body: { code: '5105', name: 'Gastos', class: 'OTRA' } })).status).toBe(400);
-    expect((await call('POST', 'accounts', { body: { code: '5105', name: 'Gastos', class: 'GASTO' }, key: false })).status).toBe(400);
+    expect(
+      (await call('POST', 'accounts', { body: { code: '11a', name: 'X cuenta', class: 'GASTO' } }))
+        .status
+    ).toBe(400);
+    expect(
+      (await call('POST', 'accounts', { body: { code: '5105', name: 'Gastos', class: 'OTRA' } }))
+        .status
+    ).toBe(400);
+    expect(
+      (
+        await call('POST', 'accounts', {
+          body: { code: '5105', name: 'Gastos', class: 'GASTO' },
+          key: false,
+        })
+      ).status
+    ).toBe(400);
     const bank = await accountByCode('1110');
-    const patch = await call('PATCH', 'account', { method: 'PATCH', body: { code: '9999' }, params: { accountId: bank.id } });
+    const patch = await call('PATCH', 'account', {
+      method: 'PATCH',
+      body: { code: '9999' },
+      params: { accountId: bank.id },
+    });
     expect(patch.status).toBe(400);
   });
 
   it('400 con regla inválida y con reversión sin motivo suficiente', async () => {
-    expect((await call('POST', 'rules', { body: { event: 'NOPE', methodType: null, debit: { kind: 'sourceCashBox' }, credit: { kind: 'sourceCashBox' } } })).status).toBe(400);
-    const res = await call('POST', 'reverse', { body: { reason: 'abc' }, params: { entryId: 'e1' } });
+    expect(
+      (
+        await call('POST', 'rules', {
+          body: {
+            event: 'NOPE',
+            methodType: null,
+            debit: { kind: 'sourceCashBox' },
+            credit: { kind: 'sourceCashBox' },
+          },
+        })
+      ).status
+    ).toBe(400);
+    const res = await call('POST', 'reverse', {
+      body: { reason: 'abc' },
+      params: { entryId: 'e1' },
+    });
     expect(res.status).toBe(400);
     expect((await res.json()).error).toMatch(/motivo/i);
-    const tooLong = await call('POST', 'reverse', { body: { reason: 'x'.repeat(501) }, params: { entryId: 'e1' } });
+    const tooLong = await call('POST', 'reverse', {
+      body: { reason: 'x'.repeat(501) },
+      params: { entryId: 'e1' },
+    });
     expect(tooLong.status).toBe(400);
   });
 });
@@ -168,14 +222,21 @@ describe('caminos felices', () => {
     expect(account).toMatchObject({ code: '5105', nature: 'DEBITO' });
     expect((await call('POST', 'accounts', { body })).status).toBe(409);
 
-    const patched = await call('PATCH', 'account', { method: 'PATCH', body: { name: 'Nómina' }, params: { accountId: account.id } });
+    const patched = await call('PATCH', 'account', {
+      method: 'PATCH',
+      body: { name: 'Nómina' },
+      params: { accountId: account.id },
+    });
     expect(patched.status).toBe(200);
     expect(await patched.json()).toMatchObject({ name: 'Nómina', code: '5105' });
   });
 
   it('versiona una regla y la desactiva', async () => {
     await setupLedger();
-    const rules = (await (await call('GET', 'rules', { method: 'GET' })).json()).rules as { id: string; event: string }[];
+    const rules = (await (await call('GET', 'rules', { method: 'GET' })).json()).rules as {
+      id: string;
+      event: string;
+    }[];
     const expense = rules.find((r) => r.event === 'EXPENSE')!;
     const exp = await accountByCode('5195');
     const put = await call('PUT', 'rule', {
@@ -197,15 +258,47 @@ describe('caminos felices', () => {
     await setupLedger();
     const [cash, rev] = [await accountByCode('110505'), await accountByCode('4140')];
     db.set('restaurants/r1/journalEntries/e1', {
-      id: 'e1', number: 'CC-000001', sequence: 1, accountingDate: '2026-03-10', event: 'SALE', description: 'venta',
-      sourceType: 'order', sourceId: 'o1', totalDebit: 9000, totalCredit: 9000, createdAt: 'x', audit: {},
-      lines: [{ accountId: cash.id, debit: 9000, credit: 0 }, { accountId: rev.id, debit: 0, credit: 9000 }],
+      id: 'e1',
+      number: 'CC-000001',
+      sequence: 1,
+      accountingDate: '2026-03-10',
+      event: 'SALE',
+      description: 'venta',
+      sourceType: 'order',
+      sourceId: 'o1',
+      totalDebit: 9000,
+      totalCredit: 9000,
+      createdAt: 'x',
+      audit: {},
+      lines: [
+        { accountId: cash.id, debit: 9000, credit: 0 },
+        { accountId: rev.id, debit: 0, credit: 9000 },
+      ],
     });
-    const ok = await call('POST', 'reverse', { body: { reason: 'cobro duplicado' }, params: { entryId: 'e1' } });
+    const ok = await call('POST', 'reverse', {
+      body: { reason: 'cobro duplicado' },
+      params: { entryId: 'e1' },
+    });
     expect(ok.status).toBe(201);
     expect(await ok.json()).toMatchObject({ reversesEntryId: 'e1', number: 'CC-000001' });
-    expect(db.get('restaurants/r1/journalEntries/e1')).toMatchObject({ reversedByEntryId: expect.any(String) });
-    expect((await call('POST', 'reverse', { body: { reason: 'cobro duplicado' }, params: { entryId: 'e1' } })).status).toBe(409);
-    expect((await call('POST', 'reverse', { body: { reason: 'cobro duplicado' }, params: { entryId: 'zzz' } })).status).toBe(404);
+    expect(db.get('restaurants/r1/journalEntries/e1')).toMatchObject({
+      reversedByEntryId: expect.any(String),
+    });
+    expect(
+      (
+        await call('POST', 'reverse', {
+          body: { reason: 'cobro duplicado' },
+          params: { entryId: 'e1' },
+        })
+      ).status
+    ).toBe(409);
+    expect(
+      (
+        await call('POST', 'reverse', {
+          body: { reason: 'cobro duplicado' },
+          params: { entryId: 'zzz' },
+        })
+      ).status
+    ).toBe(404);
   });
 });

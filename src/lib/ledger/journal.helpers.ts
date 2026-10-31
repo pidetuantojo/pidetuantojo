@@ -59,7 +59,11 @@ export interface ValidateOptions {
   allowInactive?: boolean;
 }
 
-function validateLine(line: JournalLineDraft, accountsById: AccountsById, options: ValidateOptions) {
+function validateLine(
+  line: JournalLineDraft,
+  accountsById: AccountsById,
+  options: ValidateOptions
+) {
   if (!isMoney(line.debit) || !isMoney(line.credit)) {
     throw new LedgerError('INVALID_AMOUNT', 'Los montos deben ser pesos enteros');
   }
@@ -79,7 +83,10 @@ function validateLine(line: JournalLineDraft, accountsById: AccountsById, option
     throw new LedgerError('ACCOUNT_INACTIVE', `La cuenta ${account.code} está inactiva`);
   }
   if (!account.allowsMovements) {
-    throw new LedgerError('ACCOUNT_NOT_POSTABLE', `La cuenta ${account.code} no admite movimientos`);
+    throw new LedgerError(
+      'ACCOUNT_NOT_POSTABLE',
+      `La cuenta ${account.code} no admite movimientos`
+    );
   }
 }
 
@@ -115,8 +122,10 @@ export interface BuildEntryInput {
 
 /** Arma y valida el asiento de 2 líneas que produce una regla. */
 export function buildEntryFromRule(input: BuildEntryInput): JournalEntryDraft {
-  const { rule, amount, context, accounts, accountingDate, description, sourceType, sourceId } = input;
-  if (!isMoney(amount)) throw new LedgerError('INVALID_AMOUNT', 'El monto debe ser en pesos enteros');
+  const { rule, amount, context, accounts, accountingDate, description, sourceType, sourceId } =
+    input;
+  if (!isMoney(amount))
+    throw new LedgerError('INVALID_AMOUNT', 'El monto debe ser en pesos enteros');
   if (amount < 0) throw new LedgerError('NEGATIVE_AMOUNT', 'El monto no puede ser negativo');
   if (amount === 0) throw new LedgerError('ZERO_LINE', 'El monto debe ser mayor a cero');
 
@@ -140,7 +149,14 @@ export function buildEntryFromRule(input: BuildEntryInput): JournalEntryDraft {
 
 export type ReversibleEntry = Pick<
   JournalEntry,
-  'id' | 'number' | 'event' | 'sourceType' | 'sourceId' | 'lines' | 'reversedByEntryId' | 'reversesEntryId'
+  | 'id'
+  | 'number'
+  | 'event'
+  | 'sourceType'
+  | 'sourceId'
+  | 'lines'
+  | 'reversedByEntryId'
+  | 'reversesEntryId'
 >;
 
 /** Contra-asiento: mismas cuentas con débito y crédito intercambiados. */

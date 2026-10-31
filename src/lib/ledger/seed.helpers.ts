@@ -32,7 +32,8 @@ export function buildSeedDocs(input: {
   const toRef = (ref: SeedRef): AccountRef => {
     if (ref.kind !== 'fixed') return ref;
     const accountId = idByCode.get(ref.code);
-    if (!accountId) throw new LedgerError('ACCOUNT_NOT_FOUND', `El seed referencia la cuenta ${ref.code}`);
+    if (!accountId)
+      throw new LedgerError('ACCOUNT_NOT_FOUND', `El seed referencia la cuenta ${ref.code}`);
     return { kind: 'fixed', accountId };
   };
 

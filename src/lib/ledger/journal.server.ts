@@ -7,9 +7,19 @@ import { writeAuditLog, type AuditContext } from '@/lib/shared/audit.server';
 import { checkIdempotency } from '@/lib/shared/idempotency.server';
 import { formatSequence, reserveSequence } from '@/lib/shared/sequence.server';
 
-import { buildReversalDraft, validateEntry, type AccountsById, type ValidateOptions } from './journal.helpers';
+import {
+  buildReversalDraft,
+  validateEntry,
+  type AccountsById,
+  type ValidateOptions,
+} from './journal.helpers';
 import { LedgerError } from './ledger.errors';
-import { JOURNAL_PREFIX, JOURNAL_SEQUENCE, ledgerCollectionPath, stripUndefined } from './ledger.paths';
+import {
+  JOURNAL_PREFIX,
+  JOURNAL_SEQUENCE,
+  ledgerCollectionPath,
+  stripUndefined,
+} from './ledger.paths';
 import type { JournalEntry, JournalEntryDraft, JournalLine, LedgerAccount } from './ledger.types';
 
 export interface PreparedEntry {
@@ -39,7 +49,11 @@ export async function preparePostEntry(
   audit: AuditContext,
   options: ValidateOptions = {}
 ): Promise<PreparedEntry> {
-  const accounts = await loadAccounts(tx, restaurantId, draft.lines.map((l) => l.accountId));
+  const accounts = await loadAccounts(
+    tx,
+    restaurantId,
+    draft.lines.map((l) => l.accountId)
+  );
   validateEntry(draft, accounts, options);
   const sequence = await reserveSequence(tx, restaurantId, JOURNAL_SEQUENCE);
   const number = formatSequence(JOURNAL_PREFIX, sequence.value);

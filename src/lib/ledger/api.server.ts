@@ -7,7 +7,10 @@ import { AuthError, errorResponse } from '@/lib/auth/serverAuth';
 import { LedgerError } from './ledger.errors';
 
 /** Lee y valida el body JSON; cualquier problema es 400. */
-export async function parseBody<S extends ZodTypeAny>(request: Request, schema: S): Promise<z.infer<S>> {
+export async function parseBody<S extends ZodTypeAny>(
+  request: Request,
+  schema: S
+): Promise<z.infer<S>> {
   let raw: unknown;
   try {
     raw = await request.json();
@@ -20,7 +23,10 @@ export async function parseBody<S extends ZodTypeAny>(request: Request, schema: 
 /** Errores de zod, de dominio y de autenticación → JSON `{ error }` con su código. */
 export function ledgerErrorResponse(error: unknown, context: string): NextResponse {
   if (error instanceof ZodError) {
-    return NextResponse.json({ error: error.issues[0]?.message ?? 'Datos inválidos' }, { status: 400 });
+    return NextResponse.json(
+      { error: error.issues[0]?.message ?? 'Datos inválidos' },
+      { status: 400 }
+    );
   }
   if (error instanceof LedgerError) {
     return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });

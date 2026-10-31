@@ -27,8 +27,12 @@ export async function setupLedger(restaurantId: string, audit: AuditContext): Pr
       createdBy: audit.uid,
     });
     // 11 cuentas + 22 reglas + auditoría: muy por debajo del límite de 500 escrituras
-    seed.accounts.forEach((a) => tx.create(adminDb.doc(`${accountsCol}/${a.id}`) as DocumentReference, a));
-    seed.rules.forEach((r) => tx.create(adminDb.doc(`${rulesCol}/${r.id}`) as DocumentReference, r));
+    seed.accounts.forEach((a) =>
+      tx.create(adminDb.doc(`${accountsCol}/${a.id}`) as DocumentReference, a)
+    );
+    seed.rules.forEach((r) =>
+      tx.create(adminDb.doc(`${rulesCol}/${r.id}`) as DocumentReference, r)
+    );
     writeAuditLog(tx, restaurantId, {
       action: 'ledger.setup',
       entityType: 'ledger',

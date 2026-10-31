@@ -8,7 +8,13 @@ import { checkIdempotency } from '@/lib/shared/idempotency.server';
 import { assertAccountCode, assertParentConsistent, defaultNature } from './accounts.helpers';
 import { LedgerError } from './ledger.errors';
 import { ledgerCollectionPath, stripUndefined } from './ledger.paths';
-import type { AccountClass, AccountNature, AccountRef, AccountingRule, LedgerAccount } from './ledger.types';
+import type {
+  AccountClass,
+  AccountNature,
+  AccountRef,
+  AccountingRule,
+  LedgerAccount,
+} from './ledger.types';
 
 export interface CreateAccountInput {
   code: string;
@@ -54,15 +60,25 @@ export async function createAccount(
 
   return adminDb.runTransaction(async (tx) => {
     const idem = await checkIdempotency<LedgerAccount>(tx, {
-      restaurantId, scope: 'ledger.account.create', key: meta.idempotencyKey, uid: audit.uid, payload: input,
+      restaurantId,
+      scope: 'ledger.account.create',
+      key: meta.idempotencyKey,
+      uid: audit.uid,
+      payload: input,
     });
     if (idem.status === 'replay') return idem.result;
 
     const dup = await tx.get(adminDb.collection(col).where('code', '==', input.code).limit(1));
     if (!dup.empty) throw new LedgerError('DUPLICATE_CODE', `Ya existe la cuenta ${input.code}`);
     if (input.parentCode) {
-      const parent = await tx.get(adminDb.collection(col).where('code', '==', input.parentCode).limit(1));
-      assertParentConsistent(input.code, input.parentCode, new Set(parent.empty ? [] : [input.parentCode]));
+      const parent = await tx.get(
+        adminDb.collection(col).where('code', '==', input.parentCode).limit(1)
+      );
+      assertParentConsistent(
+        input.code,
+        input.parentCode,
+        new Set(parent.empty ? [] : [input.parentCode])
+      );
     }
 
     const ref = adminDb.collection(col).doc();
@@ -81,7 +97,10 @@ export async function createAccount(
     });
     tx.create(ref as DocumentReference, account);
     writeAuditLog(tx, restaurantId, {
-      action: 'ledger.account.created', entityType: 'ledgerAccount', entityId: ref.id, context: audit,
+      action: 'ledger.account.created',
+      entityType: 'ledgerAccount',
+      entityId: ref.id,
+      context: audit,
       data: { code: account.code },
     });
     idem.save(tx, account);
@@ -100,7 +119,11 @@ export async function updateAccount(
 
   return adminDb.runTransaction(async (tx) => {
     const idem = await checkIdempotency<LedgerAccount>(tx, {
-      restaurantId, scope: `ledger.account.update:${accountId}`, key: meta.idempotencyKey, uid: audit.uid, payload: patch,
+      restaurantId,
+      scope: `ledger.account.update:${accountId}`,
+      key: meta.idempotencyKey,
+      uid: audit.uid,
+      payload: patch,
     });
     if (idem.status === 'replay') return idem.result;
 
@@ -114,10 +137,16 @@ export async function updateAccount(
       (patch.nature !== undefined && patch.nature !== current.nature);
     if (changesClassOrNature) {
       const used = await tx.get(
-        adminDb.collection(ledgerCollectionPath(restaurantId, 'lines')).where('accountId', '==', accountId).limit(1)
+        adminDb
+          .collection(ledgerCollectionPath(restaurantId, 'lines'))
+          .where('accountId', '==', accountId)
+          .limit(1)
       );
       if (!used.empty) {
-        throw new LedgerError('ACCOUNT_IMMUTABLE', 'La clase y la naturaleza no se pueden cambiar: la cuenta ya tiene movimientos');
+        throw new LedgerError(
+          'ACCOUNT_IMMUTABLE',
+          'La clase y la naturaleza no se pueden cambiar: la cuenta ya tiene movimientos'
+        );
       }
     }
 
@@ -126,14 +155,19 @@ export async function updateAccount(
       (patch.allowsMovements === false && current.allowsMovements);
     if (losesPostability) {
       const rules = await tx.get(
-        adminDb.collection(ledgerCollectionPath(restaurantId, 'rules')).where('isActive', '==', true)
+        adminDb
+          .collection(ledgerCollectionPath(restaurantId, 'rules'))
+          .where('isActive', '==', true)
       );
       const used = rules.docs.some((d) => {
         const rule = d.data() as AccountingRule;
         return refAccountId(rule.debit) === accountId || refAccountId(rule.credit) === accountId;
       });
       if (used) {
-        throw new LedgerError('ACCOUNT_USED_BY_RULE', `La cuenta ${current.code} está en una regla contable activa`);
+        throw new LedgerError(
+          'ACCOUNT_USED_BY_RULE',
+          `La cuenta ${current.code} está en una regla contable activa`
+        );
       }
     }
 
@@ -141,7 +175,10 @@ export async function updateAccount(
     const updated: LedgerAccount = { ...current, ...changes };
     tx.update(ref, changes);
     writeAuditLog(tx, restaurantId, {
-      action: 'ledger.account.updated', entityType: 'ledgerAccount', entityId: accountId, context: audit,
+      action: 'ledger.account.updated',
+      entityType: 'ledgerAccount',
+      entityId: accountId,
+      context: audit,
       data: { code: current.code, fields: Object.keys(patch) },
     });
     idem.save(tx, updated);
