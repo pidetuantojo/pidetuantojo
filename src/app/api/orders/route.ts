@@ -55,12 +55,12 @@ async function notifyRestaurant(input: CheckoutData, order: CheckoutResponse) {
 
 /**
  * WhatsApp de confirmación al cliente. El texto ya viene armado con la plantilla del estado
- * "Recibido" (sin él, ese estado no avisa). Se envía desde acá: el navegador nunca manda
- * texto ni teléfono. Los pedidos de mesa no reciben avisos.
+ * "Recibido" (sin él, ese estado no avisa en este método de entrega). Se envía desde acá:
+ * el navegador nunca manda texto ni teléfono.
  */
 async function notifyCustomer(input: CheckoutData, orderId: string, message: string | undefined) {
   const phone = waPhone(input.customerPhone);
-  if (!message || !phone || input.deliveryType === 'mesa') return;
+  if (!message || !phone) return;
   try {
     if (!(await isAutoNotifyOn(input.restaurantId))) return;
     const result = await withTimeout(sendWhatsApp(input.restaurantId, phone, message), WA_TIMEOUT_MS);

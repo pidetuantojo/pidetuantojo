@@ -150,9 +150,9 @@ function DrawerContent({
 
   async function changeStatus(next: OrderStatus) {
     if (!canChangeStatus || next.id === order.statusId) return;
-    // Solo notificar si autoNotify está activo, NO es una mesa y el estado tiene el aviso encendido.
+    // Solo notificar si autoNotify está activo y el estado avisa en este método de entrega.
     // Evita llamadas inútiles; el servidor vuelve a verificar todo antes de enviar.
-    const notify = autoNotify && !isMesa && !!order.customerPhone && statusTemplateId(next) !== null;
+    const notify = autoNotify && !!order.customerPhone && statusTemplateId(next, column) !== null;
     await updateStatus(order.id, next.id, notify);
   }
 

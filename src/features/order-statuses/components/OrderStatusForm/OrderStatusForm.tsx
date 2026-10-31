@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
 import { ROUTES } from '@/constants/routes';
+import { useAuth } from '@/features/auth';
 import { TemplatePreview } from '@/features/wa-templates/components/TemplateEditor';
-import { templateBody, WA_EVENTS } from '@/lib/whatsapp/templates.core';
+import { DELIVERY_KINDS, templateBody, WA_EVENTS } from '@/lib/whatsapp/templates.core';
 import { useWaTemplates } from '@/lib/whatsapp/useWaTemplates';
 
 import { useOrderStatusForm } from '../../hooks/useOrderStatusForm';
@@ -30,6 +31,10 @@ export function OrderStatusForm({
 
   // Estado fijo: nombre, código y color bloqueados; el aviso de WhatsApp sí se configura
   const isBase = !!status?.isBase;
+  const { can } = useAuth();
+  // Mesa solo si el plan incluye comer en el local
+  const deliveryKinds = DELIVERY_KINDS.filter((k) => k.value !== 'mesa' || can('features.dine_in'));
+  const notifiesSomewhere = deliveryKinds.some((k) => data.notifyByDelivery[k.value]);
   const { store } = useWaTemplates(restaurantId);
   // "Pedido pagado" no es un estado: no se ofrece
   const templateOptions = [
@@ -124,21 +129,40 @@ export function OrderStatusForm({
 
         {/* Aviso por WhatsApp */}
         <div className="space-y-3 rounded-xl p-4" style={{ border: '1px solid var(--t-border)', background: 'var(--t-surface-2)' }}>
-          <label className="flex cursor-pointer items-start gap-3">
-            <Checkbox
-              checked={data.notifyCustomer}
-              onChange={(e) => handleChange('notifyCustomer', e.target.checked)}
-              disabled={isPending}
-            />
-            <span>
-              <span className="block text-sm font-medium" style={{ color: 'var(--t-text-1)' }}>Avisar al cliente por WhatsApp</span>
-              <span className="block text-xs" style={{ color: 'var(--t-text-3)' }}>
-                Se envía cuando un pedido pasa a este estado, si los mensajes automáticos están activos. Los pedidos de mesa no reciben avisos.
-              </span>
+          <div>
+            <span className="block text-sm font-medium" style={{ color: 'var(--t-text-1)' }}>Avisar al cliente por WhatsApp</span>
+            <span className="block text-xs" style={{ color: 'var(--t-text-3)' }}>
+              Marca en qué tipos de pedido se envía el aviso cuando el pedido pasa a este estado (si los mensajes automáticos están activos).
             </span>
-          </label>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {deliveryKinds.map((k) => {
+              const checked = data.notifyByDelivery[k.value];
+              return (
+                <label
+                  key={k.value}
+                  className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium"
+                  style={{
+                    border: `1.5px solid ${checked ? '#FF6A1A' : 'var(--t-border)'}`,
+                    background: checked ? 'rgba(255,106,26,.08)' : 'var(--t-surface)',
+                    color: 'var(--t-text-1)',
+                  }}
+                >
+                  <Checkbox
+                    checked={checked}
+                    onChange={(e) => handleChange('notifyByDelivery', { ...data.notifyByDelivery, [k.value]: e.target.checked })}
+                    disabled={isPending}
+                  />
+                  {k.emoji} {k.label}
+                </label>
+              );
+            })}
+          </div>
+          {!notifiesSomewhere && (
+            <p className="text-xs" style={{ color: 'var(--t-text-4)' }}>Este estado no le avisa al cliente en ningún tipo de pedido.</p>
+          )}
 
-          {data.notifyCustomer && (
+          {notifiesSomewhere && (
             <>
               <Select
                 label="Plantilla"

@@ -1,7 +1,7 @@
 // Plantillas de WhatsApp: tipos, valores por defecto y reglas puras.
 // Sin Firebase: lo usan el panel (cliente) y /api/orders (servidor).
 
-import type { OrderStatus } from '@/types';
+import type { OrderDeliveryType, OrderStatus } from '@/types';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -90,11 +90,28 @@ export const STATUS_TO_EVENT: Record<string, WaEventCode> = {
 // Por defecto no avisan (hasta que el restaurante active el aviso en el estado)
 const SILENT_BY_DEFAULT = new Set(['cancelled']);
 
-type StatusNotifyFields = Pick<OrderStatus, 'code' | 'notifyCustomer' | 'waTemplateId'>;
+export const DELIVERY_KINDS: { value: OrderDeliveryType; label: string; emoji: string }[] = [
+  { value: 'recoger',   label: 'Para llevar', emoji: '🛍️' },
+  { value: 'domicilio', label: 'Domicilio',   emoji: '🛵' },
+  { value: 'mesa',      label: 'Mesa',        emoji: '🍽️' },
+];
 
-/** ¿Este estado le avisa al cliente? Sin configurar: todos menos "Cancelado". */
-export function statusNotifies(status: StatusNotifyFields): boolean {
+type StatusNotifyFields = Pick<OrderStatus, 'code' | 'notifyByDelivery' | 'notifyCustomer' | 'waTemplateId'>;
+
+/**
+ * ¿Este estado le avisa al cliente en este método de entrega?
+ * Sin configurar: mesa nunca; para llevar y domicilio, todos menos "Cancelado".
+ */
+export function statusNotifies(status: StatusNotifyFields, deliveryType: OrderDeliveryType): boolean {
+  const explicit = status.notifyByDelivery?.[deliveryType];
+  if (explicit !== undefined) return explicit;
+  if (deliveryType === 'mesa') return false;
   return status.notifyCustomer ?? !SILENT_BY_DEFAULT.has(status.code);
+}
+
+/** ¿Avisa en al menos un método de entrega? */
+export function statusNotifiesAny(status: StatusNotifyFields): boolean {
+  return DELIVERY_KINDS.some((k) => statusNotifies(status, k.value));
 }
 
 /** Plantilla elegida para el estado, o la que le toca por su código. */
@@ -102,9 +119,9 @@ export function statusTemplateChoice(status: StatusNotifyFields): string {
   return status.waTemplateId || STATUS_TO_EVENT[status.code] || GENERIC_TEMPLATE;
 }
 
-/** Plantilla a enviar al pasar a este estado; null si el estado no avisa. */
-export function statusTemplateId(status: StatusNotifyFields): string | null {
-  return statusNotifies(status) ? statusTemplateChoice(status) : null;
+/** Plantilla a enviar al pasar a este estado en ese método de entrega; null si no avisa. */
+export function statusTemplateId(status: StatusNotifyFields, deliveryType: OrderDeliveryType): string | null {
+  return statusNotifies(status, deliveryType) ? statusTemplateChoice(status) : null;
 }
 
 function isEventCode(id: string): id is WaEventCode {

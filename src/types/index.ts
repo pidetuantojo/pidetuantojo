@@ -245,7 +245,10 @@ export interface OrderStatus {
   sortOrder: number;
   isBase: boolean;
   isActive: boolean;
-  // WhatsApp al pasar a este estado. Sin definir = comportamiento por código (ver statusTemplateId)
+  // WhatsApp al pasar a este estado, por método de entrega (ver statusNotifies).
+  // Sin definir = comportamiento por código; mesa no avisa
+  notifyByDelivery?: Partial<Record<OrderDeliveryType, boolean>>;
+  // Versión anterior (un solo interruptor para todos los métodos). Solo se lee como respaldo
   notifyCustomer?: boolean;
   // Plantilla: código del sistema (pedido_confirmado…) o id de una plantilla propia
   waTemplateId?: string;

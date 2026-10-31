@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/Badge';
 import { useAuth } from '@/features/auth';
 import { useConfirmStore } from '@/store/confirm.store';
 import { useToastStore } from '@/store/toast.store';
-import { statusTemplateId, templateName, type WaTemplateStore } from '@/lib/whatsapp/templates.core';
+import { DELIVERY_KINDS, statusNotifies, statusTemplateChoice, templateName, type WaTemplateStore } from '@/lib/whatsapp/templates.core';
 import { useWaTemplates } from '@/lib/whatsapp/useWaTemplates';
 import type { OrderStatus } from '@/types';
 
@@ -155,6 +155,7 @@ export function OrderStatusesManager() {
             key={status.id}
             status={status}
             waStore={waStore}
+            dineIn={can('features.dine_in')}
             index={index}
             total={statuses.length}
             canMove={canUpdate}
@@ -225,10 +226,10 @@ function TypeBadge({ isBase }: { isBase: boolean }) {
 
 // ─── NotifyBadge ──────────────────────────────────────────────────────────────
 
-/** Qué mensaje de WhatsApp recibe el cliente al pasar a este estado. */
-function NotifyBadge({ status, waStore }: { status: OrderStatus; waStore?: WaTemplateStore }) {
-  const templateId = statusTemplateId(status);
-  if (!templateId) {
+/** Qué mensaje de WhatsApp recibe el cliente al pasar a este estado, y en qué tipos de pedido. */
+function NotifyBadge({ status, waStore, dineIn }: { status: OrderStatus; waStore?: WaTemplateStore; dineIn: boolean }) {
+  const kinds = DELIVERY_KINDS.filter((k) => (k.value !== 'mesa' || dineIn) && statusNotifies(status, k.value));
+  if (kinds.length === 0) {
     return (
       <span className="inline-flex flex-shrink-0 items-center gap-1 text-[11px]" style={{ color: 'var(--t-text-4)' }} title="No le avisa al cliente">
         <BellOff className="h-3 w-3" />
@@ -237,9 +238,14 @@ function NotifyBadge({ status, waStore }: { status: OrderStatus; waStore?: WaTem
     );
   }
   return (
-    <span className="inline-flex min-w-0 items-center gap-1 text-[11px]" style={{ color: '#15803d' }} title="Plantilla de WhatsApp que se envía">
+    <span
+      className="inline-flex min-w-0 items-center gap-1 text-[11px]"
+      style={{ color: '#15803d' }}
+      title={`Avisa en: ${kinds.map((k) => k.label).join(', ')}`}
+    >
       <MessageCircle className="h-3 w-3 flex-shrink-0" />
-      <span className="truncate">{waStore ? templateName(waStore, templateId) : 'WhatsApp'}</span>
+      <span className="truncate">{waStore ? templateName(waStore, statusTemplateChoice(status)) : 'WhatsApp'}</span>
+      <span className="flex-shrink-0">{kinds.map((k) => k.emoji).join('')}</span>
     </span>
   );
 }
@@ -249,6 +255,7 @@ function NotifyBadge({ status, waStore }: { status: OrderStatus; waStore?: WaTem
 interface StatusRowProps {
   status: OrderStatus;
   waStore?: WaTemplateStore;
+  dineIn: boolean;
   index: number;
   total: number;
   canMove?: boolean;
@@ -265,6 +272,7 @@ interface StatusRowProps {
 function StatusRow({
   status,
   waStore,
+  dineIn,
   index,
   total,
   onMoveUp,
@@ -334,7 +342,7 @@ function StatusRow({
           {status.name}
         </div>
         <TypeBadge isBase={status.isBase} />
-        <NotifyBadge status={status} waStore={waStore} />
+        <NotifyBadge status={status} waStore={waStore} dineIn={dineIn} />
         <code
           className="rounded px-1.5 py-0.5 font-mono text-xs"
           style={{ background: 'var(--t-surface-2)', color: 'var(--t-text-3)' }}

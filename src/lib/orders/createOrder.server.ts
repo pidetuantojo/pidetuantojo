@@ -253,7 +253,7 @@ export async function createPublicOrder(input: CheckoutData, now: Date = new Dat
   // Mensaje de WhatsApp al cliente: plantilla y aviso del estado "Recibido".
   // Se arma aquí porque la carta pública no puede leer las plantillas del restaurante.
   const paymentLabel = getPaymentLabel(payment);
-  const customerMessage = await buildStatusMessage(restaurantId, receivedStatus, {
+  const customerMessage = await buildStatusMessage(restaurantId, receivedStatus, deliveryType, {
     customerName: order.customerName,
     orderNumber: order.orderNumber,
     total: order.total,

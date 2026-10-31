@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { slugify } from '@/lib/utils';
 import { statusNotifies, statusTemplateChoice } from '@/lib/whatsapp/templates.core';
+import type { OrderDeliveryType } from '@/types';
 import type { CreateOrderStatusData, OrderStatus } from '@/types';
 
 import type { OrderStatusFormData } from '../types/order-status.types';
@@ -15,6 +16,15 @@ const schema = z.object({
     .regex(/^[a-z0-9_-]+$/, 'Solo minúsculas, números, guiones y guión bajo'),
   sortOrder: z.number().int().min(1, 'Debe ser mayor a 0'),
 });
+
+function notifyDefaults(status?: OrderStatus): Record<OrderDeliveryType, boolean> {
+  const base = status ?? { code: '' };
+  return {
+    recoger: statusNotifies(base, 'recoger'),
+    domicilio: statusNotifies(base, 'domicilio'),
+    mesa: statusNotifies(base, 'mesa'),
+  };
+}
 
 export function useOrderStatusForm(
   restaurantId: string,
@@ -29,8 +39,8 @@ export function useOrderStatusForm(
     color: status?.color ?? '#6b7280',
     sortOrder: status?.sortOrder ?? defaultSortOrder,
     isActive: status?.isActive ?? true,
-    // Un estado nuevo avisa con la plantilla general hasta que elijan otra
-    notifyCustomer: status ? statusNotifies(status) : true,
+    // Un estado nuevo avisa en para llevar y domicilio (no en mesa) con la plantilla general
+    notifyByDelivery: notifyDefaults(status),
     waTemplateId: status ? statusTemplateChoice(status) : 'pedido_estado_actualizado',
   });
 
@@ -75,7 +85,7 @@ export function useOrderStatusForm(
       sortOrder: data.sortOrder,
       isBase: false,
       isActive: data.isActive,
-      notifyCustomer: data.notifyCustomer,
+      notifyByDelivery: data.notifyByDelivery,
       waTemplateId: data.waTemplateId,
     };
   }
@@ -86,7 +96,7 @@ export function useOrderStatusForm(
       color: data.color,
       sortOrder: data.sortOrder,
       isActive: data.isActive,
-      notifyCustomer: data.notifyCustomer,
+      notifyByDelivery: data.notifyByDelivery,
       waTemplateId: data.waTemplateId,
     };
   }

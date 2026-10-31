@@ -86,18 +86,29 @@ describe('POST /api/whatsapp/notify', () => {
     expect(sendWhatsApp).toHaveBeenCalledTimes(1);
   });
 
-  it('no envía si el estado no avisa, si es mesa o si los mensajes automáticos están apagados', async () => {
+  it('no envía si el estado no avisa, si no avisa en mesa o si los mensajes automáticos están apagados', async () => {
     db.update(ORDER, { statusId: 'st-prep' });
     expect(await (await call(statusBody)).json()).toMatchObject({ skipped: 'status_silent' });
 
+    // st-pack no configuró mesa: por defecto no avisa
     db.update(ORDER, { statusId: 'st-pack', deliveryType: 'mesa' });
-    expect(await (await call(statusBody)).json()).toMatchObject({ skipped: 'mesa' });
+    expect(await (await call(statusBody)).json()).toMatchObject({ skipped: 'status_silent' });
 
     db.update(ORDER, { deliveryType: 'domicilio' });
     db.set(`${R}/settings/waConfig`, { autoNotify: false });
     expect(await (await call(statusBody)).json()).toMatchObject({ skipped: 'auto_notify_off' });
 
     expect(sendWhatsApp).not.toHaveBeenCalled();
+  });
+
+  it('avisa en el método de entrega que el estado tenga encendido', async () => {
+    db.set(`${R}/orderStatuses/st-ready`, { code: 'ready', name: 'Listo', notifyByDelivery: { recoger: true, domicilio: false, mesa: true } });
+    db.update(ORDER, { statusId: 'st-ready' });
+    expect(await (await call(statusBody)).json()).toMatchObject({ skipped: 'status_silent' }); // domicilio
+
+    db.update(ORDER, { deliveryType: 'mesa' });
+    expect((await call(statusBody)).status).toBe(200);
+    expect(sendWhatsApp).toHaveBeenCalledWith('r1', '3001234567', expect.stringContaining('Listo'));
   });
 
   it('"pagado" solo si el pedido realmente está pagado', async () => {

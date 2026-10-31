@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/features/auth';
 import { useOrderStatuses } from '@/features/order-statuses/hooks/useOrderStatuses';
-import { DEFAULT_TEMPLATES, statusTemplateId, WA_EVENTS, type WaEventCode } from '@/lib/whatsapp/templates.core';
+import { DEFAULT_TEMPLATES, statusNotifiesAny, statusTemplateChoice, WA_EVENTS, type WaEventCode } from '@/lib/whatsapp/templates.core';
 import { useWaTemplates } from '@/lib/whatsapp/useWaTemplates';
 import { useConfirmStore } from '@/store/confirm.store';
 import { useToastStore } from '@/store/toast.store';
@@ -53,7 +53,8 @@ export function WaTemplatesManager() {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
 
-  const usedBy = (id: string) => statuses.filter((s) => statusTemplateId(s) === id);
+  // Estados que avisan en algún método de entrega con esta plantilla
+  const usedBy = (id: string) => statuses.filter((s) => statusNotifiesAny(s) && statusTemplateChoice(s) === id);
   const saving = saveSystem.isPending || saveCustom.isPending;
 
   function open(next: Editing, body: string, templateName = '') {

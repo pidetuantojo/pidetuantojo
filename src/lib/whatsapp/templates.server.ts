@@ -1,5 +1,5 @@
 import { adminDb } from '@/lib/firebase/admin';
-import type { OrderStatus } from '@/types';
+import type { OrderDeliveryType, OrderStatus } from '@/types';
 
 import {
   applyTemplate, DEFAULT_TEMPLATES, parseTemplateStore, statusTemplateId, templateBody,
@@ -17,13 +17,14 @@ export async function buildTemplateMessage(restaurantId: string, templateId: str
   }
 }
 
-/** Mensaje para un estado. undefined = el estado tiene el aviso apagado. */
+/** Mensaje para un estado y método de entrega. undefined = el aviso está apagado ahí. */
 export async function buildStatusMessage(
   restaurantId: string,
-  status: Pick<OrderStatus, 'code' | 'notifyCustomer' | 'waTemplateId'> | null,
+  status: Pick<OrderStatus, 'code' | 'notifyByDelivery' | 'notifyCustomer' | 'waTemplateId'> | null,
+  deliveryType: OrderDeliveryType,
   data: WaTemplateData,
 ): Promise<string | undefined> {
   // Sin estados configurados: se comporta como "Recibido"
-  const templateId = statusTemplateId(status ?? { code: 'received' });
+  const templateId = statusTemplateId(status ?? { code: 'received' }, deliveryType);
   return templateId ? buildTemplateMessage(restaurantId, templateId, data) : undefined;
 }

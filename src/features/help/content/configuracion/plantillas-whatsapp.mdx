@@ -8,9 +8,9 @@ Las plantillas son los textos que recibe el cliente por WhatsApp en cada momento
 
 ## Cómo se decide qué mensaje se envía
 
-**Cada estado elige su plantilla.** En <Ui>Gestión de pedidos → Estados</Ui>, al editar un estado ves la sección <Ui>Avisar al cliente por WhatsApp</Ui>: ahí activas o apagas el aviso y eliges qué plantilla se manda. En la lista de estados, cada uno muestra el nombre de su plantilla o <Ui>Sin aviso</Ui>.
+**Cada estado elige su plantilla.** En <Ui>Gestión de pedidos → Estados</Ui>, al editar un estado ves la sección <Ui>Avisar al cliente por WhatsApp</Ui>: ahí marcas en qué tipos de pedido avisa (<Ui>Para llevar</Ui>, <Ui>Domicilio</Ui>, <Ui>Mesa</Ui>) y eliges qué plantilla se manda. La plantilla es la misma para todos los tipos que marques. En la lista de estados, cada uno muestra su plantilla con los íconos de los tipos en que avisa (🛍️ 🛵 🍽️), o <Ui>Sin aviso</Ui>.
 
-Si nunca tocaste esa sección, cada estado usa esta plantilla:
+Si nunca tocaste esa sección, en para llevar y domicilio cada estado usa esta plantilla:
 
 | Estado | Plantilla |
 |---|---|
@@ -23,7 +23,7 @@ Si nunca tocaste esa sección, cada estado usa esta plantilla:
 
 La plantilla <Ui>Pedido pagado</Ui> no depende de un estado: se envía cuando marcas el pedido como pagado.
 
-Los pedidos de mesa nunca envían mensaje.
+En mesa, ningún estado avisa hasta que marques <Ui>Mesa</Ui> en él. El aviso de <Ui>Pedido pagado</Ui> no se envía en mesa.
 
 ## Editar una plantilla
 
@@ -62,7 +62,7 @@ Sirve para darle un mensaje propio a un estado personalizado, por ejemplo "Pedid
     Usa los campos y los emojis igual que al editar, y toca <Ui>Guardar</Ui>.
   </Step>
   <Step title="Asígnala a un estado">
-    Ve a <Ui>Gestión de pedidos → Estados</Ui>, edita el estado, deja marcado <Ui>Avisar al cliente por WhatsApp</Ui> y elige tu plantilla en <Ui>Plantilla</Ui>. Tus plantillas aparecen con ✨.
+    Ve a <Ui>Gestión de pedidos → Estados</Ui>, edita el estado, marca en <Ui>Avisar al cliente por WhatsApp</Ui> los tipos de pedido que deben recibirla y elige tu plantilla en <Ui>Plantilla</Ui>. Tus plantillas aparecen con ✨.
   </Step>
 </Steps>
 

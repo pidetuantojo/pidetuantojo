@@ -72,12 +72,12 @@ describe('POST /api/orders + aviso push', () => {
     expect(await res.json()).not.toHaveProperty('customerMessage');
   });
 
-  it('no envía WhatsApp si está apagado, si es mesa o si el estado no avisa', async () => {
+  it('no envía WhatsApp si está apagado o si el estado no avisa en ese método de entrega', async () => {
     createPublicOrder.mockResolvedValue({ ...created, customerMessage: 'Hola Juan' });
     isAutoNotifyOn.mockResolvedValue(false);
     await POST(request());
     isAutoNotifyOn.mockResolvedValue(true);
-    await POST(request({ deliveryType: 'mesa', tableId: 't1', customerAddress: undefined }));
+    // Sin customerMessage = "Recibido" no avisa en este método (lo decide createPublicOrder)
     createPublicOrder.mockResolvedValue(created);
     await POST(request());
     expect(sendWhatsApp).not.toHaveBeenCalled();
