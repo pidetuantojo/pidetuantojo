@@ -37,6 +37,9 @@ export interface CashWorld {
     accBank: string;
     accExpense: string;
     accReceivable: string;
+    accGateway: string;
+    accSales: string;
+    accEquity: string;
   };
 }
 
@@ -54,8 +57,11 @@ export async function seedCashWorld(db: FakeFirestore, m: Modules): Promise<Cash
     paymentMethods: [
       { id: 'pm-efectivo', type: 'efectivo', isActive: true },
       { id: 'pm-nequi', type: 'nequi', isActive: true },
+      { id: 'pm-datafono', type: 'datafono', isActive: true },
     ],
   });
+  db.set(`restaurants/${RID}/orderStatuses/st-new`, { code: 'received', isActive: true });
+  db.set(`restaurants/${RID}/orderStatuses/st-cancel`, { code: 'cancelled', isActive: true });
   await m.setup.setupLedger(RID, auditFor('admin'));
   const accounts = await m.accounts.listAccounts(RID);
   const byCode = (code: string) => accounts.find((a) => a.code === code)!.id;
@@ -79,6 +85,11 @@ export async function seedCashWorld(db: FakeFirestore, m: Modules): Promise<Cash
       parentCode: '1105',
       allowsMovements: true,
     },
+    metaFor('admin')
+  );
+  const equity = await m.accounts.createAccount(
+    RID,
+    { code: '3115', name: 'Aportes (saldo inicial)', class: 'PATRIMONIO', allowsMovements: true },
     metaFor('admin')
   );
   const mk = (type: 'GENERAL' | 'REGISTRADORA', name: string, ledgerAccountId: string) =>
@@ -109,6 +120,30 @@ export async function seedCashWorld(db: FakeFirestore, m: Modules): Promise<Cash
       accBank: byCode('1110'),
       accExpense: byCode('5195'),
       accReceivable: byCode('1365'),
+      accGateway: byCode('1380'),
+      accSales: byCode('4140'),
+      accEquity: equity.id,
     },
   };
+}
+
+/** Pedido ficticio con total conocido (subtotal − descuento + domicilio). */
+export function seedOrder(
+  db: FakeFirestore,
+  id: string,
+  overrides: Record<string, unknown> = {}
+): void {
+  db.set(`restaurants/${RID}/orders/${id}`, {
+    restaurantId: RID,
+    orderNumber: id,
+    statusId: 'st-new',
+    deliveryType: 'recoger',
+    subtotal: 50000,
+    discount: 0,
+    deliveryFee: 0,
+    total: 50000,
+    isPaid: false,
+    items: [],
+    ...overrides,
+  });
 }
