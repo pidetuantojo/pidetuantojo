@@ -98,6 +98,26 @@ export const PERMISSION_MODULES = [
     ],
   },
   {
+    id: 'ledger', label: 'Libro contable', kind: 'user',
+    permissions: [
+      { key: 'ledger.view', label: 'Ver libro contable', description: 'Plan de cuentas, reglas contables y asientos', requires: ['features.cash'] },
+      { key: 'ledger.manage', label: 'Administrar plan de cuentas y reglas', description: 'Crear cuentas, editar reglas contables y reversar asientos', requires: ['ledger.view'] },
+      { key: 'ledger.export', label: 'Exportar libro contable', requires: ['ledger.view'] },
+    ],
+  },
+  {
+    id: 'cash', label: 'Caja', kind: 'user',
+    permissions: [
+      { key: 'cash.view', label: 'Ver caja', description: 'Cajas, turnos y movimientos', requires: ['features.cash'] },
+      { key: 'cash.operate', label: 'Operar caja', description: 'Abrir y cerrar turno, registrar ingresos y egresos', requires: ['cash.view'] },
+      { key: 'cash.approve', label: 'Aprobar cierres y diferencias', description: 'Aprobar cierres de caja, sobrantes y faltantes', requires: ['cash.view'] },
+      { key: 'cash.reverse', label: 'Reversar movimientos de caja', requires: ['cash.view'] },
+      { key: 'cash.registers.manage', label: 'Administrar cajas registradoras', requires: ['cash.view'] },
+      { key: 'petty_cash.manage', label: 'Operar caja menor', description: 'Registrar gastos y legalizaciones de caja menor', requires: ['cash.view'] },
+      { key: 'petty_cash.approve', label: 'Aprobar caja menor', description: 'Aprobar legalizaciones y reembolsos', requires: ['petty_cash.manage'] },
+    ],
+  },
+  {
     id: 'payment_methods', label: 'Métodos de pago', kind: 'user', route: '/dashboard/pagos',
     permissions: [
       { key: 'payment_methods.view', label: 'Ver métodos de pago' },
@@ -171,6 +191,7 @@ export const PERMISSION_MODULES = [
       { key: 'features.delivery_companies', label: 'Empresas de domicilios', description: 'Registrar empresas y asignar su domiciliario' },
       { key: 'features.promotions', label: 'Promociones', description: 'Precio tachado, descuento al total y domicilio gratis, con horarios' },
       { key: 'features.promotions_advanced', label: 'Promociones avanzadas y fidelidad', description: 'Combos, 2x1, regalos, cupones, primer pedido y programa de fidelidad', requires: ['features.promotions'] },
+      { key: 'features.cash', label: 'Caja y libro contable', description: 'Cajas, turnos, movimientos y contabilidad por partida doble' },
     ],
   },
 ] as const satisfies readonly PermissionModule[];
@@ -193,7 +214,7 @@ export const PERMISSION_TEMPLATES: readonly { id: string; label: string; descrip
     permissions: [
       'dashboard.view', 'orders.view', 'orders.create', 'orders.edit', 'orders.change_status',
       'orders.set_delivery_fee', 'orders.mark_paid', 'orders.manage_notes', 'orders.assign_driver',
-      'orders.print', 'print_station.run', 'accounting.view', 'products.toggle_availability',
+      'orders.print', 'print_station.run', 'accounting.view', 'products.toggle_availability', 'cash.operate',
     ],
   },
   {
