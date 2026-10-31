@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { z } from 'zod';
 
 import { slugify } from '@/lib/utils';
+import { statusNotifies, statusTemplateChoice } from '@/lib/whatsapp/templates.core';
 import type { CreateOrderStatusData, OrderStatus } from '@/types';
 
 import type { OrderStatusFormData } from '../types/order-status.types';
@@ -28,6 +29,9 @@ export function useOrderStatusForm(
     color: status?.color ?? '#6b7280',
     sortOrder: status?.sortOrder ?? defaultSortOrder,
     isActive: status?.isActive ?? true,
+    // Un estado nuevo avisa con la plantilla general hasta que elijan otra
+    notifyCustomer: status ? statusNotifies(status) : true,
+    waTemplateId: status ? statusTemplateChoice(status) : 'pedido_estado_actualizado',
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof OrderStatusFormData, string>>>({});
@@ -71,6 +75,8 @@ export function useOrderStatusForm(
       sortOrder: data.sortOrder,
       isBase: false,
       isActive: data.isActive,
+      notifyCustomer: data.notifyCustomer,
+      waTemplateId: data.waTemplateId,
     };
   }
 
@@ -80,6 +86,8 @@ export function useOrderStatusForm(
       color: data.color,
       sortOrder: data.sortOrder,
       isActive: data.isActive,
+      notifyCustomer: data.notifyCustomer,
+      waTemplateId: data.waTemplateId,
     };
   }
 

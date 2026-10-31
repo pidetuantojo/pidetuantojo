@@ -6,7 +6,7 @@ Los estados que vienen listos alcanzan para la mayoría de los restaurantes. Tó
 
 ## Los estados que ya tienes
 
-Cuando se crea tu restaurante, el panel arma estos seis estados. Se llaman **estados base**:
+Cuando se crea tu restaurante, el panel arma estos seis estados. Son los **estados fijos** y en la lista llevan la etiqueta <Ui>Fijo</Ui> con un candado:
 
 | Orden | Estado | Para qué sirve |
 | --- | --- | --- |
@@ -17,7 +17,9 @@ Cuando se crea tu restaurante, el panel arma estos seis estados. Se llaman **est
 | 5 | <Ui>Entregado</Ui> | El cliente ya lo tiene. **Cierra el pedido** |
 | 6 | <Ui>Cancelado</Ui> | El pedido no sigue. **Cierra el pedido** |
 
-En un estado base **no puedes cambiar el nombre ni el color** (por eso ves un candado), ni eliminarlo. Sí puedes moverlo de lugar y desactivarlo.
+En un estado fijo **no puedes cambiar el nombre ni el color** (por eso ves un candado), ni eliminarlo. Sí puedes moverlo de lugar, desactivarlo y configurar su aviso de WhatsApp.
+
+Los estados que creas tú llevan la etiqueta <Ui>Personalizado</Ui> y una franja naranja a la izquierda. Esos sí los puedes editar y eliminar. Arriba de la lista ves cuántos tienes de cada tipo.
 
 ## Cómo ver los estados
 
@@ -25,9 +27,9 @@ Ve a <Ui>Gestión de pedidos → Estados</Ui>. Cada fila muestra:
 
 - las flechas para <Ui>Subir</Ui> y <Ui>Bajar</Ui> el estado,
 - su número de orden y su color,
-- el nombre y su código interno,
-- la etiqueta <Ui>Base</Ui> (si es de los que vienen listos) y si está <Ui>Activo</Ui> o <Ui>Inactivo</Ui>,
-- los botones de acciones: el ojo para activar o desactivar, el lápiz para editar y el tacho para eliminar (estos dos solo en los estados que creaste tú).
+- el nombre, la etiqueta <Ui>Fijo</Ui> o <Ui>Personalizado</Ui>, el mensaje de WhatsApp que manda (o <Ui>Sin aviso</Ui>) y su código interno,
+- si está <Ui>Activo</Ui> o <Ui>Inactivo</Ui>,
+- los botones de acciones: el ojo para activar o desactivar, el lápiz para editar y el tacho para eliminar (este último solo en los estados que creaste tú).
 
 ## Crear un estado nuevo
 
@@ -62,7 +64,7 @@ Ve a <Ui>Gestión de pedidos → Estados</Ui>. Cada fila muestra:
 ## Editar, reordenar, activar o eliminar
 
 - **Reordenar:** toca las flechas <Ui>Subir</Ui> y <Ui>Bajar</Ui> de cualquier estado, incluso los base. El orden de la lista es el orden de los botones en el pedido.
-- **Editar (solo los tuyos):** toca el lápiz y cambia el nombre, el color, el orden o si está activo. Termina con <Ui>Guardar cambios</Ui>.
+- **Editar:** toca el lápiz. En los tuyos puedes cambiar el nombre, el color, el orden, si está activo y el aviso de WhatsApp. En los fijos, solo el orden, si está activo y el aviso. Termina con <Ui>Guardar cambios</Ui>.
 - **Desactivar o activar:** toca el ojo. Un estado inactivo deja de aparecer como botón en los pedidos nuevos, pero los pedidos que ya estaban en ese estado lo siguen mostrando.
 - **Eliminar (solo los tuyos):** toca el tacho y confirma. **No se puede deshacer.**
 
@@ -70,7 +72,7 @@ Ve a <Ui>Gestión de pedidos → Estados</Ui>. Cada fila muestra:
 
 - Los botones de estado de cada pedido siguen exactamente el orden y los estados activos de esta lista. <Ui>Cancelado</Ui> no se muestra con los demás: tiene su propio botón <Ui>Cancelar</Ui>.
 - **Solo "Entregado" y "Cancelado" cierran un pedido.** Un estado que crees tú no saca el pedido del tablero.
-- Si tienes mensajes automáticos de WhatsApp activos, cada cambio de estado le avisa al cliente. Los estados que creas tú (y también "En preparación" y "Listo") mandan un mensaje general: "Tu pedido #… ahora está: *nombre del estado*". Más detalle en la guía de WhatsApp.
+- Si tienes mensajes automáticos de WhatsApp activos, cada estado con <Ui>Avisar al cliente por WhatsApp</Ui> marcado le manda al cliente la plantilla que elegiste. Lo configuras al editar el estado: ahí eliges la plantilla y ves cómo queda el mensaje. Por defecto avisan todos menos <Ui>Cancelado</Ui>, y los estados que creas tú usan el mensaje general "Tu pedido #… ahora está: *nombre del estado*" hasta que les elijas otra plantilla. Más detalle en <GuideLink href="/dashboard/ayuda/configuracion/plantillas-whatsapp">Personalizar mensajes de WhatsApp</GuideLink>.
 - Cada cambio de estado queda registrado con la hora y el usuario que lo hizo. Lo ves en <Ui>Finanzas → Contabilidad</Ui>, tocando <Ui>Ver</Ui> en el pedido, junto con el tiempo que pasó entre que se creó y se entregó.
 - Los cambios pueden tardar unos minutos en verse en otros celulares o computadores que ya tenían Pedidos abierto. Si urge, recarga la página.
 

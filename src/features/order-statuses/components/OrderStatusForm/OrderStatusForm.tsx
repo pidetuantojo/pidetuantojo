@@ -1,8 +1,15 @@
 'use client';
 
+import Link from 'next/link';
+
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { Select } from '@/components/ui/Select';
+import { ROUTES } from '@/constants/routes';
+import { TemplatePreview } from '@/features/wa-templates/components/TemplateEditor';
+import { templateBody, WA_EVENTS } from '@/lib/whatsapp/templates.core';
+import { useWaTemplates } from '@/lib/whatsapp/useWaTemplates';
 
 import { useOrderStatusForm } from '../../hooks/useOrderStatusForm';
 import {
@@ -20,6 +27,15 @@ export function OrderStatusForm({
 }: OrderStatusFormProps) {
   const { data, errors, handleChange, validate, toCreateData, toUpdateData, isEditing } =
     useOrderStatusForm(restaurantId, status, defaultSortOrder);
+
+  // Estado fijo: nombre, código y color bloqueados; el aviso de WhatsApp sí se configura
+  const isBase = !!status?.isBase;
+  const { store } = useWaTemplates(restaurantId);
+  // "Pedido pagado" no es un estado: no se ofrece
+  const templateOptions = [
+    ...WA_EVENTS.filter((e) => e.code !== 'pedido_pagado').map((e) => ({ value: e.code, label: `${e.emoji} ${e.label}` })),
+    ...(store?.custom ?? []).map((t) => ({ value: t.id, label: `✨ ${t.name}` })),
+  ];
 
   const createMutation = useCreateOrderStatus(restaurantId);
   const updateMutation = useUpdateOrderStatus(restaurantId);
@@ -49,7 +65,7 @@ export function OrderStatusForm({
           error={errors.name}
           placeholder="Ej: En camino, En caja..."
           required
-          disabled={isPending}
+          disabled={isPending || isBase}
         />
 
         <Input
@@ -58,7 +74,7 @@ export function OrderStatusForm({
           onChange={(e) => handleChange('code', e.target.value)}
           error={errors.code}
           placeholder="en_camino"
-          hint={isEditing ? 'El código no se puede editar' : 'Se auto-genera desde el nombre'}
+          hint={isBase ? 'Estado fijo: el nombre, el código y el color no se pueden cambiar' : isEditing ? 'El código no se puede editar' : 'Se auto-genera desde el nombre'}
           required
           disabled={isPending || isEditing}
         />
@@ -71,7 +87,7 @@ export function OrderStatusForm({
               type="color"
               value={data.color}
               onChange={(e) => handleChange('color', e.target.value)}
-              disabled={isPending}
+              disabled={isPending || isBase}
               className="h-10 w-16 cursor-pointer rounded-lg p-0.5"
               style={{ border: '1px solid var(--t-input-border)' }}
             />
@@ -105,6 +121,39 @@ export function OrderStatusForm({
           />
           <span className="text-sm font-medium" style={{ color: 'var(--t-text-2)' }}>Estado activo</span>
         </label>
+
+        {/* Aviso por WhatsApp */}
+        <div className="space-y-3 rounded-xl p-4" style={{ border: '1px solid var(--t-border)', background: 'var(--t-surface-2)' }}>
+          <label className="flex cursor-pointer items-start gap-3">
+            <Checkbox
+              checked={data.notifyCustomer}
+              onChange={(e) => handleChange('notifyCustomer', e.target.checked)}
+              disabled={isPending}
+            />
+            <span>
+              <span className="block text-sm font-medium" style={{ color: 'var(--t-text-1)' }}>Avisar al cliente por WhatsApp</span>
+              <span className="block text-xs" style={{ color: 'var(--t-text-3)' }}>
+                Se envía cuando un pedido pasa a este estado, si los mensajes automáticos están activos. Los pedidos de mesa no reciben avisos.
+              </span>
+            </span>
+          </label>
+
+          {data.notifyCustomer && (
+            <>
+              <Select
+                label="Plantilla"
+                value={data.waTemplateId}
+                onChange={(v) => handleChange('waTemplateId', v)}
+                options={templateOptions}
+                disabled={isPending}
+              />
+              <Link href={ROUTES.dashboard.notificaciones.plantillas} className="inline-block text-xs font-semibold" style={{ color: '#FF6A1A' }}>
+                + Crear o editar plantillas
+              </Link>
+              {store && <TemplatePreview body={templateBody(store, data.waTemplateId)} statusName={data.name} />}
+            </>
+          )}
+        </div>
 
         {mutationError && (
           <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{mutationError}</p>

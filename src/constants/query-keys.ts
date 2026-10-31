@@ -35,4 +35,5 @@ export const QUERY_KEYS = {
   restaurantCategory: (id: string) => ['restaurant-categories', id] as const,
 
   waConfig: (restaurantId: string) => ['waConfig', restaurantId] as const,
+  waTemplates: (restaurantId: string) => ['waTemplates', restaurantId] as const,
 } as const;

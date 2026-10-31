@@ -7,7 +7,7 @@ import { adminDb } from '@/lib/firebase/admin';
 import { normalizePhone } from '@/lib/customers/phone';
 import { loadPublicRestaurant } from '@/lib/restaurants/restaurant.server';
 import {
-  getCustomerProfile, getLoyaltyStatus, getReceivedStatusId, loadActivePromotions, promotionFeatures,
+  getCustomerProfile, getLoyaltyStatus, getReceivedStatus, loadActivePromotions, promotionFeatures,
 } from '@/lib/promotions/promotions.server';
 import {
   evaluatePromotions, LOYALTY_PROMOTION_ID, type PricingLine, type PricingProduct,
@@ -18,6 +18,7 @@ import type { Adicional, Additional, Customer, DeliveryZone, Mesa, Order, OrderI
 import { CheckoutError, type CheckoutData, type CheckoutResponse } from './checkout.schema';
 import { generateOrderNumber } from './orderNumber';
 import { statusChange } from './statusHistory';
+import { buildStatusMessage } from '@/lib/whatsapp/templates.server';
 
 // Pedidos programados: mismo rango que el checkout (unos minutos de tolerancia por relojes desfasados)
 const SCHEDULE_PAST_TOLERANCE_MS = 10 * 60_000;
@@ -91,7 +92,7 @@ export async function createPublicOrder(input: CheckoutData, now: Date = new Dat
   const features = promotionFeatures(restaurant);
 
   // ─── Datos del restaurante ─────────────────────────────────────────────────
-  const [products, adicionalesSnap, zoneSnap, mesaSnap, promotions, receivedStatusId, profile] = await Promise.all([
+  const [products, adicionalesSnap, zoneSnap, mesaSnap, promotions, receivedStatus, profile] = await Promise.all([
     loadProducts(restaurantId, input.items.map((i) => i.productId)),
     restaurantRef(restaurantId).collection('adicionales').get(),
     isZonesMode && deliveryType === 'domicilio' && input.deliveryZoneId
@@ -101,10 +102,11 @@ export async function createPublicOrder(input: CheckoutData, now: Date = new Dat
       ? restaurantRef(restaurantId).collection('mesas').doc(input.tableId).get()
       : Promise.resolve(null),
     loadActivePromotions(restaurant, now),
-    getReceivedStatusId(restaurantId),
+    getReceivedStatus(restaurantId),
     getCustomerProfile(restaurantId, phoneKey),
   ]);
   const adicionales = adicionalesSnap.docs.map((d) => ({ ...(d.data() as Adicional), id: d.id }));
+  const receivedStatusId = receivedStatus?.id ?? '';
 
   // Zona de domicilio (modo zonas): el valor sale de la base de datos, no del navegador
   let zone: DeliveryZone | null = null;
@@ -248,6 +250,18 @@ export async function createPublicOrder(input: CheckoutData, now: Date = new Dat
     nowIso,
   });
 
+  // Mensaje de WhatsApp al cliente: plantilla y aviso del estado "Recibido".
+  // Se arma aquí porque la carta pública no puede leer las plantillas del restaurante.
+  const paymentLabel = getPaymentLabel(payment);
+  const customerMessage = await buildStatusMessage(restaurantId, receivedStatus, {
+    customerName: order.customerName,
+    orderNumber: order.orderNumber,
+    total: order.total,
+    paymentMethod: paymentLabel,
+    items: order.items.map((i) => ({ productName: i.productName, quantity: i.quantity })),
+    statusName: receivedStatus?.name,
+  });
+
   return {
     id: order.id,
     orderNumber: order.orderNumber,
@@ -261,8 +275,9 @@ export async function createPublicOrder(input: CheckoutData, now: Date = new Dat
     deliveryZoneName: zone?.name,
     barrio: order.barrio,
     tableName: order.tableName,
-    paymentLabel: getPaymentLabel(payment),
+    paymentLabel,
     paymentAccount: payment.account,
+    ...(customerMessage ? { customerMessage } : {}),
   };
 }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Edit, Trash2, Eye, EyeOff, Lock, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, Lock, ChevronUp, ChevronDown, Sparkles, MessageCircle, BellOff } from 'lucide-react';
 
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/Badge';
 import { useAuth } from '@/features/auth';
 import { useConfirmStore } from '@/store/confirm.store';
 import { useToastStore } from '@/store/toast.store';
+import { statusTemplateId, templateName, type WaTemplateStore } from '@/lib/whatsapp/templates.core';
+import { useWaTemplates } from '@/lib/whatsapp/useWaTemplates';
 import type { OrderStatus } from '@/types';
 
 import { useOrderStatuses } from '../../hooks/useOrderStatuses';
@@ -26,6 +28,7 @@ export function OrderStatusesManager() {
   const restaurantId = user?.restaurantId ?? '';
 
   const { data: statuses = [], isLoading, error } = useOrderStatuses(restaurantId);
+  const { store: waStore } = useWaTemplates(restaurantId);
 
   const updateStatus = useUpdateOrderStatus(restaurantId);
   const toggleActive = useToggleOrderStatusActive(restaurantId);
@@ -120,7 +123,7 @@ export function OrderStatusesManager() {
         <div>
           <h2 className="text-2xl font-bold" style={{ color: 'var(--t-text-1)' }}>Estados de pedido</h2>
           <p className="mt-0.5 text-sm" style={{ color: 'var(--t-text-3)' }}>
-            Define el orden del flujo combinando estados base y personalizados
+            Define el orden del flujo combinando estados fijos y personalizados
           </p>
         </div>
         {can('order_statuses.create') && (
@@ -131,18 +134,33 @@ export function OrderStatusesManager() {
         )}
       </div>
 
+      {/* Leyenda: qué es fijo y qué es personalizado */}
+      {statuses.length > 0 && (
+        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm" style={{ color: 'var(--t-text-3)' }}>
+          <span className="flex items-center gap-2">
+            <TypeBadge isBase />
+            <span>{statuses.filter((s) => s.isBase).length} · vienen con el sistema. Se ordenan, se activan y se les configura el aviso</span>
+          </span>
+          <span className="flex items-center gap-2">
+            <TypeBadge isBase={false} />
+            <span>{statuses.filter((s) => !s.isBase).length} · creados por ti. Se pueden editar y eliminar</span>
+          </span>
+        </div>
+      )}
+
       {/* Lista unificada ordenada por sortOrder */}
-      <section className="space-y-2">
+      <section className="-mt-4 space-y-2">
         {statuses.map((status, index) => (
           <StatusRow
             key={status.id}
             status={status}
+            waStore={waStore}
             index={index}
             total={statuses.length}
             canMove={canUpdate}
             onMoveUp={canUpdate ? () => handleMove(index, 'up') : undefined}
             onMoveDown={canUpdate ? () => handleMove(index, 'down') : undefined}
-            onEdit={canUpdate && !status.isBase ? handleEdit : undefined}
+            onEdit={canUpdate ? handleEdit : undefined}
             onToggleActive={canUpdate ? handleToggleActive : undefined}
             onDelete={canDelete && !status.isBase ? handleDelete : undefined}
             isToggling={togglingId === status.id}
@@ -182,10 +200,55 @@ export function OrderStatusesManager() {
   );
 }
 
+// ─── TypeBadge ────────────────────────────────────────────────────────────────
+
+/** Fijo = estado base del sistema (nombre y color bloqueados). Personalizado = creado por el restaurante. */
+function TypeBadge({ isBase }: { isBase: boolean }) {
+  return isBase ? (
+    <span
+      className="inline-flex flex-shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold"
+      style={{ background: 'var(--t-surface-2)', color: 'var(--t-text-2)', border: '1px solid var(--t-border)' }}
+    >
+      <Lock className="h-3 w-3" />
+      Fijo
+    </span>
+  ) : (
+    <span
+      className="inline-flex flex-shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold"
+      style={{ background: 'rgba(255,106,26,.1)', color: '#FF6A1A', border: '1px solid rgba(255,106,26,.3)' }}
+    >
+      <Sparkles className="h-3 w-3" />
+      Personalizado
+    </span>
+  );
+}
+
+// ─── NotifyBadge ──────────────────────────────────────────────────────────────
+
+/** Qué mensaje de WhatsApp recibe el cliente al pasar a este estado. */
+function NotifyBadge({ status, waStore }: { status: OrderStatus; waStore?: WaTemplateStore }) {
+  const templateId = statusTemplateId(status);
+  if (!templateId) {
+    return (
+      <span className="inline-flex flex-shrink-0 items-center gap-1 text-[11px]" style={{ color: 'var(--t-text-4)' }} title="No le avisa al cliente">
+        <BellOff className="h-3 w-3" />
+        Sin aviso
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex min-w-0 items-center gap-1 text-[11px]" style={{ color: '#15803d' }} title="Plantilla de WhatsApp que se envía">
+      <MessageCircle className="h-3 w-3 flex-shrink-0" />
+      <span className="truncate">{waStore ? templateName(waStore, templateId) : 'WhatsApp'}</span>
+    </span>
+  );
+}
+
 // ─── StatusRow ────────────────────────────────────────────────────────────────
 
 interface StatusRowProps {
   status: OrderStatus;
+  waStore?: WaTemplateStore;
   index: number;
   total: number;
   canMove?: boolean;
@@ -201,6 +264,7 @@ interface StatusRowProps {
 
 function StatusRow({
   status,
+  waStore,
   index,
   total,
   onMoveUp,
@@ -217,6 +281,8 @@ function StatusRow({
       className="flex items-center gap-3 rounded-xl px-3 py-3 shadow-sm"
       style={{
         border: '1px solid var(--t-border)',
+        // Los personalizados llevan una franja naranja a la izquierda para distinguirlos de un vistazo
+        borderLeft: status.isBase ? '1px solid var(--t-border)' : '3px solid #FF6A1A',
         background: 'var(--t-surface)',
         opacity: isMoving ? 0.6 : 1,
         transition: 'opacity .15s',
@@ -267,6 +333,8 @@ function StatusRow({
         >
           {status.name}
         </div>
+        <TypeBadge isBase={status.isBase} />
+        <NotifyBadge status={status} waStore={waStore} />
         <code
           className="rounded px-1.5 py-0.5 font-mono text-xs"
           style={{ background: 'var(--t-surface-2)', color: 'var(--t-text-3)' }}
@@ -277,9 +345,6 @@ function StatusRow({
 
       {/* Badges */}
       <div className="flex flex-shrink-0 items-center gap-2">
-        {status.isBase && (
-          <Badge variant="info">Base</Badge>
-        )}
         <Badge variant={status.isActive ? 'success' : 'default'}>
           {status.isActive ? 'Activo' : 'Inactivo'}
         </Badge>
@@ -307,22 +372,22 @@ function StatusRow({
           </button>
         )}
 
+        {onEdit && (
+          <button
+            onClick={() => onEdit(status)}
+            className="rounded-lg p-2 transition-colors hover:bg-blue-50 hover:text-blue-600"
+            style={{ color: 'var(--t-text-4)' }}
+            title={status.isBase ? 'Configurar aviso de WhatsApp' : 'Editar'}
+          >
+            <Edit className="h-4 w-4" />
+          </button>
+        )}
         {status.isBase ? (
-          <span className="rounded-lg p-2" style={{ color: 'var(--t-text-4)', opacity: 0.4 }} title="Estado base — nombre y color fijos">
+          <span className="rounded-lg p-2" style={{ color: 'var(--t-text-3)' }} title="Estado fijo: no se puede eliminar">
             <Lock className="h-4 w-4" />
           </span>
         ) : (
           <>
-            {onEdit && (
-              <button
-                onClick={() => onEdit(status)}
-                className="rounded-lg p-2 transition-colors hover:bg-blue-50 hover:text-blue-600"
-                style={{ color: 'var(--t-text-4)' }}
-                title="Editar"
-              >
-                <Edit className="h-4 w-4" />
-              </button>
-            )}
             {onDelete && (
               <button
                 onClick={() => onDelete(status.id, status.name)}

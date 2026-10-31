@@ -4,5 +4,7 @@ export interface OrderStatusFormData {
   color: string;
   sortOrder: number;
   isActive: boolean;
+  notifyCustomer: boolean;
+  waTemplateId: string;
 }
 

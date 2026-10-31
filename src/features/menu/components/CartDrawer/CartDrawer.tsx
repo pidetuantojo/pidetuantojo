@@ -28,7 +28,6 @@ import type { DeliveryMethods, DeliveryZone, LoyaltyConfig, Mesa, OpeningHours, 
 
 import { checkoutService, CheckoutRequestError } from '../../services/checkout.service';
 import { CartPromotions, CartTotals, type CouponState } from './CartPromotions';
-import { getWaTemplates, applyTemplate, DEFAULT_TEMPLATES } from '@/lib/whatsapp/templates';
 
 const sg = "var(--font-sans, sans-serif)";
 
@@ -499,7 +498,6 @@ export function CartDrawer({ primaryColor, secondaryColor, deliveryZones, delive
     }
 
     const savedPhone = phone;
-    const savedName = name;
     clearCart();
     setName('');
     setPhone('');
@@ -523,29 +521,15 @@ export function CartDrawer({ primaryColor, secondaryColor, deliveryZones, delive
     setSeenPromotionIds({});
 
     if (waConnected && created) {
-      // Mensaje restaurante → cliente usando plantilla pedido_nuevo
-      const notifyData = {
-        customerName: savedName,
-        customerPhone: savedPhone,
-        orderNumber: created.orderNumber,
-        total: created.total,
-        paymentMethod: created.paymentLabel,
-        items: created.items.map((i) => ({ productName: i.productName, quantity: i.quantity })),
-      };
-      (async () => {
-        let waMessage: string;
-        try {
-          const templates = await getWaTemplates(restaurantId);
-          waMessage = applyTemplate(templates.pedido_nuevo, notifyData);
-        } catch {
-          waMessage = applyTemplate(DEFAULT_TEMPLATES.pedido_nuevo, notifyData);
-        }
+      // Mensaje restaurante → cliente: lo arma el servidor con la plantilla del estado "Recibido".
+      // Sin customerMessage, ese estado tiene el aviso apagado.
+      if (created.customerMessage) {
         fetch('/api/whatsapp/notify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ restaurantId, phone: savedPhone, message: waMessage }),
+          body: JSON.stringify({ restaurantId, phone: savedPhone, message: created.customerMessage }),
         }).catch(() => {});
-      })();
+      }
       setCartOpen(false);
       setWaSuccessModal({ orderNumber: created.orderNumber });
     } else {

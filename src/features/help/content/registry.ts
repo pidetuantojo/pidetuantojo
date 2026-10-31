@@ -201,10 +201,10 @@ export const HELP_GUIDES: readonly HelpGuide[] = [
     section: 'configuracion',
     slug: 'plantillas-whatsapp',
     title: 'Personalizar mensajes de WhatsApp',
-    summary: 'Edita el texto que recibe el cliente en cada momento del pedido.',
-    minutes: 3,
+    summary: 'Edita los mensajes, crea los tuyos y elige cuál envía cada estado.',
+    minutes: 4,
     audience: 'Admin',
-    keywords: ['plantilla', 'mensaje', 'whatsapp', 'texto', 'variable', 'notificacion'],
+    keywords: ['plantilla', 'mensaje', 'whatsapp', 'texto', 'variable', 'campo', 'emoji', 'notificacion', 'estado', 'aviso'],
   },
   {
     section: 'configuracion',

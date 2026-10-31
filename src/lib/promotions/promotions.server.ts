@@ -105,10 +105,10 @@ export async function getLoyaltyStatus(
 }
 
 /** Estado base de los pedidos nuevos ("Recibido"). */
-export async function getReceivedStatusId(restaurantId: string): Promise<string> {
+export async function getReceivedStatus(restaurantId: string): Promise<OrderStatus | null> {
   const snap = await adminDb.collection('restaurants').doc(restaurantId).collection('orderStatuses').get();
   const statuses = snap.docs.map((d) => ({ ...(d.data() as OrderStatus), id: d.id }));
-  return statuses.find((s) => s.code === 'received')?.id
-    ?? statuses.sort((a, b) => a.sortOrder - b.sortOrder)[0]?.id
-    ?? '';
+  return statuses.find((s) => s.code === 'received')
+    ?? statuses.sort((a, b) => a.sortOrder - b.sortOrder)[0]
+    ?? null;
 }

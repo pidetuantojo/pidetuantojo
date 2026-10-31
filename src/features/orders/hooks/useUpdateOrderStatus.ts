@@ -4,22 +4,9 @@ import { useAuth } from '@/features/auth';
 import { toStatusActor } from '@/lib/orders/statusHistory';
 
 import { ordersService } from '../services/orders.service';
-import { getWaTemplates, applyTemplate, DEFAULT_TEMPLATES } from '@/lib/whatsapp/templates';
-import type { WaEventCode } from '@/lib/whatsapp/templates';
-
-// Mapa de statusCode → eventCode de plantilla específica.
-// "En camino" no es estado base: se crea a mano y su code sale del nombre (slugify → "en_camino").
-const STATUS_TO_EVENT: Record<string, WaEventCode> = {
-  confirmed:  'pedido_confirmado',
-  on_the_way: 'pedido_en_camino',
-  en_camino:  'pedido_en_camino',
-  delivered:  'pedido_entregado',
-  received:   'pedido_nuevo',
-  paid:       'pedido_pagado',
-};
-
-// Nunca notificar para estos códigos
-const SKIP_WA_CODES = new Set(['cancelled']);
+import {
+  applyTemplate, DEFAULT_TEMPLATES, getWaTemplateStore, STATUS_TO_EVENT, templateBody,
+} from '@/lib/whatsapp/templates';
 
 export interface WaNotifyItem {
   productName: string;
@@ -32,19 +19,20 @@ export interface WaNotifyData {
   orderNumber: string;
   statusName: string;
   statusCode?: string;
+  // Plantilla a usar (statusTemplateId del estado). Sin ella se elige por statusCode
+  templateId?: string;
   items?: WaNotifyItem[];
   paymentMethod?: string;
   total?: number;
 }
 
 async function buildMessage(restaurantId: string, data: WaNotifyData): Promise<string> {
-  // Usar plantilla específica si existe, si no → pedido_estado_actualizado (estados custom)
-  const eventCode: WaEventCode = STATUS_TO_EVENT[data.statusCode ?? ''] ?? 'pedido_estado_actualizado';
+  const templateId = data.templateId ?? STATUS_TO_EVENT[data.statusCode ?? ''] ?? 'pedido_estado_actualizado';
   try {
-    const templates = await getWaTemplates(restaurantId);
-    return applyTemplate(templates[eventCode], data);
+    const store = await getWaTemplateStore(restaurantId);
+    return applyTemplate(templateBody(store, templateId), data);
   } catch {
-    return applyTemplate(DEFAULT_TEMPLATES[eventCode], data);
+    return applyTemplate(DEFAULT_TEMPLATES.pedido_estado_actualizado, data);
   }
 }
 
@@ -94,7 +82,8 @@ export function useUpdateOrderStatus(restaurantId: string) {
     try {
       await ordersService.updateStatus(restaurantId, orderId, statusId, toStatusActor(user));
 
-      if (notifyData?.customerPhone && !SKIP_WA_CODES.has(notifyData.statusCode ?? '')) {
+      // Si el estado no avisa, quien llama no pasa notifyData (ver statusTemplateId)
+      if (notifyData?.customerPhone) {
         // No bloquear el flujo principal — enviar en background
         sendWaNotification(restaurantId, notifyData).then((result) => {
             if (result === 'disconnected') setWaError('disconnected');

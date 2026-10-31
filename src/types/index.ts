@@ -245,6 +245,10 @@ export interface OrderStatus {
   sortOrder: number;
   isBase: boolean;
   isActive: boolean;
+  // WhatsApp al pasar a este estado. Sin definir = comportamiento por código (ver statusTemplateId)
+  notifyCustomer?: boolean;
+  // Plantilla: código del sistema (pedido_confirmado…) o id de una plantilla propia
+  waTemplateId?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -59,6 +59,8 @@ export interface CheckoutResponse {
   tableName?: string;
   paymentLabel: string;
   paymentAccount?: string;
+  // WhatsApp para el cliente, ya armado con la plantilla. Ausente = el estado "Recibido" no avisa
+  customerMessage?: string;
 }
 
 /** Errores de negocio con mensaje para el cliente (4xx). */

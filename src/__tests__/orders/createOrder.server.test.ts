@@ -54,6 +54,21 @@ function input(overrides: Record<string, unknown> = {}) {
 describe('createPublicOrder', () => {
   beforeEach(seed);
 
+  it('arma el WhatsApp de pedido nuevo con la plantilla del restaurante', async () => {
+    db.set(`${R}/settings/waTemplates`, { pedido_nuevo: 'Hola {{nombreCliente}}, pedido {{numeroPedido}} por {{total}}' });
+    const order = await createPublicOrder(input(), NOW);
+    expect(order.customerMessage).toBe(`Hola Juan, pedido ${order.orderNumber} por $40.000`);
+  });
+
+  it('usa la plantilla propia elegida en Recibido, y no manda nada si el aviso está apagado', async () => {
+    db.set(`${R}/settings/waTemplates`, { custom: { c1: { name: 'Mía', body: 'Gracias {{nombreCliente}}', createdAt: '' } } });
+    db.set(`${R}/orderStatuses/st-received`, { code: 'received', sortOrder: 1, waTemplateId: 'c1' });
+    expect((await createPublicOrder(input(), NOW)).customerMessage).toBe('Gracias Juan');
+
+    db.set(`${R}/orderStatuses/st-received`, { code: 'received', sortOrder: 1, notifyCustomer: false });
+    expect((await createPublicOrder(input(), NOW)).customerMessage).toBeUndefined();
+  });
+
   it('los precios salen de la base de datos, no del navegador', async () => {
     const order = await createPublicOrder(input({ items: [{ productId: 'burger', quantity: 2, additionalIds: ['queso'] }] }), NOW);
     expect(order.subtotal).toBe(46000);

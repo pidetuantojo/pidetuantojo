@@ -1,4 +1,4 @@
-Las plantillas son los textos que recibe el cliente por WhatsApp en cada momento del pedido. Vienen escritas por defecto, y puedes adaptarlas al tono de tu restaurante.
+Las plantillas son los textos que recibe el cliente por WhatsApp en cada momento del pedido. Vienen escritas por defecto, puedes adaptarlas al tono de tu restaurante y también crear las tuyas para tus estados personalizados.
 
 <Callout type="info" title="Solo se usan si WhatsApp está conectado">
   Las plantillas se envían únicamente si conectaste WhatsApp **y** encendiste <Ui>Mensajes automáticos</Ui>. Si no, puedes editarlas igual, pero no se mandan.
@@ -6,53 +6,80 @@ Las plantillas son los textos que recibe el cliente por WhatsApp en cada momento
 
 <GuideCard href="/dashboard/ayuda/configuracion/whatsapp" title="Conectar WhatsApp" summary="Primero conecta tu número y activa los mensajes automáticos." />
 
-## Qué mensaje se envía y cuándo
+## Cómo se decide qué mensaje se envía
 
-| Plantilla | Se envía cuando… |
+**Cada estado elige su plantilla.** En <Ui>Gestión de pedidos → Estados</Ui>, al editar un estado ves la sección <Ui>Avisar al cliente por WhatsApp</Ui>: ahí activas o apagas el aviso y eliges qué plantilla se manda. En la lista de estados, cada uno muestra el nombre de su plantilla o <Ui>Sin aviso</Ui>.
+
+Si nunca tocaste esa sección, cada estado usa esta plantilla:
+
+| Estado | Plantilla |
 |---|---|
-| <Ui>Pedido nuevo</Ui> | El cliente confirma el pedido en tu menú |
-| <Ui>Pedido confirmado</Ui> | Mueves el pedido al estado "confirmado" |
-| <Ui>Pedido en camino</Ui> | Mueves el pedido a un estado llamado **En camino**. Este estado no viene por defecto: créalo en <Ui>Estados</Ui> con ese nombre exacto |
-| <Ui>Pedido entregado</Ui> | Mueves el pedido a "entregado" |
-| <Ui>Pedido pagado</Ui> | Marcas el pedido como pagado |
-| <Ui>Estado actualizado (otros)</Ui> | Mueves el pedido a un **estado que creaste tú** (por ejemplo "En preparación") |
+| <Ui>Recibido</Ui> | <Ui>Pedido nuevo</Ui> (se envía cuando el cliente hace el pedido en tu menú) |
+| <Ui>Confirmado</Ui> | <Ui>Pedido confirmado</Ui> |
+| <Ui>Entregado</Ui> | <Ui>Pedido entregado</Ui> |
+| Un estado que creaste con el nombre "En camino" | <Ui>Pedido en camino</Ui> |
+| <Ui>Cancelado</Ui> | Ninguna: no avisa |
+| Los demás | <Ui>Estado actualizado (general)</Ui> |
 
-Los pedidos de mesa y los cancelados nunca envían mensaje.
+La plantilla <Ui>Pedido pagado</Ui> no depende de un estado: se envía cuando marcas el pedido como pagado.
+
+Los pedidos de mesa nunca envían mensaje.
 
 ## Editar una plantilla
 
 <Steps>
   <Step title="Abre las plantillas">
-    En el menú lateral ve a <Ui>Notificaciones → Plantillas</Ui>.
+    En el menú lateral ve a <Ui>Notificaciones → Plantillas</Ui>. Arriba están <Ui>Mis plantillas</Ui> y abajo las <Ui>Plantillas del sistema</Ui>. Cada una dice en qué estados se envía.
   </Step>
-  <Step title="Toca Editar en el mensaje que quieres cambiar">
+  <Step title="Toca Editar">
     Se abre el editor con el texto actual.
   </Step>
   <Step title="Escribe tu mensaje">
-    Usa las variables de la lista para meter los datos del pedido (ver abajo).
+    Para meter los datos del pedido, toca un campo como <Ui>+ Nombre del cliente</Ui>: se agrega donde está el cursor. Para agregar emojis toca <Ui>😊 Emojis</Ui> y elige uno.
   </Step>
-  <Step title="Revisa la Vista previa">
-    La pestaña <Ui>Vista previa</Ui> muestra cómo lo va a ver el cliente, con datos de ejemplo.
+  <Step title="Revisa cómo queda">
+    Debajo del editor ves <Ui>Así lo recibe el cliente</Ui>, con datos de ejemplo. Se actualiza mientras escribes.
   </Step>
   <Step title="Toca Guardar">
     El cambio se aplica desde el próximo mensaje.
   </Step>
 </Steps>
 
-Si no te gustó cómo quedó, toca <Ui>Restaurar por defecto</Ui> para volver al texto original y después <Ui>Guardar</Ui>.
+En las plantillas del sistema, si no te gustó cómo quedó, toca <Ui>Restaurar por defecto</Ui> para volver al texto original y después <Ui>Guardar</Ui>.
 
-## Variables
+## Crear tu propia plantilla
 
-Las variables son palabras entre llaves dobles que se reemplazan por los datos reales de cada pedido. Escríbelas **exactamente** así, con las llaves:
+Sirve para darle un mensaje propio a un estado personalizado, por ejemplo "Pedido empacado".
 
-| Variable | Se reemplaza por | Ejemplo |
+<Steps>
+  <Step title="Toca Nueva plantilla">
+    En <Ui>Notificaciones → Plantillas</Ui>, toca <Ui>+ Nueva plantilla</Ui>.
+  </Step>
+  <Step title="Ponle un nombre">
+    En <Ui>Nombre de la plantilla</Ui> escribe algo que reconozcas, por ejemplo "Pedido empacado". El cliente no ve este nombre.
+  </Step>
+  <Step title="Escribe el mensaje y guárdalo">
+    Usa los campos y los emojis igual que al editar, y toca <Ui>Guardar</Ui>.
+  </Step>
+  <Step title="Asígnala a un estado">
+    Ve a <Ui>Gestión de pedidos → Estados</Ui>, edita el estado, deja marcado <Ui>Avisar al cliente por WhatsApp</Ui> y elige tu plantilla en <Ui>Plantilla</Ui>. Tus plantillas aparecen con ✨.
+  </Step>
+</Steps>
+
+Una plantilla que algún estado está usando no se puede eliminar: primero cámbiale la plantilla a ese estado.
+
+## Campos
+
+Los campos se reemplazan por los datos reales de cada pedido. Con los botones se escriben solos, pero también puedes escribirlos a mano, con las llaves dobles:
+
+| Campo | Se escribe | Ejemplo |
 |---|---|---|
-| `{{nombreCliente}}` | Nombre del cliente | Juan García |
-| `{{numeroPedido}}` | Número del pedido | 1042 |
-| `{{total}}` | Total a pagar | $45.000 |
-| `{{metodoPago}}` | Método de pago elegido | Efectivo |
-| `{{productos}}` | Lista de productos con cantidades | 2x Hamburguesa clásica |
-| `{{estadoPedido}}` | Nombre del estado (útil en "Estado actualizado") | En preparación |
+| Nombre del cliente | `{{nombreCliente}}` | Juan García |
+| Número de pedido | `{{numeroPedido}}` | 1042 |
+| Total | `{{total}}` | $45.000 |
+| Método de pago | `{{metodoPago}}` | Efectivo |
+| Lista de productos | `{{productos}}` | 2x Hamburguesa clásica |
+| Estado del pedido | `{{estadoPedido}}` | En camino |
 
 **Ejemplo:**
 
@@ -65,5 +92,6 @@ Total: {{total}}
 
 - **Para dar formato usa los símbolos de WhatsApp:** `*texto*` sale en **negrita** y `_texto_` en _cursiva_.
 - **Mensajes cortos.** El cliente los lee en el celular: con el número de pedido y lo importante alcanza.
-- **No borres `{{numeroPedido}}`.** Es lo que le permite al cliente saber de qué pedido le hablas, sobre todo si pide seguido.
-- **Una variable mal escrita sale tal cual.** Si pones `{{nombre}}` en vez de `{{nombreCliente}}`, el cliente va a ver literalmente `{{nombre}}`. Revisa siempre la <Ui>Vista previa</Ui>.
+- **No borres el número de pedido.** Es lo que le permite al cliente saber de qué pedido le hablas, sobre todo si pide seguido.
+- **Un campo escrito a mano y mal escrito sale tal cual.** Si pones `{{nombre}}` en vez de `{{nombreCliente}}`, el cliente va a ver literalmente `{{nombre}}`. Usa los botones y revisa siempre cómo queda.
+- **¿Muchos mensajes?** Si al cliente le llegan demasiados avisos, apaga el aviso de los estados intermedios (por ejemplo "En preparación") en <Ui>Estados</Ui>.

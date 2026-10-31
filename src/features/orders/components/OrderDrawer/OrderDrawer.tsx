@@ -10,6 +10,7 @@ import {
 import { formatCurrency } from '@/lib/utils';
 import { toWhatsAppNumber } from '@/lib/customers/phone';
 import { toStatusActor } from '@/lib/orders/statusHistory';
+import { statusTemplateId } from '@/lib/whatsapp/templates.core';
 import { useAuth } from '@/features/auth';
 import { formatScheduledDate } from '@/features/menu/helpers/schedule.helpers';
 import { PrintOrderButton } from '@/features/printers/components/PrintOrderButton';
@@ -149,13 +150,15 @@ function DrawerContent({
 
   async function changeStatus(next: OrderStatus) {
     if (!canChangeStatus || next.id === order.statusId) return;
-    // Solo notificar al cliente si autoNotify está activo y NO es una mesa
-    const notifyData = (autoNotify && !isMesa) ? {
+    // Solo notificar si autoNotify está activo, NO es una mesa y el estado tiene el aviso encendido
+    const templateId = statusTemplateId(next);
+    const notifyData = (autoNotify && !isMesa && templateId) ? {
       customerPhone: order.customerPhone,
       customerName: order.customerName,
       orderNumber: order.orderNumber,
       statusName: next.name,
       statusCode: next.code,
+      templateId,
       items: order.items.map((i) => ({ productName: i.productName, quantity: i.quantity })),
       paymentMethod: order.paymentMethod,
       total: totals.total,
