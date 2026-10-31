@@ -38,3 +38,37 @@ export function accountingDayRangeUtc(accountingDate: string): { startIso: strin
     endIso: new Date(start + 24 * 60 * 60 * 1000).toISOString(),
   };
 }
+
+const dateTimeFormatter = new Intl.DateTimeFormat('es-CO', {
+  timeZone: BOGOTA_TZ,
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: true,
+});
+
+const timeFormatter = new Intl.DateTimeFormat('es-CO', {
+  timeZone: BOGOTA_TZ,
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: true,
+});
+
+function toInstant(value: Date | string): Date | null {
+  const instant = typeof value === 'string' ? new Date(value) : value;
+  return Number.isNaN(instant.getTime()) ? null : instant;
+}
+
+/** "31 oct 2026, 08:30 a. m." en hora de Bogotá; "—" si la fecha es inválida. */
+export function formatBogotaDateTime(value: Date | string): string {
+  const instant = toInstant(value);
+  return instant ? dateTimeFormatter.format(instant) : '—';
+}
+
+/** "08:30 a. m." en hora de Bogotá; "—" si la fecha es inválida. */
+export function formatBogotaTime(value: Date | string): string {
+  const instant = toInstant(value);
+  return instant ? timeFormatter.format(instant) : '—';
+}
