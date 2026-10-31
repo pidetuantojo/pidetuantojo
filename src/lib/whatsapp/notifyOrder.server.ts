@@ -5,6 +5,8 @@ import { FieldValue } from 'firebase-admin/firestore';
 
 import { getOrderTotals } from '@/features/orders/helpers/totals.helpers';
 import { adminDb } from '@/lib/firebase/admin';
+import { orderEvents } from '@/lib/orders/orderEvents';
+import { addOrderEventServer } from '@/lib/orders/orderEvents.server';
 import type { Order, OrderStatus } from '@/types';
 
 import { isAutoNotifyOn, sendWhatsApp, waPhone, type SendResult } from './send.server';
@@ -46,11 +48,13 @@ export async function notifyOrderEvent(restaurantId: string, orderId: string, ev
   };
 
   let message: string | undefined;
+  let what = 'pedido pagado';
   if (event === 'paid') {
     message = await buildTemplateMessage(restaurantId, 'pedido_pagado', { ...data, statusName: 'Pagado' });
   } else {
     const statusSnap = await restaurant.collection('orderStatuses').doc(order.statusId).get();
     const status = statusSnap.exists ? ({ ...(statusSnap.data() as OrderStatus), id: statusSnap.id }) : null;
+    what = `estado ${status?.name ?? ''}`.trim();
     // Estado borrado: no se adivina qué mandar
     message = status ? await buildStatusMessage(restaurantId, status, deliveryType, { ...data, statusName: status.name }) : undefined;
   }
@@ -58,5 +62,6 @@ export async function notifyOrderEvent(restaurantId: string, orderId: string, ev
 
   const result = await sendWhatsApp(restaurantId, phone, message);
   if (result.ok) await orderRef.update({ waNotified: FieldValue.arrayUnion(key) });
+  await addOrderEventServer(restaurantId, orderId, result.ok ? orderEvents.whatsappSent(what) : orderEvents.whatsappFailed(what, result.error));
   return result;
 }

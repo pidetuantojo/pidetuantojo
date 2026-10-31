@@ -194,7 +194,7 @@ export function EditOrderModal({ order, restaurantId, products, adicionales, cat
         };
       });
 
-      await ordersService.updateData(restaurantId, order.id, {
+      await ordersService.updateData(restaurantId, order, {
         items: newItems,
         // subtotal = productos · total = productos − descuentos + domicilio (si deja de ser domicilio, se borra el valor)
         subtotal: total,

@@ -44,7 +44,7 @@ describe('buildOrderTimeline', () => {
         statusChange('s3', null, '2026-10-06T12:40:00.000Z'),
       ],
     }), statuses);
-    expect(t.entries.map((e) => e.label)).toEqual(['Pedido creado · Recibido', 'Entregado', 'Preparando', 'Entregado']);
+    expect(t.entries.map((e) => e.label)).toEqual(['Pedido creado · Recibido', 'Estado: Entregado', 'Estado: Preparando', 'Estado: Entregado']);
     expect(t.entries[3].byName).toBe('Ana');
     expect(t.deliveredAt).toBe('2026-10-06T12:50:00.000Z');
     expect(t.fulfillmentMs).toBe(50 * 60000);

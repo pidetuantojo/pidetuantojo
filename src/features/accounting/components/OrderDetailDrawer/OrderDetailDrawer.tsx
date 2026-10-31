@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Bike, Clock, CreditCard, MapPin, MessageSquare, ShoppingBag, User, UtensilsCrossed, X } from 'lucide-react';
+import { AlertTriangle, Bike, Clock, CreditCard, MapPin, MessageSquare, ShoppingBag, User, UtensilsCrossed, X } from 'lucide-react';
 
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { getOrderTotals } from '@/features/orders/helpers/totals.helpers';
 import type { Order, OrderStatus } from '@/types';
 
 import { buildOrderTimeline, deliveryLabel, formatDuration } from '../../helpers/orderDetail.helpers';
+import { useOrderEvents } from '../../hooks/useOrderEvents';
 
 interface OrderDetailDrawerProps {
   order: Order | null;
@@ -50,6 +51,8 @@ const DELIVERY_ICON = {
 
 /** Detalle de solo lectura de un pedido: datos, productos, montos, pagos y línea de tiempo de estados. */
 export function OrderDetailDrawer({ order, statuses, onClose }: OrderDetailDrawerProps) {
+  const { data: events = [], isLoading: eventsLoading, isError: eventsError } = useOrderEvents(order?.restaurantId ?? '', order?.id);
+
   useEffect(() => {
     if (!order) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -61,7 +64,7 @@ export function OrderDetailDrawer({ order, statuses, onClose }: OrderDetailDrawe
 
   const status = statuses.find((s) => s.id === order.statusId);
   const totals = getOrderTotals(order);
-  const timeline = buildOrderTimeline(order, statuses);
+  const timeline = buildOrderTimeline(order, statuses, events);
   const deliveryType = order.deliveryType ?? 'recoger';
   const promoDiscount = Math.max(0, totals.discount - (order.manualDiscount ?? 0));
 
@@ -118,25 +121,46 @@ export function OrderDetailDrawer({ order, statuses, onClose }: OrderDetailDrawe
             )}
           </Section>
 
-          {/* Línea de tiempo */}
-          <Section title="Movimientos del pedido">
+          {/* Auditoría: quién hizo qué y cuándo */}
+          <Section title="Auditoría del pedido">
             <ol className="relative ml-1.5 space-y-3 pl-5" style={{ borderLeft: '2px solid var(--t-border)' }}>
               {timeline.entries.map((e) => (
                 <li key={e.key} className="relative">
                   <span
                     className="absolute -left-[27px] top-1 h-3 w-3 rounded-full"
-                    style={{ background: e.color ?? 'var(--t-text-4)', boxShadow: '0 0 0 3px var(--t-surface)' }}
+                    style={{ background: e.sensitive ? '#f59e0b' : e.color ?? 'var(--t-text-4)', boxShadow: '0 0 0 3px var(--t-surface)' }}
                   />
-                  <p className="text-sm font-semibold" style={{ color: 'var(--t-text-1)' }}>{e.label}</p>
+                  <p className="flex items-start gap-1.5 text-sm font-semibold" style={{ color: 'var(--t-text-1)' }}>
+                    {e.sensitive && <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-amber-500" aria-label="Para revisar" />}
+                    <span>{e.label}</span>
+                  </p>
+                  {e.changes && e.changes.length > 0 && (
+                    <ul className="mt-1 space-y-0.5">
+                      {e.changes.map((c) => (
+                        <li key={c.label} className="text-xs" style={{ color: 'var(--t-text-2)' }}>
+                          <span style={{ color: 'var(--t-text-4)' }}>{c.label}:</span>{' '}
+                          {c.before ? <><span className="line-through" style={{ color: 'var(--t-text-4)' }}>{c.before}</span> → </> : null}
+                          <span className="font-medium">{c.after}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                   <p className="text-xs" style={{ color: 'var(--t-text-3)' }}>
-                    {formatDate(e.at)}{e.byName ? ` · ${e.byName}` : ''}
+                    {formatDate(e.at)}
+                    {e.byName ? ` · ${e.byName}` : e.system ? ' · Sistema' : ''}
                   </p>
                 </li>
               ))}
             </ol>
-            {!timeline.hasHistory && (
+            {eventsLoading && <p className="text-xs" style={{ color: 'var(--t-text-4)' }}>Cargando auditoría…</p>}
+            {eventsError && (
+              <p className="rounded-lg px-3 py-2 text-xs text-red-600" style={{ background: 'var(--t-surface-2)' }}>
+                No se pudo cargar la auditoría completa. Se muestran solo los estados.
+              </p>
+            )}
+            {!timeline.hasHistory && !eventsLoading && (
               <p className="rounded-lg px-3 py-2 text-xs" style={{ background: 'var(--t-surface-2)', color: 'var(--t-text-3)' }}>
-                Este pedido es anterior al registro de estados: solo se conoce la hora de creación.
+                Este pedido es anterior a la auditoría: solo se muestra lo que quedó guardado (creación, pagos, mesa).
               </p>
             )}
           </Section>

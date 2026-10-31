@@ -12,6 +12,8 @@ vi.mock('@/lib/push/push.server', async () => {
     Promise.race([task, new Promise<'timeout'>((r) => setTimeout(() => r('timeout'), ms))]);
   return { notifyNewOrder, withTimeout };
 });
+const addOrderEventServer = vi.fn();
+vi.mock('@/lib/orders/orderEvents.server', () => ({ addOrderEventServer }));
 vi.mock('@/lib/whatsapp/send.server', () => ({
   sendWhatsApp, isAutoNotifyOn,
   waPhone: (p?: string) => ((p ?? '').replace(/\D/g, '').length >= 7 ? (p ?? '').replace(/\D/g, '') : null),

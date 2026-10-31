@@ -8,6 +8,8 @@ export const INC = Symbol('increment');
 export const increment = (n: number) => ({ [INC]: n });
 export const UNION = Symbol('arrayUnion');
 export const arrayUnion = (...items: unknown[]) => ({ [UNION]: items });
+// La hora del servidor se guarda como marcador (los tests no dependen del valor)
+export const serverTimestamp = () => 'SERVER_TIMESTAMP';
 
 let autoId = 0;
 

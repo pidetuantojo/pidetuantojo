@@ -1,9 +1,12 @@
-import { arrayUnion, collection, deleteField, doc, updateDoc, setDoc, writeBatch } from 'firebase/firestore';
+import {
+  arrayUnion, collection, deleteField, doc, serverTimestamp, writeBatch, type WriteBatch,
+} from 'firebase/firestore';
 
-import { db } from '@/lib/firebase/config';
+import { auth, db } from '@/lib/firebase/config';
+import { compactEvent, orderEvents, type OrderEventDraft } from '@/lib/orders/orderEvents';
 import { generateOrderNumber } from '@/lib/orders/orderNumber';
 import { statusChange, type StatusActor } from '@/lib/orders/statusHistory';
-import type { AssignedDriver, CreateOrderData, Mesa, Order, OrderItem, OrderPayment } from '@/types';
+import type { AssignedDriver, CreateOrderData, Mesa, Order, OrderItem, OrderPayment, UpdateOrderData } from '@/types';
 
 import { applyManualDiscount, lineSubtotal, recalcAmounts } from '../helpers/amounts.helpers';
 import { isFullyPaid } from '../helpers/payments.helpers';
@@ -13,6 +16,29 @@ function ordersRef(restaurantId: string) {
   return collection(db, 'restaurants', restaurantId, 'orders');
 }
 
+/**
+ * Auditoría: agrega el evento al mismo lote que el cambio (se guardan los dos o ninguno).
+ * Quién y cuándo los pone Firebase: las reglas exigen by = usuario logueado y at = hora del servidor.
+ */
+function addEvent(batch: WriteBatch, restaurantId: string, orderId: string, draft: OrderEventDraft | null) {
+  const user = auth.currentUser;
+  if (!draft || !user) return;
+  batch.set(doc(collection(db, 'restaurants', restaurantId, 'orders', orderId, 'events')), compactEvent({
+    ...draft,
+    at: serverTimestamp(),
+    by: user.uid,
+    byName: user.displayName || user.email || undefined,
+  }));
+}
+
+/** Un cambio al pedido + su evento de auditoría, en una sola escritura. */
+async function commit(restaurantId: string, orderId: string, update: Record<string, unknown>, draft: OrderEventDraft | null) {
+  const batch = writeBatch(db);
+  batch.update(doc(ordersRef(restaurantId), orderId), { ...update, updatedAt: new Date().toISOString() });
+  addEvent(batch, restaurantId, orderId, draft);
+  await batch.commit();
+}
+
 // Pedidos del menú público: POST /api/orders (el servidor calcula precios y promociones).
 // Aquí solo se crean pedidos manuales del panel (regla: orders.create).
 export const ordersService = {
@@ -20,7 +46,8 @@ export const ordersService = {
     const now = new Date().toISOString();
     const ref = doc(ordersRef(data.restaurantId));
     const orderNumber = generateOrderNumber();
-    await setDoc(ref, {
+    const batch = writeBatch(db);
+    batch.set(ref, {
       ...data,
       id: ref.id,
       orderNumber,
@@ -28,23 +55,18 @@ export const ordersService = {
       createdAt: now,
       updatedAt: now,
     });
+    addEvent(batch, data.restaurantId, ref.id, orderEvents.created('panel'));
+    await batch.commit();
     return { id: ref.id, orderNumber };
   },
 
+  // Los cambios de estado quedan en statusHistory (no se duplican como evento)
   async updateStatus(restaurantId: string, id: string, statusId: string, actor?: StatusActor | null): Promise<void> {
     const now = new Date().toISOString();
-    await updateDoc(doc(ordersRef(restaurantId), id), {
+    await commit(restaurantId, id, {
       statusId,
       statusHistory: arrayUnion(statusChange(statusId, actor, now)),
-      updatedAt: now,
-    });
-  },
-
-  async updateNotes(restaurantId: string, id: string, notes: string): Promise<void> {
-    await updateDoc(doc(ordersRef(restaurantId), id), {
-      notes,
-      updatedAt: new Date().toISOString(),
-    });
+    }, null);
   },
 
   /**
@@ -55,92 +77,74 @@ export const ordersService = {
     restaurantId: string,
     id: string,
     deliveryFee: number,
-    order: Pick<Order, 'subtotal' | 'discount' | 'freeDelivery'>,
+    order: Pick<Order, 'subtotal' | 'discount' | 'freeDelivery' | 'deliveryFee' | 'total'>,
   ): Promise<void> {
     const { total } = getOrderTotals({ ...order, deliveryFee });
-    await updateDoc(doc(ordersRef(restaurantId), id), {
+    await commit(restaurantId, id, {
       deliveryFee,
       total,
       ...(order.freeDelivery && deliveryFee > 0 ? { freeDelivery: deleteField() } : {}),
-      updatedAt: new Date().toISOString(),
-    });
+    }, orderEvents.deliveryFee(order.deliveryFee, deliveryFee, order.total, total));
   },
 
   async updateIsPaid(restaurantId: string, id: string, isPaid: boolean): Promise<void> {
-    await updateDoc(doc(ordersRef(restaurantId), id), {
-      isPaid,
-      updatedAt: new Date().toISOString(),
-    });
+    await commit(restaurantId, id, { isPaid }, orderEvents.paidFlag(isPaid));
   },
 
-  async updateInternalNote(restaurantId: string, id: string, internalNote: string): Promise<void> {
-    await updateDoc(doc(ordersRef(restaurantId), id), {
-      internalNote,
-      updatedAt: new Date().toISOString(),
-    });
+  async updateInternalNote(restaurantId: string, order: Pick<Order, 'id' | 'internalNote'>, internalNote: string): Promise<void> {
+    await commit(restaurantId, order.id, { internalNote }, orderEvents.internalNote(order.internalNote, internalNote));
   },
 
-  async updateData(restaurantId: string, id: string, data: import('@/types').UpdateOrderData): Promise<void> {
+  async updateData(restaurantId: string, order: Order, data: UpdateOrderData): Promise<void> {
     // Firestore rechaza `undefined`: un campo explícitamente undefined significa "borrarlo"
     const payload = Object.fromEntries(
       Object.entries(data).map(([k, v]) => [k, v === undefined ? deleteField() : v]),
     );
-    await updateDoc(doc(ordersRef(restaurantId), id), {
-      ...payload,
-      updatedAt: new Date().toISOString(),
-    });
+    await commit(restaurantId, order.id, payload, orderEvents.edited(order, data));
   },
 
   async softDelete(restaurantId: string, id: string, userId: string, reason?: string): Promise<void> {
-    const now = new Date().toISOString();
-    await updateDoc(doc(ordersRef(restaurantId), id), {
+    await commit(restaurantId, id, {
       isDeleted: true,
-      deletedAt: now,
+      deletedAt: new Date().toISOString(),
       deletedBy: userId,
       ...(reason?.trim() ? { deletedReason: reason.trim() } : {}),
-      updatedAt: now,
-    });
+    }, orderEvents.deleted(reason));
   },
 
   /** Registra pagos en caja (uno con "Pagar", varios al dividir). Queda pagado cuando cubren el total. */
   async addPayments(restaurantId: string, order: Order, payments: OrderPayment[]): Promise<void> {
     const all = [...(order.payments ?? []), ...payments];
-    await updateDoc(doc(ordersRef(restaurantId), order.id), {
+    await commit(restaurantId, order.id, {
       // arrayUnion: dos cobros seguidos (cuenta dividida) no se pisan aunque el pedido aún no se haya refrescado
       payments: arrayUnion(...payments),
       isPaid: isFullyPaid({ ...order, payments: all }),
-      updatedAt: new Date().toISOString(),
-    });
+    }, orderEvents.paymentsAdded(payments));
   },
 
   async removePayment(restaurantId: string, order: Order, paymentId: string): Promise<void> {
     const rest = (order.payments ?? []).filter((p) => p.id !== paymentId);
-    await updateDoc(doc(ordersRef(restaurantId), order.id), {
+    await commit(restaurantId, order.id, {
       payments: rest,
       isPaid: isFullyPaid({ ...order, payments: rest }),
-      updatedAt: new Date().toISOString(),
-    });
+    }, orderEvents.paymentRemoved(order.payments?.find((p) => p.id === paymentId)));
   },
 
   /** Descuento manual (0 = quitarlo). Se suma a las promociones en `discount`. */
   async setManualDiscount(restaurantId: string, order: Order, amount: number, reason?: string): Promise<void> {
     const { discount, manualDiscount, total } = applyManualDiscount(order, amount);
-    await updateDoc(doc(ordersRef(restaurantId), order.id), {
+    await commit(restaurantId, order.id, {
       discount,
       total,
       manualDiscount: manualDiscount > 0 ? manualDiscount : deleteField(),
       manualDiscountReason: manualDiscount > 0 && reason?.trim() ? reason.trim() : deleteField(),
-      updatedAt: new Date().toISOString(),
-    });
+    }, orderEvents.discount(order.manualDiscount, manualDiscount, reason, order.total, total));
   },
 
   /** Reemplaza los productos (ej: quitar uno) recalculando montos. */
   async updateItems(restaurantId: string, order: Order, items: OrderItem[]): Promise<void> {
-    await updateDoc(doc(ordersRef(restaurantId), order.id), {
-      items,
-      ...recalcAmounts(order, items),
-      updatedAt: new Date().toISOString(),
-    });
+    const amounts = recalcAmounts(order, items);
+    await commit(restaurantId, order.id, { items, ...amounts }, orderEvents.itemsRemoved(order, items, amounts.total));
   },
 
   /**
@@ -177,37 +181,31 @@ export const ordersService = {
     const batch = writeBatch(db);
     batch.update(doc(ordersRef(restaurantId), source.id), { items: remaining, ...recalcAmounts(source, remaining), updatedAt: now });
     batch.update(doc(ordersRef(restaurantId), target.id), { items: targetItems, ...recalcAmounts(target, targetItems), updatedAt: now });
+    addEvent(batch, restaurantId, source.id, orderEvents.itemTransferred('out', qty, item, target));
+    addEvent(batch, restaurantId, target.id, orderEvents.itemTransferred('in', qty, item, source));
     await batch.commit();
   },
 
-  async moveTable(restaurantId: string, orderId: string, mesa: Pick<Mesa, 'id' | 'name'>): Promise<void> {
-    await updateDoc(doc(ordersRef(restaurantId), orderId), {
-      tableId: mesa.id,
-      tableName: mesa.name,
-      updatedAt: new Date().toISOString(),
-    });
+  async moveTable(restaurantId: string, order: Pick<Order, 'id' | 'tableName'>, mesa: Pick<Mesa, 'id' | 'name'>): Promise<void> {
+    await commit(restaurantId, order.id, { tableId: mesa.id, tableName: mesa.name }, orderEvents.tableMoved(order.tableName, mesa));
   },
 
   /** Libera la mesa: el pedido sale del tablero (y queda entregado si aún no lo estaba). */
   async releaseTable(restaurantId: string, orderId: string, deliveredStatusId?: string, actor?: StatusActor | null): Promise<void> {
     const now = new Date().toISOString();
-    await updateDoc(doc(ordersRef(restaurantId), orderId), {
+    await commit(restaurantId, orderId, {
       tableReleasedAt: now,
       ...(deliveredStatusId
         ? { statusId: deliveredStatusId, statusHistory: arrayUnion(statusChange(deliveredStatusId, actor, now)) }
         : {}),
-      updatedAt: now,
-    });
+    }, orderEvents.tableReleased());
   },
 
   async updateDriver(
     restaurantId: string,
-    orderId: string,
+    order: Pick<Order, 'id' | 'assignedDriver'>,
     driver: AssignedDriver | null,
   ): Promise<void> {
-    await updateDoc(doc(ordersRef(restaurantId), orderId), {
-      assignedDriver: driver ?? null,
-      updatedAt: new Date().toISOString(),
-    });
+    await commit(restaurantId, order.id, { assignedDriver: driver ?? null }, orderEvents.driver(order.assignedDriver, driver));
   },
 };

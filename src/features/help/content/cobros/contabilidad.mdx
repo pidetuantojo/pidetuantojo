@@ -47,14 +47,35 @@ Al tocar <Ui>Ver</Ui> se abre un panel a la derecha. Es **solo de consulta**: de
 | Parte | Qué muestra |
 |---|---|
 | <Ui>Tiempos</Ui> | Cuándo se creó, cuándo se entregó y el <Ui>Tiempo total</Ui> entre los dos |
-| <Ui>Movimientos del pedido</Ui> | Cada estado por el que pasó, con la hora y quién lo cambió. Si el pedido es de mesa, también cuándo se liberó la mesa |
+| <Ui>Auditoría del pedido</Ui> | Todo lo que le pasó al pedido, en orden: quién lo hizo y a qué hora (ver abajo) |
 | <Ui>Cliente y entrega</Ui> | Nombre, teléfono, tipo de entrega, dirección y barrio, domiciliario y notas |
 | <Ui>Productos</Ui> | Cada producto con sus adicionales, instrucciones, promociones y regalos |
 | <Ui>Montos</Ui> | Productos, promociones, descuento manual (con su motivo), domicilio y total |
 | <Ui>Pago</Ui> | Cada pago registrado con su hora. En efectivo, cuánto recibiste y el cambio |
 
+### Auditoría del pedido
+
+Es el registro de todo lo que se hizo con el pedido. Cada renglón dice **qué pasó, a qué hora y quién lo hizo**. Lo que hace el sistema solo (pedido creado desde la carta, WhatsApp enviado) aparece como <Ui>Sistema</Ui>.
+
+Queda registrado:
+
+- Cuándo se creó y desde dónde (carta o panel).
+- Cada cambio de estado.
+- Ediciones del pedido, con **lo que había antes y lo que quedó**: cliente, teléfono, dirección, tipo de entrega, método de pago, productos agregados o quitados, y total.
+- Pagos registrados y **pagos anulados**, marcar como pagado o pendiente.
+- Descuento manual (con su motivo) y valor del domicilio.
+- Domiciliario asignado o quitado, nota interna, cambio o liberación de mesa, productos pasados a otra mesa.
+- Mensajes de WhatsApp enviados al cliente, o los que no se pudieron enviar.
+- Si se eliminó el pedido, y el motivo.
+
+Las acciones que conviene revisar aparecen con ⚠️: anular un pago, poner un descuento, quitar productos, bajar el total, marcar como pendiente o eliminar el pedido.
+
+<Callout type="info" title="Nadie puede borrar la auditoría">
+  Los registros no se pueden editar ni borrar, ni siquiera el administrador. Cada uno queda firmado con el usuario que hizo la acción y con la hora real del servidor.
+</Callout>
+
 <Callout type="info" title="Pedidos antiguos">
-  Los movimientos de estado se guardan desde el 31 de octubre de 2026. En los pedidos anteriores solo se conoce la hora de creación, así que no aparecen la hora de entrega ni el tiempo total.
+  La auditoría completa empieza el 31 de octubre de 2026. En los pedidos anteriores se muestra solo lo que quedó guardado: la creación, los pagos con su hora y si se liberó la mesa. Por eso tampoco aparecen la hora de entrega ni el tiempo total.
 </Callout>
 
 Para cerrar el panel toca la <Ui>X</Ui>, toca fuera del panel o presiona <Ui>Esc</Ui>.

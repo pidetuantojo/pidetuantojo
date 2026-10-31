@@ -2,14 +2,14 @@
 // de Firestore, y hace falta sesión con permiso sobre ese restaurante.
 import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 
-import { arrayUnion, FakeFirestore, increment } from './fakeFirestore';
+import { arrayUnion, FakeFirestore, increment, serverTimestamp } from './fakeFirestore';
 
 const db = new FakeFirestore();
 const verifyIdToken = vi.fn();
 const sendWhatsApp = vi.fn();
 
 vi.mock('@/lib/firebase/admin', () => ({ adminDb: db, adminAuth: { verifyIdToken } }));
-vi.mock('firebase-admin/firestore', () => ({ FieldValue: { increment, arrayUnion } }));
+vi.mock('firebase-admin/firestore', () => ({ FieldValue: { increment, arrayUnion, serverTimestamp } }));
 vi.mock('@/lib/whatsapp/session', () => ({ getWhatsAppSession: () => ({}) }));
 vi.mock('@/lib/whatsapp/send.server', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/whatsapp/send.server')>()),
@@ -77,6 +77,21 @@ describe('POST /api/whatsapp/notify', () => {
     const res = await call(statusBody);
     expect(res.status).toBe(200);
     expect(sendWhatsApp).toHaveBeenCalledWith('r1', '3001234567', 'Hola Ana, pedido 1042: Empacado');
+  });
+
+  it('deja en la auditoría el WhatsApp enviado o fallido', async () => {
+    await call(statusBody);
+    sendWhatsApp.mockResolvedValue({ ok: false, status: 503, error: 'WhatsApp no está conectado' });
+    await call({ restaurantId: 'r1', orderId: 'o1', event: 'paid' }); // no pagado: se omite, sin evento
+    db.update(ORDER, { isPaid: true });
+    await call({ restaurantId: 'r1', orderId: 'o1', event: 'paid' });
+    const summaries = Array.from(db.docs.entries())
+      .filter(([p]) => p.startsWith(`${ORDER}/events/`))
+      .map(([, d]) => d.summary);
+    expect(summaries).toEqual([
+      'WhatsApp enviado al cliente: estado Empacado',
+      'No se pudo enviar el WhatsApp (pedido pagado): WhatsApp no está conectado',
+    ]);
   });
 
   it('no repite el aviso del mismo estado', async () => {

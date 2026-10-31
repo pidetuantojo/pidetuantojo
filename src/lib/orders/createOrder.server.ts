@@ -17,6 +17,8 @@ import type { Adicional, Additional, Customer, DeliveryZone, Mesa, Order, OrderI
 
 import { CheckoutError, type CheckoutData, type CheckoutResponse } from './checkout.schema';
 import { generateOrderNumber } from './orderNumber';
+import { orderEvents } from './orderEvents';
+import { serverEventData } from './orderEvents.server';
 import { statusChange } from './statusHistory';
 import { buildStatusMessage } from '@/lib/whatsapp/templates.server';
 
@@ -314,6 +316,7 @@ async function saveOrder(
     });
 
     tx.set(orderRef, order);
+    tx.set(orderRef.collection('events').doc(), serverEventData(orderEvents.created('carta')));
     promoRefs.forEach((ref) => tx.update(ref, { usesCount: FieldValue.increment(1) }));
 
     const promoUses = Object.fromEntries(usedPromotions.map((p) => [p.id, FieldValue.increment(1)]));

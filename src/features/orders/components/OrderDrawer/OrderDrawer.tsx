@@ -187,7 +187,7 @@ function DrawerContent({
   }
 
   async function handleSaveNote() {
-    await run(() => ordersService.updateInternalNote(restaurantId, order.id, noteInput.trim()));
+    await run(() => ordersService.updateInternalNote(restaurantId, order, noteInput.trim()));
     setEditingNote(false);
   }
 
@@ -584,7 +584,7 @@ function DrawerContent({
                 {canAssignDriver && (
                   <>
                     <button type="button" onClick={() => setDialog({ type: 'driver' })} aria-label="Cambiar domiciliario" className="text-indigo-300 hover:text-indigo-600"><Pencil className="h-3.5 w-3.5" /></button>
-                    <button type="button" onClick={() => run(() => ordersService.updateDriver(restaurantId, order.id, null))} aria-label="Quitar domiciliario" className="text-indigo-300 hover:text-indigo-600"><XCircle className="h-4 w-4" /></button>
+                    <button type="button" onClick={() => run(() => ordersService.updateDriver(restaurantId, order, null))} aria-label="Quitar domiciliario" className="text-indigo-300 hover:text-indigo-600"><XCircle className="h-4 w-4" /></button>
                   </>
                 )}
               </div>

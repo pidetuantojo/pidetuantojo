@@ -4,6 +4,8 @@ import { checkoutErrorResponse, readJson } from '@/lib/orders/apiHelpers';
 import { checkoutSchema, type CheckoutData, type CheckoutResponse } from '@/lib/orders/checkout.schema';
 import { createPublicOrder } from '@/lib/orders/createOrder.server';
 import { notifyNewOrder, withTimeout } from '@/lib/push/push.server';
+import { orderEvents } from '@/lib/orders/orderEvents';
+import { addOrderEventServer } from '@/lib/orders/orderEvents.server';
 import { isAutoNotifyOn, sendWhatsApp, waPhone } from '@/lib/whatsapp/send.server';
 
 export const runtime = 'nodejs';
@@ -64,8 +66,14 @@ async function notifyCustomer(input: CheckoutData, orderId: string, message: str
   try {
     if (!(await isAutoNotifyOn(input.restaurantId))) return;
     const result = await withTimeout(sendWhatsApp(input.restaurantId, phone, message), WA_TIMEOUT_MS);
-    if (result === 'timeout') console.warn('[POST /api/orders] El WhatsApp al cliente tardó demasiado:', orderId);
-    else if (!result.ok) console.warn('[POST /api/orders] No se pudo enviar el WhatsApp al cliente:', result.error);
+    if (result === 'timeout') {
+      console.warn('[POST /api/orders] El WhatsApp al cliente tardó demasiado:', orderId);
+      return;
+    }
+    if (!result.ok) console.warn('[POST /api/orders] No se pudo enviar el WhatsApp al cliente:', result.error);
+    await addOrderEventServer(input.restaurantId, orderId, result.ok
+      ? orderEvents.whatsappSent('confirmación del pedido')
+      : orderEvents.whatsappFailed('confirmación del pedido', result.error));
   } catch (error) {
     console.error('[POST /api/orders] Error enviando el WhatsApp al cliente:', error);
   }

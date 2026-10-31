@@ -138,7 +138,7 @@ export function TransferTableDialog({
                 key={m.id}
                 type="button"
                 disabled={saving || current || !!busy}
-                onClick={() => run(() => ordersService.moveTable(restaurantId, order.id, m), onClose)}
+                onClick={() => run(() => ordersService.moveTable(restaurantId, order, m), onClose)}
                 className={`flex flex-col items-center gap-1 rounded-xl border px-2 py-3 text-center transition-colors disabled:cursor-default ${
                   current ? 'border-[#FF6A1A] bg-orange-50 text-[#FF6A1A]'
                     : busy ? 'border-[var(--t-border)] bg-[var(--t-surface-2)] text-[var(--t-text-4)] opacity-70'
@@ -263,7 +263,7 @@ export function DriverDialog({
   );
 
   function assign(driver: AssignedDriver) {
-    run(() => ordersService.updateDriver(restaurantId, order.id, driver), onClose);
+    run(() => ordersService.updateDriver(restaurantId, order, driver), onClose);
   }
 
   function pick(d: Domiciliario) {

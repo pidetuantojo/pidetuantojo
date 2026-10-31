@@ -2,12 +2,12 @@ import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 
 import { CheckoutError, checkoutSchema } from '@/lib/orders/checkout.schema';
 
-import { FakeFirestore, increment } from './fakeFirestore';
+import { FakeFirestore, increment, serverTimestamp } from './fakeFirestore';
 
 const db = new FakeFirestore();
 
 vi.mock('@/lib/firebase/admin', () => ({ adminDb: db, adminAuth: {} }));
-vi.mock('firebase-admin/firestore', () => ({ FieldValue: { increment } }));
+vi.mock('firebase-admin/firestore', () => ({ FieldValue: { increment, serverTimestamp } }));
 
 // Se importa después de los mocks (usa adminDb al ejecutarse)
 let createPublicOrder: typeof import('@/lib/orders/createOrder.server').createPublicOrder;
@@ -53,6 +53,14 @@ function input(overrides: Record<string, unknown> = {}) {
 
 describe('createPublicOrder', () => {
   beforeEach(seed);
+
+  it('registra en la auditoría que el pedido se creó desde la carta', async () => {
+    const order = await createPublicOrder(input(), NOW);
+    const events = Array.from(db.docs.entries()).filter(([p]) => p.startsWith(`${R}/orders/${order.id}/events/`));
+    expect(events).toHaveLength(1);
+    expect(events[0][1]).toMatchObject({ type: 'created', summary: 'Pedido creado desde la carta', at: 'SERVER_TIMESTAMP' });
+    expect(events[0][1]).not.toHaveProperty('by');
+  });
 
   it('arma el WhatsApp de pedido nuevo con la plantilla del restaurante', async () => {
     db.set(`${R}/settings/waTemplates`, { pedido_nuevo: 'Hola {{nombreCliente}}, pedido {{numeroPedido}} por {{total}}' });

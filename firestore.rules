@@ -285,6 +285,16 @@ service cloud.firestore {
         allow update: if isSuperAdmin() || orderUpdateAllowed();
         // Nadie elimina pedidos — solo se cambia el estado
         allow delete: if isSuperAdmin();
+
+        // Auditoría del pedido: se escribe junto con cada cambio y NUNCA se edita ni se borra.
+        // Firmado por quien está logueado y con la hora del servidor (no se puede antedatar).
+        match /events/{eventId} {
+          allow read: if hasAnyPerm(restaurantId, ['orders.view', 'accounting.view']);
+          allow create: if isMember(restaurantId)
+            && request.resource.data.by == request.auth.uid
+            && request.resource.data.at == request.time;
+          allow update, delete: if false;
+        }
       }
     }
 
