@@ -22,6 +22,9 @@ La contabilidad te muestra **cuánto vendiste en el período que elijas**: ingre
   <Step title="Revisa la tabla">
     Al final está <Ui>Detalle de pedidos</Ui>, con un renglón por pedido.
   </Step>
+  <Step title="Abre el detalle de un pedido">
+    Toca <Ui>Ver</Ui> al final del renglón para ver toda la información de ese pedido.
+  </Step>
 </Steps>
 
 ## Qué muestra cada parte
@@ -35,7 +38,26 @@ La contabilidad te muestra **cuánto vendiste en el período que elijas**: ingre
 | <Ui>Rendimiento de promociones</Ui> | Solo aparece si hubo promociones: cuántos pedidos trajo cada una y cuánto costó |
 | Tarjetas por medio de pago | Cuánto dinero y cuántos pedidos por Efectivo, Nequi, etc. |
 | <Ui>Unidades vendidas por producto</Ui> | Ranking de los productos más vendidos. Los regalos de promociones no cuentan como ventas |
-| <Ui>Detalle de pedidos</Ui> | Fecha, pedido, cliente, estado, método, cantidad de items y total, con el total general al final |
+| <Ui>Detalle de pedidos</Ui> | Fecha, pedido, cliente, entrega (<Ui>Domicilio</Ui>, <Ui>Mesa</Ui> o <Ui>Recoger</Ui>), estado, método, cantidad de items y total, con el total general al final |
+
+## Detalle de un pedido
+
+Al tocar <Ui>Ver</Ui> se abre un panel a la derecha. Es **solo de consulta**: desde aquí no se cambia nada del pedido.
+
+| Parte | Qué muestra |
+|---|---|
+| <Ui>Tiempos</Ui> | Cuándo se creó, cuándo se entregó y el <Ui>Tiempo total</Ui> entre los dos |
+| <Ui>Movimientos del pedido</Ui> | Cada estado por el que pasó, con la hora y quién lo cambió. Si el pedido es de mesa, también cuándo se liberó la mesa |
+| <Ui>Cliente y entrega</Ui> | Nombre, teléfono, tipo de entrega, dirección y barrio, domiciliario y notas |
+| <Ui>Productos</Ui> | Cada producto con sus adicionales, instrucciones, promociones y regalos |
+| <Ui>Montos</Ui> | Productos, promociones, descuento manual (con su motivo), domicilio y total |
+| <Ui>Pago</Ui> | Cada pago registrado con su hora. En efectivo, cuánto recibiste y el cambio |
+
+<Callout type="info" title="Pedidos antiguos">
+  Los movimientos de estado se guardan desde el 31 de octubre de 2026. En los pedidos anteriores solo se conoce la hora de creación, así que no aparecen la hora de entrega ni el tiempo total.
+</Callout>
+
+Para cerrar el panel toca la <Ui>X</Ui>, toca fuera del panel o presiona <Ui>Esc</Ui>.
 
 ### Cómo se reparte el dinero por medio de pago
 
@@ -51,7 +73,7 @@ La contabilidad te muestra **cuánto vendiste en el período que elijas**: ingre
 
 ## Exportar a Excel
 
-Si tu usuario tiene el permiso, arriba de la tabla ves el botón <Ui>Exportar Excel</Ui>. Descarga un archivo con los pedidos del período: fecha, número, cliente, teléfono, método de pago, productos, descuentos, domicilio, promociones y total.
+Si tu usuario tiene el permiso, arriba de la tabla ves el botón <Ui>Exportar Excel</Ui>. Descarga un archivo con los pedidos del período: fecha, número, cliente, teléfono, tipo de entrega, método de pago, productos, descuentos, domicilio, promociones y total.
 
 ## Errores comunes
 
@@ -59,6 +81,7 @@ Si tu usuario tiene el permiso, arriba de la tabla ves el botón <Ui>Exportar Ex
 - **El total no coincide con la caja:** puede haber pedidos entregados que todavía no marcaste como pagados. Esos suman en el total aunque la plata no haya entrado. Revisa que cada pedido cobrado tenga su pago registrado.
 - **No veo el botón Exportar Excel:** tu usuario no tiene ese permiso, o no hay pedidos en el período. Dice "Sin pedidos en el rango seleccionado."
 - **No me aparece Contabilidad en el menú:** tu usuario no tiene permiso para verla. Pídeselo al administrador en <GuideLink href="/dashboard/ayuda/configuracion/equipo-y-permisos">Equipo y permisos</GuideLink>.
-- **Las filas no se abren:** la tabla es solo de consulta. Para ver o cambiar un pedido, ve a <Ui>Gestión de pedidos → Pedidos</Ui>.
+- **Un pedido no muestra la hora de entrega:** todavía no está en <Ui>Entregado</Ui>, o es anterior al 31 de octubre de 2026, cuando empezaron a guardarse los movimientos.
+- **Quiero cambiar algo de un pedido:** el detalle de Contabilidad es solo de consulta. Para editarlo, cobrarlo o cambiar su estado, ve a <Ui>Gestión de pedidos → Pedidos</Ui>.
 
 <GuideCard href="/dashboard/ayuda/cobros/metodos-de-pago" title="Métodos de pago" summary="Elige con qué medios te pueden pagar." />
