@@ -5,8 +5,9 @@ import { adminDb } from '@/lib/firebase/admin';
 
 import { compactEvent, type OrderEventDraft } from './orderEvents';
 
-export function serverEventData(draft: OrderEventDraft) {
-  return compactEvent({ ...draft, at: FieldValue.serverTimestamp() });
+/** Evento con hora del servidor. Con `actor` lo firma ese usuario; sin él es del sistema. */
+export function serverEventData(draft: OrderEventDraft, actor?: { uid: string; name?: string }) {
+  return compactEvent({ ...draft, at: FieldValue.serverTimestamp(), by: actor?.uid, byName: actor?.name });
 }
 
 /** Agrega un evento; si falla no rompe la operación principal (se registra en el log). */

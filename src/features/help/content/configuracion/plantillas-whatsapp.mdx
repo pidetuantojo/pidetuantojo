@@ -76,7 +76,11 @@ Los campos se reemplazan por los datos reales de cada pedido. Con los botones se
 |---|---|---|
 | Nombre del cliente | `{{nombreCliente}}` | Juan García |
 | Número de pedido | `{{numeroPedido}}` | 1042 |
+| Resumen de pago | `{{resumenPago}}` | Productos, descuento (si hubo), domicilio (si es a domicilio) y total, cada uno en su línea |
 | Total | `{{total}}` | $45.000 |
+| Valor de los productos | `{{valorProductos}}` | $46.000 |
+| Descuento | `{{descuento}}` | −$6.000 |
+| Valor del domicilio | `{{domicilio}}` | $5.000, Gratis o Por confirmar |
 | Método de pago | `{{metodoPago}}` | Efectivo |
 | Lista de productos | `{{productos}}` | 2x Hamburguesa clásica |
 | Estado del pedido | `{{estadoPedido}}` | En camino |
@@ -87,6 +91,8 @@ Los campos se reemplazan por los datos reales de cada pedido. Con los botones se
 Hola {{nombreCliente}}! Tu pedido #{{numeroPedido}} ya está listo 🍔
 Total: {{total}}
 ```
+
+**Resumen de pago** es la forma más fácil de mostrar el desglose: se adapta solo. En un pedido para llevar no aparece la línea de domicilio, y si no hubo descuento tampoco aparece. Si el domicilio todavía no tiene valor, dice "Por confirmar". Las plantillas *Pedido nuevo*, *Pedido confirmado* y *Pedido pagado* lo traen por defecto. Si ya las habías personalizado, agrega el campo con el botón <Ui>+ Resumen de pago</Ui> o toca <Ui>Restaurar por defecto</Ui>.
 
 ## Consejos
 

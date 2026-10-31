@@ -1,7 +1,8 @@
 // Plantillas de WhatsApp: tipos, valores por defecto y reglas puras.
 // Sin Firebase: lo usan el panel (cliente) y /api/orders (servidor).
 
-import type { OrderDeliveryType, OrderStatus } from '@/types';
+import { getOrderTotals } from '@/features/orders/helpers/totals.helpers';
+import type { Order, OrderDeliveryType, OrderStatus } from '@/types';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -34,9 +35,37 @@ export interface WaTemplateData {
   customerName?: string;
   orderNumber?: string;
   total?: number;
+  // Desglose del total: productos (precio de lista) − descuento + domicilio
+  subtotal?: number;
+  discount?: number;
+  deliveryType?: OrderDeliveryType;
+  // undefined en domicilio = aún no se definió el valor
+  deliveryFee?: number;
+  freeDelivery?: boolean;
   paymentMethod?: string;
   items?: { productName: string; quantity: number }[];
   statusName?: string;
+}
+
+/** Datos de la plantilla a partir del pedido guardado (montos con getOrderTotals). */
+export function templateDataFromOrder(
+  order: Pick<Order, 'customerName' | 'orderNumber' | 'subtotal' | 'discount' | 'deliveryFee' | 'freeDelivery' | 'deliveryType' | 'paymentMethod' | 'items'>,
+  statusName?: string,
+): WaTemplateData {
+  const totals = getOrderTotals(order);
+  return {
+    customerName: order.customerName,
+    orderNumber: order.orderNumber,
+    subtotal: totals.productsTotal,
+    discount: totals.discount,
+    deliveryType: order.deliveryType ?? 'recoger',
+    deliveryFee: order.deliveryFee,
+    freeDelivery: order.freeDelivery,
+    total: totals.total,
+    paymentMethod: order.paymentMethod,
+    items: order.items.map((i) => ({ productName: i.productName, quantity: i.quantity })),
+    statusName,
+  };
 }
 
 // ─── Metadata de eventos ──────────────────────────────────────────────────────
@@ -53,12 +82,12 @@ export const WA_EVENTS: WaEventMeta[] = [
 // ─── Plantillas por defecto ───────────────────────────────────────────────────
 
 export const DEFAULT_TEMPLATES: WaTemplates = {
-  pedido_nuevo: `Hola {{nombreCliente}}! 👋\nTu pedido *#{{numeroPedido}}* fue recibido ✅\n\n*🛒 Productos:*\n{{productos}}\n\n*💰 Total:* {{total}}\n*💳 Pago:* {{metodoPago}}`,
-  pedido_confirmado: `Hola {{nombreCliente}}! 👋\nTu pedido *#{{numeroPedido}}* fue *confirmado* ✅\n\n*🛒 Productos:*\n{{productos}}\n\n*💰 Total:* {{total}}\n*💳 Pago:* {{metodoPago}}`,
+  pedido_nuevo: `Hola {{nombreCliente}}! 👋\nTu pedido *#{{numeroPedido}}* fue recibido ✅\n\n*🛒 Productos:*\n{{productos}}\n\n{{resumenPago}}\n*💳 Pago:* {{metodoPago}}`,
+  pedido_confirmado: `Hola {{nombreCliente}}! 👋\nTu pedido *#{{numeroPedido}}* fue *confirmado* ✅\n\n*🛒 Productos:*\n{{productos}}\n\n{{resumenPago}}\n*💳 Pago:* {{metodoPago}}`,
   pedido_en_camino: `Hola {{nombreCliente}}! 🚀\nTu pedido *#{{numeroPedido}}* está *en camino* 🛵\n\n¡Prepárate para recibirlo!`,
   pedido_entregado: `Hola {{nombreCliente}}! ✔️\nTu pedido *#{{numeroPedido}}* fue *entregado*.\n\n¡Gracias por tu pedido! 🙌`,
   pedido_estado_actualizado: `Hola {{nombreCliente}}! 📦\nTu pedido *#{{numeroPedido}}* ahora está: *{{estadoPedido}}*`,
-  pedido_pagado: `Hola {{nombreCliente}}! 💳\nTu pedido *#{{numeroPedido}}* ya fue *pagado* ✅\n\n*💰 Total:* {{total}}\n*💳 Pago:* {{metodoPago}}\n\n¡Gracias por tu pedido! 🙌`,
+  pedido_pagado: `Hola {{nombreCliente}}! 💳\nTu pedido *#{{numeroPedido}}* ya fue *pagado* ✅\n\n{{resumenPago}}\n*💳 Pago:* {{metodoPago}}\n\n¡Gracias por tu pedido! 🙌`,
 };
 
 // ─── Campos disponibles ───────────────────────────────────────────────────────
@@ -66,7 +95,11 @@ export const DEFAULT_TEMPLATES: WaTemplates = {
 export const TEMPLATE_VARS = [
   { key: '{{nombreCliente}}', label: 'Nombre del cliente' },
   { key: '{{numeroPedido}}',  label: 'Número de pedido' },
+  { key: '{{resumenPago}}',   label: 'Resumen de pago' },
   { key: '{{total}}',         label: 'Total' },
+  { key: '{{valorProductos}}', label: 'Valor de los productos' },
+  { key: '{{descuento}}',     label: 'Descuento' },
+  { key: '{{domicilio}}',     label: 'Valor del domicilio' },
   { key: '{{metodoPago}}',    label: 'Método de pago' },
   { key: '{{productos}}',     label: 'Lista de productos' },
   { key: '{{estadoPedido}}',  label: 'Estado del pedido' },
@@ -161,11 +194,37 @@ function formatCOP(amount: number): string {
   return `$${amount.toLocaleString('es-CO')}`;
 }
 
+/** Valor del domicilio para el cliente; vacío si el pedido no es a domicilio. */
+function deliveryText(data: WaTemplateData): string {
+  if (data.deliveryType !== 'domicilio') return '';
+  if (data.freeDelivery) return 'Gratis';
+  return data.deliveryFee !== undefined ? formatCOP(data.deliveryFee) : 'Por confirmar';
+}
+
+/**
+ * Desglose del total. El descuento solo si hubo; el domicilio solo en pedidos a domicilio.
+ * Sin desglose (datos antiguos) queda solo el total.
+ */
+export function paymentSummary(data: WaTemplateData): string {
+  if (data.total === undefined) return '';
+  const lines: string[] = [];
+  if (data.subtotal !== undefined) lines.push(`🧾 Productos: ${formatCOP(data.subtotal)}`);
+  if (data.discount) lines.push(`🏷️ Descuento: −${formatCOP(data.discount)}`);
+  const delivery = deliveryText(data);
+  if (delivery) lines.push(`🛵 Domicilio: ${delivery}`);
+  lines.push(`💰 *Total: ${formatCOP(data.total)}*`);
+  return lines.join('\n');
+}
+
 export function applyTemplate(template: string, data: WaTemplateData): string {
   const products = data.items?.map((i) => `  • ${i.quantity}x ${i.productName}`).join('\n') ?? '';
   return template
     .replace(/{{nombreCliente}}/g, data.customerName ?? '')
     .replace(/{{numeroPedido}}/g, data.orderNumber ?? '')
+    .replace(/{{resumenPago}}/g, paymentSummary(data))
+    .replace(/{{valorProductos}}/g, data.subtotal !== undefined ? formatCOP(data.subtotal) : '')
+    .replace(/{{descuento}}/g, data.discount ? `−${formatCOP(data.discount)}` : formatCOP(0))
+    .replace(/{{domicilio}}/g, deliveryText(data) || formatCOP(0))
     .replace(/{{total}}/g, data.total !== undefined ? formatCOP(data.total) : '')
     .replace(/{{metodoPago}}/g, data.paymentMethod ?? '')
     .replace(/{{productos}}/g, products)

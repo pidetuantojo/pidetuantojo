@@ -675,7 +675,11 @@ function DrawerContent({
       </aside>
 
       {dialog?.type === 'pay' || dialog?.type === 'split' ? (
-        <PaymentDialog order={order} restaurantId={restaurantId} paymentMethods={paymentMethods} mode={dialog.type} onClose={() => setDialog(null)} />
+        <PaymentDialog
+          order={order} restaurantId={restaurantId} paymentMethods={paymentMethods} mode={dialog.type} onClose={() => setDialog(null)}
+          // Para llevar y domicilio: "Pedido pagado" al cliente cuando el cobro completa el total (lo verifica el servidor)
+          onPaymentRegistered={autoNotify && !isMesa && order.customerPhone ? () => notifyPaid(order.id) : undefined}
+        />
       ) : null}
       {dialog?.type === 'discount' && <DiscountDialog order={order} restaurantId={restaurantId} onClose={() => setDialog(null)} />}
       {dialog?.type === 'table' && (

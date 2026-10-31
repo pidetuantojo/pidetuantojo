@@ -43,6 +43,30 @@ export const checkoutSchema = z.object({
 export type CheckoutInput = z.input<typeof checkoutSchema>;
 export type CheckoutData = z.output<typeof checkoutSchema>;
 
+/**
+ * Pedido manual del panel (POST /api/orders/manual): mismas reglas de precios y promociones que la carta.
+ * En mesa el nombre y el celular son opcionales (la mesa identifica el pedido).
+ * `dryRun` = vista previa: calcula descuentos y total sin guardar (el método de pago puede faltar).
+ */
+export const panelOrderSchema = checkoutSchema.extend({
+  customerName: text(120).default(''),
+  customerPhone: text(40).default(''),
+  paymentMethodId: z.string().max(64).default(''),
+  notes: text(500).optional(),
+  dryRun: z.boolean().default(false),
+}).superRefine((d, ctx) => {
+  if (d.deliveryType === 'mesa') {
+    if (!d.tableId && !d.dryRun) ctx.addIssue({ code: 'custom', path: ['tableId'], message: 'Elige la mesa' });
+  } else if (!d.dryRun) {
+    if (d.customerName.length < 2) ctx.addIssue({ code: 'custom', path: ['customerName'], message: 'El nombre del cliente es requerido' });
+    if (d.customerPhone.length < 7) ctx.addIssue({ code: 'custom', path: ['customerPhone'], message: 'El teléfono es requerido' });
+  }
+  if (!d.dryRun && !d.paymentMethodId) ctx.addIssue({ code: 'custom', path: ['paymentMethodId'], message: 'Elige un método de pago' });
+});
+
+export type PanelOrderInput = z.input<typeof panelOrderSchema>;
+export type PanelOrderData = z.output<typeof panelOrderSchema>;
+
 /** Respuesta de POST /api/orders: el carrito arma el mensaje de WhatsApp con estos datos. */
 export interface CheckoutResponse {
   id: string;
@@ -59,6 +83,8 @@ export interface CheckoutResponse {
   tableName?: string;
   paymentLabel: string;
   paymentAccount?: string;
+  // Solo vista previa del panel (dryRun) con celular: sellos de fidelidad del cliente
+  loyaltyStatus?: { stamps: number; required: number; rewardAvailable: boolean } | null;
   // WhatsApp para el cliente, ya armado con la plantilla. Ausente = el estado "Recibido" no avisa.
   // Lo envía /api/orders y lo quita de la respuesta: nunca llega al navegador
   customerMessage?: string;

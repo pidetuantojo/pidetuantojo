@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import {
-  DEFAULT_TEMPLATES, parseTemplateStore, statusNotifiesAny, statusTemplateId, templateBody, templateName,
+  DEFAULT_TEMPLATES, parseTemplateStore, paymentSummary, statusNotifiesAny, statusTemplateId, templateBody, templateName,
 } from '@/lib/whatsapp/templates.core';
 
 describe('statusTemplateId', () => {
@@ -55,5 +55,32 @@ describe('parseTemplateStore / templateBody', () => {
 
   it('documento inexistente: todo por defecto', () => {
     expect(parseTemplateStore(undefined)).toEqual({ system: DEFAULT_TEMPLATES, custom: [] });
+  });
+});
+
+describe('resumen de pago', () => {
+  const base = { total: 45000, subtotal: 46000 };
+
+  it('domicilio con descuento: productos, descuento, domicilio y total', () => {
+    expect(paymentSummary({ ...base, discount: 6000, deliveryType: 'domicilio', deliveryFee: 5000 })).toBe(
+      '🧾 Productos: $46.000\n🏷️ Descuento: −$6.000\n🛵 Domicilio: $5.000\n💰 *Total: $45.000*',
+    );
+  });
+
+  it('para llevar sin descuento: sin líneas de domicilio ni descuento', () => {
+    expect(paymentSummary({ total: 20000, subtotal: 20000, deliveryType: 'recoger', discount: 0 })).toBe(
+      '🧾 Productos: $20.000\n💰 *Total: $20.000*',
+    );
+  });
+
+  it('domicilio gratis o sin valor definido', () => {
+    expect(paymentSummary({ ...base, deliveryType: 'domicilio', freeDelivery: true })).toContain('🛵 Domicilio: Gratis');
+    expect(paymentSummary({ ...base, deliveryType: 'domicilio' })).toContain('🛵 Domicilio: Por confirmar');
+  });
+
+  it('las plantillas por defecto con total usan el resumen', () => {
+    expect(DEFAULT_TEMPLATES.pedido_nuevo).toContain('{{resumenPago}}');
+    expect(DEFAULT_TEMPLATES.pedido_confirmado).toContain('{{resumenPago}}');
+    expect(DEFAULT_TEMPLATES.pedido_pagado).toContain('{{resumenPago}}');
   });
 });

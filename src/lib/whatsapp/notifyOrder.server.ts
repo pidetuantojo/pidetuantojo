@@ -3,13 +3,13 @@
 
 import { FieldValue } from 'firebase-admin/firestore';
 
-import { getOrderTotals } from '@/features/orders/helpers/totals.helpers';
 import { adminDb } from '@/lib/firebase/admin';
 import { orderEvents } from '@/lib/orders/orderEvents';
 import { addOrderEventServer } from '@/lib/orders/orderEvents.server';
 import type { Order, OrderStatus } from '@/types';
 
 import { isAutoNotifyOn, sendWhatsApp, waPhone, type SendResult } from './send.server';
+import { templateDataFromOrder } from './templates.core';
 import { buildStatusMessage, buildTemplateMessage } from './templates.server';
 
 export type NotifyEvent = 'status' | 'paid';
@@ -39,13 +39,7 @@ export async function notifyOrderEvent(restaurantId: string, orderId: string, ev
   if (order.waNotified?.includes(key)) return { ok: true, skipped: 'already_sent' };
   if (!(await isAutoNotifyOn(restaurantId))) return { ok: true, skipped: 'auto_notify_off' };
 
-  const data = {
-    customerName: order.customerName,
-    orderNumber: order.orderNumber,
-    total: getOrderTotals(order).total,
-    paymentMethod: order.paymentMethod,
-    items: order.items.map((i) => ({ productName: i.productName, quantity: i.quantity })),
-  };
+  const data = templateDataFromOrder(order);
 
   let message: string | undefined;
   let what = 'pedido pagado';

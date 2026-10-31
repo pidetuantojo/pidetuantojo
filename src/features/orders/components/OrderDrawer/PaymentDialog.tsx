@@ -20,6 +20,8 @@ interface PaymentDialogProps {
   // 'split' abre directamente "Dividir cuenta"
   mode: 'pay' | 'split';
   onClose: () => void;
+  // Después de cada cobro: el servidor avisa al cliente solo si el pedido quedó pagado (y una sola vez)
+  onPaymentRegistered?: () => void;
 }
 
 function buildPayment(method: PaymentMethodConfig, amount: number, extra: Partial<OrderPayment>, userId?: string): OrderPayment {
@@ -50,7 +52,7 @@ interface SplitRow {
   paid: boolean;
 }
 
-export function PaymentDialog({ order, restaurantId, paymentMethods, mode: initialMode, onClose }: PaymentDialogProps) {
+export function PaymentDialog({ order, restaurantId, paymentMethods, mode: initialMode, onClose, onPaymentRegistered }: PaymentDialogProps) {
   const { user } = useAuth();
   const methods = getActivePaymentMethods(paymentMethods);
   const remaining = remainingAmount(order);
@@ -85,6 +87,7 @@ export function PaymentDialog({ order, restaurantId, paymentMethods, mode: initi
     setError('');
     try {
       await ordersService.addPayments(restaurantId, order, payments);
+      onPaymentRegistered?.();
       return true;
     } catch {
       setError('No se pudo registrar el pago. Intenta de nuevo.');

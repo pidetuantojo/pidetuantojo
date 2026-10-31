@@ -11,6 +11,8 @@ export interface Caller {
   role: UserRole;
   restaurantId?: string;
   isActive: boolean;
+  // Para firmar acciones (auditoría)
+  name?: string;
   // Permisos efectivos (o los de compatibilidad si el usuario aún no fue migrado)
   permissions: Permission[];
 }
@@ -43,7 +45,7 @@ export async function getCaller(request: Request): Promise<Caller> {
     ? normalizePermissions(data.effectivePermissions)
     : legacyPermissions(data.role);
 
-  return { uid, role: data.role, restaurantId: data.restaurantId, isActive: true, permissions };
+  return { uid, role: data.role, restaurantId: data.restaurantId, isActive: true, name: data.displayName || data.email, permissions };
 }
 
 /** Como `getCaller`, pero exige uno de los roles indicados. */

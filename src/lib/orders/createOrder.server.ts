@@ -15,11 +15,12 @@ import {
 import { getPaymentMethodsForDelivery, getPaymentLabel, toOrderPayment } from '@/features/payment-methods/helpers/payment-methods.helpers';
 import type { Adicional, Additional, Customer, DeliveryZone, Mesa, Order, OrderItem, Product, Promotion } from '@/types';
 
-import { CheckoutError, type CheckoutData, type CheckoutResponse } from './checkout.schema';
+import { CheckoutError, type CheckoutData, type CheckoutResponse, type PanelOrderData } from './checkout.schema';
 import { generateOrderNumber } from './orderNumber';
 import { orderEvents } from './orderEvents';
 import { serverEventData } from './orderEvents.server';
 import { statusChange } from './statusHistory';
+import { templateDataFromOrder } from '@/lib/whatsapp/templates.core';
 import { buildStatusMessage } from '@/lib/whatsapp/templates.server';
 
 // Pedidos programados: mismo rango que el checkout (unos minutos de tolerancia por relojes desfasados)
@@ -61,13 +62,38 @@ function resolveAdditionals(product: Product, adicionales: Adicional[], ids: str
   return result;
 }
 
-export async function createPublicOrder(input: CheckoutData, now: Date = new Date()): Promise<CheckoutResponse> {
+export interface OrderActor {
+  uid: string;
+  name?: string;
+}
+
+type OrderOrigin = { source: 'carta' } | { source: 'panel'; actor: OrderActor; dryRun: boolean };
+
+/** Checkout de la carta pública (sin sesión). */
+export function createPublicOrder(input: CheckoutData, now: Date = new Date()): Promise<CheckoutResponse> {
+  return createOrder(input, { source: 'carta' }, now);
+}
+
+/**
+ * Pedido manual del panel: mismos precios, promociones, cupones y fidelidad que la carta.
+ * Con `dryRun` solo calcula (vista previa del modal) y no guarda nada.
+ */
+export function createPanelOrder(input: PanelOrderData, actor: OrderActor, now: Date = new Date()): Promise<CheckoutResponse> {
+  return createOrder(input, { source: 'panel', actor, dryRun: input.dryRun }, now);
+}
+
+async function createOrder(input: CheckoutData & { notes?: string }, origin: OrderOrigin, now: Date): Promise<CheckoutResponse> {
   const restaurant = await loadPublicRestaurant(input.restaurantId);
   if (!restaurant) throw new CheckoutError('Este restaurante no está recibiendo pedidos.', 404);
   const restaurantId = restaurant.id;
+  const isPanel = origin.source === 'panel';
+  const dryRun = origin.source === 'panel' && origin.dryRun;
 
+  // En el panel el celular puede faltar en mesa (y en la vista previa): sin él no hay fidelidad
+  // ni límites por cliente, y las promos de "primer pedido" no se aplican
   const phoneKey = normalizePhone(input.customerPhone);
-  if (!phoneKey) throw new CheckoutError('Escribe un celular válido.', 400);
+  const phoneOptional = isPanel && (input.deliveryType === 'mesa' || dryRun) && !input.customerPhone.trim();
+  if (!phoneKey && !phoneOptional) throw new CheckoutError('Escribe un celular válido.', 400);
 
   // ─── Entrega ───────────────────────────────────────────────────────────────
   const methods = restaurant.deliveryMethods;
@@ -77,8 +103,9 @@ export async function createPublicOrder(input: CheckoutData, now: Date = new Dat
     mesa: methods?.mesa?.isActive ?? false,
   };
   const deliveryType = input.deliveryType;
-  if (!deliveryActive[deliveryType]) throw new CheckoutError('Esa forma de entrega no está disponible.', 400);
-  if (deliveryType === 'domicilio' && !input.customerAddress?.trim()) throw new CheckoutError('Escribe la dirección de entrega.', 400);
+  // El panel puede tomar pedidos por cualquier canal (ej: domicilio por teléfono con la carta en solo recoger)
+  if (!isPanel && !deliveryActive[deliveryType]) throw new CheckoutError('Esa forma de entrega no está disponible.', 400);
+  if (deliveryType === 'domicilio' && !input.customerAddress?.trim() && !dryRun) throw new CheckoutError('Escribe la dirección de entrega.', 400);
 
   let scheduledFor: string | undefined;
   if (input.scheduledFor) {
@@ -105,7 +132,7 @@ export async function createPublicOrder(input: CheckoutData, now: Date = new Dat
       : Promise.resolve(null),
     loadActivePromotions(restaurant, now),
     getReceivedStatus(restaurantId),
-    getCustomerProfile(restaurantId, phoneKey),
+    phoneKey ? getCustomerProfile(restaurantId, phoneKey) : Promise.resolve(null),
   ]);
   const adicionales = adicionalesSnap.docs.map((d) => ({ ...(d.data() as Adicional), id: d.id }));
   const receivedStatusId = receivedStatus?.id ?? '';
@@ -114,7 +141,7 @@ export async function createPublicOrder(input: CheckoutData, now: Date = new Dat
   let zone: DeliveryZone | null = null;
   if (isZonesMode && deliveryType === 'domicilio') {
     zone = zoneSnap?.exists ? { ...(zoneSnap.data() as DeliveryZone), id: zoneSnap.id } : null;
-    if (!zone?.isActive) throw new CheckoutError('Elige una zona de domicilio válida.', 400);
+    if (!zone?.isActive && !dryRun) throw new CheckoutError('Elige una zona de domicilio válida.', 400);
   }
   const mesa: Mesa | null = mesaSnap?.exists ? { ...(mesaSnap.data() as Mesa), id: mesaSnap.id } : null;
   if (deliveryType === 'mesa' && input.tableId && !mesa?.isActive) throw new CheckoutError('Esa mesa no está disponible.', 400);
@@ -157,7 +184,10 @@ export async function createPublicOrder(input: CheckoutData, now: Date = new Dat
     pricingProducts.set(p.id, { name: p.name, isAvailable: p.isActive && p.isAvailable });
   });
 
-  const loyalty = input.redeemLoyalty ? await getLoyaltyStatus(restaurant, phoneKey, profile.customer) : null;
+  // Vista previa del panel con celular: se calcula siempre para mostrar si puede canjear
+  const loyalty = phoneKey && profile && (input.redeemLoyalty || dryRun)
+    ? await getLoyaltyStatus(restaurant, phoneKey, profile.customer)
+    : null;
   if (input.redeemLoyalty && !loyalty?.rewardAvailable) {
     throw new CheckoutError('Todavía no tienes el premio de fidelidad disponible.', 409);
   }
@@ -167,7 +197,7 @@ export async function createPublicOrder(input: CheckoutData, now: Date = new Dat
     deliveryType,
     deliveryFee: zone ? zone.price : undefined,
     couponCode: input.couponCode,
-    customer: { isNew: profile.isNew, promoUses: profile.customer?.promoUses ?? {} },
+    customer: profile ? { isNew: profile.isNew, promoUses: profile.customer?.promoUses ?? {} } : undefined,
     loyalty: loyalty ? { config: loyalty.config, rewardAvailable: loyalty.rewardAvailable, redeem: input.redeemLoyalty } : undefined,
     graceIds: new Set(input.expectedPromotionIds),
     products: pricingProducts,
@@ -198,6 +228,24 @@ export async function createPublicOrder(input: CheckoutData, now: Date = new Dat
     }));
   }
 
+  if (dryRun) {
+    return {
+      id: '',
+      orderNumber: '',
+      items,
+      subtotal: pricing.subtotal,
+      discount: pricing.discount,
+      deliveryFee: deliveryType === 'domicilio' ? pricing.deliveryFee : undefined,
+      freeDelivery: pricing.freeDelivery,
+      total: pricing.total,
+      appliedPromotions: pricing.applied,
+      deliveryZoneName: zone?.name,
+      tableName: mesa?.name,
+      paymentLabel: '',
+      loyaltyStatus: loyalty ? { stamps: loyalty.stamps, required: loyalty.required, rewardAvailable: loyalty.rewardAvailable } : null,
+    };
+  }
+
   // ─── Pago ──────────────────────────────────────────────────────────────────
   const payment = getPaymentMethodsForDelivery(restaurant.paymentMethods, restaurant.deliveryMethods, deliveryType)
     .find((m) => m.id === input.paymentMethodId);
@@ -214,9 +262,10 @@ export async function createPublicOrder(input: CheckoutData, now: Date = new Dat
     id: orderRef.id,
     restaurantId,
     orderNumber: generateOrderNumber(now.getTime()),
-    customerName: input.customerName.trim(),
+    // Mesa sin nombre (panel): la mesa identifica el pedido
+    customerName: input.customerName.trim() || mesa?.name || '',
     customerPhone: input.customerPhone.trim(),
-    customerPhoneKey: phoneKey,
+    customerPhoneKey: phoneKey ?? undefined,
     deliveryType,
     customerAddress: deliveryType === 'domicilio' ? input.customerAddress?.trim() : undefined,
     barrio: deliveryType === 'domicilio' ? barrio : undefined,
@@ -236,8 +285,9 @@ export async function createPublicOrder(input: CheckoutData, now: Date = new Dat
     freeDelivery: pricing.freeDelivery || undefined,
     couponCode: appliedCoupon,
     loyaltyRedeemed: loyaltyRedeemed || undefined,
+    notes: input.notes?.trim() || undefined,
     statusId: receivedStatusId,
-    statusHistory: [statusChange(receivedStatusId, null, nowIso)],
+    statusHistory: [statusChange(receivedStatusId, isPanel ? origin.actor : null, nowIso)],
     createdAt: nowIso,
     updatedAt: nowIso,
   });
@@ -250,18 +300,17 @@ export async function createPublicOrder(input: CheckoutData, now: Date = new Dat
     marketingOptIn: input.marketingOptIn,
     loyaltyRedeemed,
     nowIso,
+    source: origin.source,
+    actor: isPanel ? origin.actor : undefined,
   });
 
   // Mensaje de WhatsApp al cliente: plantilla y aviso del estado "Recibido".
   // Se arma aquí porque la carta pública no puede leer las plantillas del restaurante.
   const paymentLabel = getPaymentLabel(payment);
-  const customerMessage = await buildStatusMessage(restaurantId, receivedStatus, deliveryType, {
-    customerName: order.customerName,
-    orderNumber: order.orderNumber,
-    total: order.total,
+  // Los pedidos del panel no mandan este mensaje (el cliente está en el local o al teléfono)
+  const customerMessage = isPanel ? undefined : await buildStatusMessage(restaurantId, receivedStatus, deliveryType, {
+    ...templateDataFromOrder(order, receivedStatus?.name),
     paymentMethod: paymentLabel,
-    items: order.items.map((i) => ({ productName: i.productName, quantity: i.quantity })),
-    statusName: receivedStatus?.name,
   });
 
   return {
@@ -292,14 +341,21 @@ async function saveOrder(
   orderRef: DocumentReference,
   order: Order,
   usedPromotions: Promotion[],
-  opts: { phoneKey: string; marketingOptIn: boolean; loyaltyRedeemed: boolean; nowIso: string }
+  opts: {
+    phoneKey: string | null; marketingOptIn: boolean; loyaltyRedeemed: boolean; nowIso: string;
+    source: 'carta' | 'panel'; actor?: OrderActor;
+  }
 ): Promise<void> {
-  const customerRef = restaurantRef(restaurantId).collection('customers').doc(opts.phoneKey);
+  // Sin celular (mesa del panel) no hay cliente que registrar
+  const customerRef = opts.phoneKey ? restaurantRef(restaurantId).collection('customers').doc(opts.phoneKey) : null;
   const promoRefs = usedPromotions.map((p) => restaurantRef(restaurantId).collection('promotions').doc(p.id));
 
   await adminDb.runTransaction(async (tx) => {
-    const [customerSnap, ...promoSnaps] = await Promise.all([tx.get(customerRef), ...promoRefs.map((ref) => tx.get(ref))]);
-    const customer = customerSnap.exists ? (customerSnap.data() as Customer) : null;
+    const [customerSnap, ...promoSnaps] = await Promise.all([
+      customerRef ? tx.get(customerRef) : Promise.resolve(null),
+      ...promoRefs.map((ref) => tx.get(ref)),
+    ]);
+    const customer = customerSnap?.exists ? (customerSnap.data() as Customer) : null;
 
     usedPromotions.forEach((p, i) => {
       const fresh = promoSnaps[i].data() as Promotion | undefined;
@@ -316,13 +372,14 @@ async function saveOrder(
     });
 
     tx.set(orderRef, order);
-    tx.set(orderRef.collection('events').doc(), serverEventData(orderEvents.created('carta')));
+    tx.set(orderRef.collection('events').doc(), serverEventData(orderEvents.created(opts.source), opts.actor));
     promoRefs.forEach((ref) => tx.update(ref, { usesCount: FieldValue.increment(1) }));
 
     const promoUses = Object.fromEntries(usedPromotions.map((p) => [p.id, FieldValue.increment(1)]));
     const optIn = opts.marketingOptIn ? { marketingOptIn: true, marketingOptInAt: opts.nowIso } : {};
     const loyalty = opts.loyaltyRedeemed ? { loyaltyRedeemedAt: opts.nowIso, loyaltyRedemptions: FieldValue.increment(1) } : {};
 
+    if (!customerRef) return;
     if (customer) {
       tx.update(customerRef, {
         name: order.customerName,
@@ -336,7 +393,7 @@ async function saveOrder(
       });
     } else {
       tx.set(customerRef, {
-        id: opts.phoneKey,
+        id: opts.phoneKey!,
         restaurantId,
         phone: order.customerPhone,
         name: order.customerName,

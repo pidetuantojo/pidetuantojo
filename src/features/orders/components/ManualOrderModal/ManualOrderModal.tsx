@@ -4,20 +4,32 @@ import { useState, useMemo, useEffect } from 'react';
 import { X, Plus, Minus, Trash2, Search, ShoppingBag } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
-import type { Product, Adicional, OrderItem, Additional, Category, Mesa, OrderDeliveryType, PaymentMethodConfig } from '@/types';
+import type { Product, Adicional, Category, DeliveryZone, Mesa, OrderDeliveryType, PaymentMethodConfig } from '@/types';
+import { Select } from '@/components/ui/Select';
 import { PaymentMethodPicker } from '@/features/payment-methods/components/PaymentMethodPicker';
-import { getActivePaymentMethods, toOrderPayment } from '@/features/payment-methods/helpers/payment-methods.helpers';
+import { getActivePaymentMethods } from '@/features/payment-methods/helpers/payment-methods.helpers';
+import { authFetch } from '@/lib/auth/authFetch';
 import { normalizePhone } from '@/lib/customers/phone';
-import { statusChange, toStatusActor } from '@/lib/orders/statusHistory';
-import { useAuth } from '@/features/auth';
+import type { CheckoutResponse, PanelOrderInput } from '@/lib/orders/checkout.schema';
 
-import { ordersService } from '../../services/orders.service';
+/** POST /api/orders/manual: el servidor calcula precios, promociones, cupón y fidelidad. */
+async function postPanelOrder(input: PanelOrderInput): Promise<CheckoutResponse> {
+  const res = await authFetch('/api/orders/manual', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((body as { error?: string }).error ?? 'No se pudo procesar el pedido');
+  return body as CheckoutResponse;
+}
 
 interface ManualOrderModalProps {
   isOpen: boolean;
   onClose: () => void;
   restaurantId: string;
-  receivedStatusId: string;
+  // Ya no se usa: el estado inicial lo asigna el servidor (se mantiene por compatibilidad)
+  receivedStatusId?: string;
   products: Product[];
   adicionales: Adicional[];
   categories: Category[];
@@ -28,6 +40,9 @@ interface ManualOrderModalProps {
   mesas?: Mesa[];
   occupiedTableIds?: Set<string>;
   dineInEnabled?: boolean;
+  // Modo zonas (igual que la carta): el domicilio se elige de la lista y cobra el valor de la zona
+  deliveryMode?: 'manual' | 'zones';
+  deliveryZones?: DeliveryZone[];
 }
 
 interface CartLine {
@@ -48,7 +63,6 @@ export function ManualOrderModal({
   isOpen,
   onClose,
   restaurantId,
-  receivedStatusId,
   products,
   adicionales,
   categories,
@@ -57,8 +71,9 @@ export function ManualOrderModal({
   mesas = [],
   occupiedTableIds,
   dineInEnabled = false,
+  deliveryMode = 'manual',
+  deliveryZones = [],
 }: ManualOrderModalProps) {
-  const { user } = useAuth();
   const activePaymentMethods = getActivePaymentMethods(paymentMethods);
   const [search, setSearch] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
@@ -70,9 +85,18 @@ export function ManualOrderModal({
   const [tableId, setTableId] = useState('');
   const [address, setAddress] = useState('');
   const [barrio, setBarrio] = useState('');
+  const [zoneId, setZoneId] = useState('');
   const [paymentMethodId, setPaymentMethodId] = useState('');
   const selectedPayment = activePaymentMethods.find((m) => m.id === paymentMethodId) ?? null;
   const [notes, setNotes] = useState('');
+
+  // Promociones: el cupón se aplica con el botón; el cálculo lo hace el servidor (vista previa)
+  const [couponInput, setCouponInput] = useState('');
+  const [couponCode, setCouponCode] = useState('');
+  const [redeemLoyalty, setRedeemLoyalty] = useState(false);
+  const [preview, setPreview] = useState<CheckoutResponse | null>(null);
+  const [previewError, setPreviewError] = useState('');
+  const [previewing, setPreviewing] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
@@ -141,15 +165,91 @@ export function ManualOrderModal({
 
   function reset() {
     setCart([]); setCustomerName(''); setCustomerPhone('');
-    setDeliveryType(initialDeliveryType); setTableId(''); setAddress(''); setBarrio('');
+    setDeliveryType(initialDeliveryType); setTableId(''); setAddress(''); setBarrio(''); setZoneId('');
     setPaymentMethodId(''); setNotes(''); setSearch('');
     setSelectedCategoryId(''); setError('');
+    setCouponInput(''); setCouponCode(''); setRedeemLoyalty(false); setPreview(null); setPreviewError('');
   }
 
   const subtotal = cart.reduce((sum, l) => {
     const addPrice = l.selectedAdicionales.reduce((s, a) => s + a.price, 0);
     return sum + (l.product.price + addPrice) * l.quantity;
   }, 0);
+
+  // Modo zonas: solo si hay zonas activas (si no, queda el barrio escrito a mano)
+  const activeZones = useMemo(
+    () => deliveryZones.filter((z) => z.isActive).sort((a, b) => a.sortOrder - b.sortOrder),
+    [deliveryZones],
+  );
+  const isZonesMode = deliveryMode === 'zones' && activeZones.length > 0;
+  const selectedZone = isZonesMode && deliveryType === 'domicilio' ? activeZones.find((z) => z.id === zoneId) : undefined;
+  const deliveryFee = selectedZone?.price ?? 0;
+  // Sin vista previa (cargando o con error) se muestra el cálculo local, sin promociones
+  const total = preview?.total ?? subtotal + deliveryFee;
+
+  const validPhone = normalizePhone(customerPhone);
+
+  function buildInput(dryRun: boolean): PanelOrderInput {
+    return {
+      restaurantId,
+      items: cart.map((l, i) => ({
+        productId: l.product.id,
+        quantity: l.quantity,
+        additionalIds: l.selectedAdicionales.map((a) => a.id),
+        key: String(i),
+      })),
+      customerName: customerName.trim(),
+      // En la vista previa un celular a medio escribir no se manda (el servidor lo rechazaría)
+      customerPhone: dryRun && !validPhone ? '' : customerPhone.trim(),
+      deliveryType,
+      ...(deliveryType === 'domicilio'
+        ? {
+            customerAddress: address.trim(),
+            ...(isZonesMode ? (zoneId ? { deliveryZoneId: zoneId } : {}) : (barrio.trim() ? { barrio: barrio.trim() } : {})),
+          }
+        : {}),
+      ...(isMesa && tableId ? { tableId } : {}),
+      paymentMethodId,
+      ...(couponCode ? { couponCode } : {}),
+      redeemLoyalty,
+      // Las promociones que el cajero vio se respetan unos minutos aunque venzan
+      expectedPromotionIds: preview?.appliedPromotions.map((p) => p.promotionId) ?? [],
+      ...(notes.trim() ? { notes: notes.trim() } : {}),
+      dryRun,
+    };
+  }
+
+  // Vista previa: el servidor calcula promociones, cupón y fidelidad mientras se arma el pedido
+  const previewKey = JSON.stringify([
+    cart.map((l) => [l.product.id, l.quantity, l.selectedAdicionales.map((a) => a.id)]),
+    deliveryType, zoneId, tableId, couponCode, redeemLoyalty, validPhone,
+  ]);
+  useEffect(() => {
+    if (!isOpen || cart.length === 0) {
+      setPreview(null);
+      setPreviewError('');
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      setPreviewing(true);
+      try {
+        const result = await postPanelOrder(buildInput(true));
+        if (!cancelled) { setPreview(result); setPreviewError(''); }
+      } catch (err) {
+        if (!cancelled) { setPreview(null); setPreviewError(err instanceof Error ? err.message : 'No se pudo calcular el pedido'); }
+      } finally {
+        if (!cancelled) setPreviewing(false);
+      }
+    }, 400);
+    return () => { cancelled = true; clearTimeout(timer); };
+    // buildInput lee el estado actual; previewKey resume lo que cambia el precio
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, previewKey]);
+
+  const loyaltyStatus = preview?.loyaltyStatus;
+  const canRedeem = !!loyaltyStatus?.rewardAvailable || redeemLoyalty;
+  const gifts = preview?.items.filter((i) => i.isGift) ?? [];
 
   async function handleSubmit() {
     if (isMesa && !selectedTable) { setError('Elige la mesa'); return; }
@@ -158,39 +258,16 @@ export function ManualOrderModal({
     if (!isMesa && !customerPhone.trim()) { setError('El teléfono es requerido'); return; }
     if (cart.length === 0) { setError('Agrega al menos un producto'); return; }
     if (deliveryType === 'domicilio' && !address.trim()) { setError('La dirección es requerida para domicilio'); return; }
+    if (deliveryType === 'domicilio' && isZonesMode && !selectedZone) { setError('Elige la zona o barrio'); return; }
     if (!selectedPayment) { setError('Elige un método de pago'); return; }
+
+    if (previewError && couponCode) { setError('Revisa el cupón antes de crear el pedido'); return; }
 
     setError('');
     setIsSaving(true);
     try {
-      const items: OrderItem[] = cart.map((l) => {
-        const addPrice = l.selectedAdicionales.reduce((s, a) => s + a.price, 0);
-        const unitPrice = l.product.price;
-        const additionals: Additional[] = l.selectedAdicionales.map((a) => ({ name: a.name, price: a.price }));
-        return { productId: l.product.id, productName: l.product.name, quantity: l.quantity, unitPrice, subtotal: (unitPrice + addPrice) * l.quantity, additionals };
-      });
-
-      // Teléfono normalizado: los pedidos manuales también cuentan para la fidelidad del cliente
-      const phoneKey = normalizePhone(customerPhone);
-      await ordersService.create({
-        restaurantId,
-        statusId: receivedStatusId,
-        statusHistory: [statusChange(receivedStatusId, toStatusActor(user))],
-        customerName: customerName.trim() || selectedTable?.name || '',
-        customerPhone: customerPhone.trim(),
-        ...(phoneKey ? { customerPhoneKey: phoneKey } : {}),
-        deliveryType,
-        ...(isMesa && selectedTable ? { tableId: selectedTable.id, tableName: selectedTable.name } : {}),
-        ...(deliveryType === 'domicilio' && address.trim() ? { customerAddress: address.trim() } : {}),
-        ...(deliveryType === 'domicilio' && barrio.trim() ? { barrio: barrio.trim() } : {}),
-        ...toOrderPayment(selectedPayment),
-        isPaid: false,
-        items,
-        subtotal,
-        total: subtotal,
-        ...(notes.trim() ? { notes: notes.trim() } : {}),
-      });
-
+      // El servidor recalcula todo (precios, promociones, cupón, fidelidad) y suma los usos
+      await postPanelOrder(buildInput(false));
       reset();
       onClose();
     } catch (err) {
@@ -429,8 +506,18 @@ export function ManualOrderModal({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
                   <input type="text" placeholder="Dirección *" value={address} onChange={(e) => setAddress(e.target.value)}
                     style={{ width: '100%', borderRadius: 12, border: '1.5px solid var(--t-input-border)', padding: '10px 13px', fontFamily: sg, fontSize: 13, color: 'var(--t-text-1)', background: 'var(--t-input-bg)', outline: 'none', boxSizing: 'border-box' }} />
-                  <input type="text" placeholder="Barrio o sector" value={barrio} onChange={(e) => setBarrio(e.target.value)}
-                    style={{ width: '100%', borderRadius: 12, border: '1.5px solid var(--t-input-border)', padding: '10px 13px', fontFamily: sg, fontSize: 13, color: 'var(--t-text-1)', background: 'var(--t-input-bg)', outline: 'none', boxSizing: 'border-box' }} />
+                  {isZonesMode ? (
+                    <Select
+                      value={zoneId}
+                      onChange={setZoneId}
+                      placeholder="Elige tu zona o barrio *"
+                      searchable
+                      options={activeZones.map((z) => ({ value: z.id, label: `${z.name} · ${formatCurrency(z.price)}` }))}
+                    />
+                  ) : (
+                    <input type="text" placeholder="Barrio o sector" value={barrio} onChange={(e) => setBarrio(e.target.value)}
+                      style={{ width: '100%', borderRadius: 12, border: '1.5px solid var(--t-input-border)', padding: '10px 13px', fontFamily: sg, fontSize: 13, color: 'var(--t-text-1)', background: 'var(--t-input-bg)', outline: 'none', boxSizing: 'border-box' }} />
+                  )}
                 </div>
               )}
             </section>
@@ -441,6 +528,47 @@ export function ManualOrderModal({
                 Método de pago
               </div>
               <PaymentMethodPicker methods={activePaymentMethods} value={paymentMethodId} onChange={setPaymentMethodId} />
+            </section>
+
+            {/* CUPÓN Y FIDELIDAD */}
+            <section>
+              <div style={{ fontFamily: sg, fontSize: 11, fontWeight: 700, letterSpacing: '.04em', color: 'var(--t-text-2)', marginBottom: 10 }}>
+                Cupón y fidelidad
+              </div>
+              {couponCode ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, borderRadius: 12, border: '1.5px solid #bbf7d0', background: '#f0fdf4', padding: '8px 12px' }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#15803d' }}>🎟️ {couponCode}</span>
+                  <button type="button" onClick={() => { setCouponCode(''); setCouponInput(''); }}
+                    style={{ fontSize: 12, fontWeight: 600, color: 'var(--t-text-3)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                    Quitar
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input type="text" placeholder="Código de cupón (opcional)" value={couponInput} onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                    style={{ flex: 1, minWidth: 0, borderRadius: 12, border: '1.5px solid var(--t-input-border)', padding: '10px 13px', fontFamily: sg, fontSize: 13, color: 'var(--t-text-1)', background: 'var(--t-input-bg)', outline: 'none', boxSizing: 'border-box' }} />
+                  <button type="button" disabled={!couponInput.trim()} onClick={() => setCouponCode(couponInput.trim())}
+                    style={{ borderRadius: 12, border: '1.5px solid var(--t-border)', background: 'var(--t-surface)', padding: '0 14px', fontFamily: sg, fontSize: 13, fontWeight: 600, color: 'var(--t-text-2)', cursor: couponInput.trim() ? 'pointer' : 'default', opacity: couponInput.trim() ? 1 : 0.5 }}>
+                    Aplicar
+                  </button>
+                </div>
+              )}
+              {canRedeem && (
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 13, color: 'var(--t-text-1)', cursor: 'pointer' }}>
+                  <input type="checkbox" checked={redeemLoyalty} onChange={(e) => setRedeemLoyalty(e.target.checked)} style={{ accentColor: '#FF6A1A' }} />
+                  🎁 Canjear premio de fidelidad
+                </label>
+              )}
+              {loyaltyStatus && !loyaltyStatus.rewardAvailable && !redeemLoyalty && (
+                <p style={{ fontSize: 12, color: 'var(--t-text-3)', margin: '8px 0 0' }}>
+                  Fidelidad: {loyaltyStatus.stamps} de {loyaltyStatus.required} sellos
+                </p>
+              )}
+              {!validPhone && (
+                <p style={{ fontSize: 11, color: 'var(--t-text-4)', margin: '8px 0 0' }}>
+                  Escribe el celular del cliente para ver sus sellos de fidelidad.
+                </p>
+              )}
             </section>
 
             {/* NOTAS */}
@@ -454,9 +582,35 @@ export function ManualOrderModal({
         {/* Footer */}
         <div style={{ flexShrink: 0, borderTop: '1px solid var(--t-border)', padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           {error && <p style={{ fontFamily: sg, fontSize: 13, color: '#D8412F', textAlign: 'center', margin: 0 }}>{error}</p>}
+          {/* Desglose: productos, promociones, domicilio */}
+          {cart.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: 13, color: 'var(--t-text-3)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Productos</span>
+                <span>{formatCurrency(preview?.subtotal ?? subtotal)}</span>
+              </div>
+              {preview?.appliedPromotions.filter((p) => p.amount > 0 && p.type !== 'free_delivery').map((p) => (
+                <div key={p.promotionId} style={{ display: 'flex', justifyContent: 'space-between', color: '#15803d' }}>
+                  <span>🏷️ {p.type === 'loyalty' ? 'Premio de fidelidad' : p.name}</span>
+                  <span>−{formatCurrency(p.amount)}</span>
+                </div>
+              ))}
+              {gifts.map((g) => (
+                <div key={g.productId} style={{ color: '#15803d' }}>🎁 Regalo: {g.quantity}× {g.productName}</div>
+              ))}
+              {deliveryType === 'domicilio' && (preview?.deliveryFee !== undefined || selectedZone) && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Domicilio{selectedZone ? ` · ${selectedZone.name}` : ''}</span>
+                  <span>{preview?.freeDelivery ? 'Gratis' : formatCurrency(preview?.deliveryFee ?? deliveryFee)}</span>
+                </div>
+              )}
+              {previewing && <span style={{ fontSize: 11, color: 'var(--t-text-4)' }}>Calculando promociones…</span>}
+              {previewError && <span style={{ fontSize: 12, color: '#D8412F' }}>{previewError}</span>}
+            </div>
+          )}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--t-text-1)' }}>Total</span>
-            <span style={{ fontWeight: 700, fontSize: 17, color: '#FF6A1A' }}>{formatCurrency(subtotal)}</span>
+            <span style={{ fontWeight: 700, fontSize: 17, color: '#FF6A1A' }}>{formatCurrency(total)}</span>
           </div>
           <button
             onClick={handleSubmit}

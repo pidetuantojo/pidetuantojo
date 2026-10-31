@@ -276,10 +276,9 @@ service cloud.firestore {
       }
 
       match /orders/{orderId} {
-        // Los pedidos del menú público los crea el servidor (/api/orders: valida precios y promociones).
-        // Desde el cliente solo se crean pedidos manuales del panel.
-        allow create: if request.resource.data.restaurantId == restaurantId
-          && hasPerm(restaurantId, 'orders.create');
+        // Todos los pedidos los crea el servidor, que calcula precios, promociones y usos:
+        // la carta con /api/orders y el panel con /api/orders/manual. Desde el navegador, nunca.
+        allow create: if false;
         // Contabilidad y la estación de impresión también leen pedidos
         allow read: if hasAnyPerm(restaurantId, ['orders.view', 'accounting.view', 'print_station.run']);
         allow update: if isSuperAdmin() || orderUpdateAllowed();

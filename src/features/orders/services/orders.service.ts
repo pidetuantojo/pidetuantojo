@@ -4,9 +4,8 @@ import {
 
 import { auth, db } from '@/lib/firebase/config';
 import { compactEvent, orderEvents, type OrderEventDraft } from '@/lib/orders/orderEvents';
-import { generateOrderNumber } from '@/lib/orders/orderNumber';
 import { statusChange, type StatusActor } from '@/lib/orders/statusHistory';
-import type { AssignedDriver, CreateOrderData, Mesa, Order, OrderItem, OrderPayment, UpdateOrderData } from '@/types';
+import type { AssignedDriver, Mesa, Order, OrderItem, OrderPayment, UpdateOrderData } from '@/types';
 
 import { applyManualDiscount, lineSubtotal, recalcAmounts } from '../helpers/amounts.helpers';
 import { isFullyPaid } from '../helpers/payments.helpers';
@@ -39,27 +38,9 @@ async function commit(restaurantId: string, orderId: string, update: Record<stri
   await batch.commit();
 }
 
-// Pedidos del menú público: POST /api/orders (el servidor calcula precios y promociones).
-// Aquí solo se crean pedidos manuales del panel (regla: orders.create).
+// Los pedidos se CREAN en el servidor: la carta con POST /api/orders y el panel con POST /api/orders/manual
+// (calculan precios, promociones y usos). Aquí solo se modifican pedidos existentes.
 export const ordersService = {
-  async create(data: CreateOrderData): Promise<{ id: string; orderNumber: string }> {
-    const now = new Date().toISOString();
-    const ref = doc(ordersRef(data.restaurantId));
-    const orderNumber = generateOrderNumber();
-    const batch = writeBatch(db);
-    batch.set(ref, {
-      ...data,
-      id: ref.id,
-      orderNumber,
-      statusHistory: data.statusHistory ?? [statusChange(data.statusId, null, now)],
-      createdAt: now,
-      updatedAt: now,
-    });
-    addEvent(batch, data.restaurantId, ref.id, orderEvents.created('panel'));
-    await batch.commit();
-    return { id: ref.id, orderNumber };
-  },
-
   // Los cambios de estado quedan en statusHistory (no se duplican como evento)
   async updateStatus(restaurantId: string, id: string, statusId: string, actor?: StatusActor | null): Promise<void> {
     const now = new Date().toISOString();

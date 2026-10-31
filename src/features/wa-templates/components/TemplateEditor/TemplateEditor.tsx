@@ -7,6 +7,11 @@ import { applyTemplate, TEMPLATE_VARS } from '@/lib/whatsapp/templates.core';
 export const EXAMPLE_DATA = {
   customerName: 'Juan García',
   orderNumber: '1042',
+  // Ejemplo a domicilio con descuento, para ver todas las líneas del resumen
+  subtotal: 46000,
+  discount: 6000,
+  deliveryType: 'domicilio' as const,
+  deliveryFee: 5000,
   total: 45000,
   paymentMethod: 'Efectivo',
   statusName: 'En camino',

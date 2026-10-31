@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 
-import { CheckoutError, checkoutSchema } from '@/lib/orders/checkout.schema';
+import { CheckoutError, checkoutSchema, panelOrderSchema } from '@/lib/orders/checkout.schema';
 
 import { FakeFirestore, increment, serverTimestamp } from './fakeFirestore';
 
@@ -11,8 +11,9 @@ vi.mock('firebase-admin/firestore', () => ({ FieldValue: { increment, serverTime
 
 // Se importa después de los mocks (usa adminDb al ejecutarse)
 let createPublicOrder: typeof import('@/lib/orders/createOrder.server').createPublicOrder;
+let createPanelOrder: typeof import('@/lib/orders/createOrder.server').createPanelOrder;
 beforeAll(async () => {
-  ({ createPublicOrder } = await import('@/lib/orders/createOrder.server'));
+  ({ createPublicOrder, createPanelOrder } = await import('@/lib/orders/createOrder.server'));
 });
 
 // Miércoles 14 de octubre de 2026, 16:00 en Colombia
@@ -154,5 +155,66 @@ describe('createPublicOrder', () => {
   it('restaurante inactivo: no recibe pedidos', async () => {
     db.update(R, { isActive: false });
     await expect(createPublicOrder(input(), NOW)).rejects.toThrow(/no está recibiendo pedidos/);
+  });
+});
+
+describe('createPanelOrder (pedido manual)', () => {
+  beforeEach(() => {
+    seed();
+    db.set(`${R}/mesas/t1`, { name: 'Mesa 4', isActive: true, sortOrder: 1 });
+  });
+  const cajero = { uid: 'u-ana', name: 'Ana' };
+  const panel = (over: Record<string, unknown> = {}) => panelOrderSchema.parse({
+    restaurantId: 'r1', items: [{ productId: 'burger', quantity: 2 }],
+    customerName: 'Juan', customerPhone: '300 123 4567', deliveryType: 'recoger', paymentMethodId: 'efectivo', ...over,
+  });
+  const orders = () => Array.from(db.docs.keys()).filter((k) => /^restaurants\/r1\/orders\/[^/]+$/.test(k));
+
+  it('aplica las mismas promociones que la carta y suma el uso', async () => {
+    promo('p20', { type: 'item_discount', discountKind: 'percent', discountValue: 20, target: { scope: 'categories', categoryIds: ['burgers'] } });
+    const order = await createPanelOrder(panel(), cajero, NOW);
+    expect(order.discount).toBe(8000);
+    expect(order.total).toBe(32000);
+    expect(db.get(`${R}/promotions/p20`)?.usesCount).toBe(1);
+    // El mismo filtro que usa la vista previa encuentra el pedido guardado
+    expect(orders()).toHaveLength(1);
+  });
+
+  it('valida el cupón en el servidor', async () => {
+    promo('cupon', { type: 'order_discount', discountKind: 'percent', discountValue: 10, stackable: true, couponCode: 'INSTA10' });
+    await expect(createPanelOrder(panel({ couponCode: 'NOEXISTE' }), cajero, NOW)).rejects.toThrow(/no existe/);
+    const order = await createPanelOrder(panel({ couponCode: 'insta10' }), cajero, NOW);
+    expect(order.total).toBe(36000);
+  });
+
+  it('la vista previa calcula sin guardar ni sumar usos, aunque falten datos', async () => {
+    promo('p20', { type: 'item_discount', discountKind: 'percent', discountValue: 20, target: { scope: 'categories', categoryIds: ['burgers'] } });
+    const preview = await createPanelOrder(panel({ dryRun: true, customerName: '', customerPhone: '', paymentMethodId: '' }), cajero, NOW);
+    expect(preview.total).toBe(32000);
+    expect(orders()).toHaveLength(0);
+    expect(db.get(`${R}/promotions/p20`)?.usesCount).toBe(0);
+  });
+
+  it('mesa sin celular ni nombre: se crea con el nombre de la mesa y sin registrar cliente', async () => {
+    const order = await createPanelOrder(panel({ deliveryType: 'mesa', tableId: 't1', customerName: '', customerPhone: '' }), cajero, NOW);
+    const saved = db.get(`${R}/orders/${order.id}`)!;
+    expect(saved).toMatchObject({ customerName: 'Mesa 4', tableName: 'Mesa 4' });
+    expect(saved).not.toHaveProperty('customerPhoneKey');
+    expect(Array.from(db.docs.keys()).some((k) => k.includes('/customers/'))).toBe(false);
+  });
+
+  it('fuera de mesa exige nombre, celular y método de pago', () => {
+    expect(() => panel({ customerName: '' })).toThrow(/nombre/);
+    expect(() => panel({ customerPhone: '' })).toThrow(/teléfono/);
+    expect(() => panel({ paymentMethodId: '' })).toThrow(/método de pago/);
+  });
+
+  it('la auditoría queda firmada por el cajero y no se manda WhatsApp', async () => {
+    const order = await createPanelOrder(panel({ notes: 'Sin cebolla' }), cajero, NOW);
+    const saved = db.get(`${R}/orders/${order.id}`)!;
+    expect(saved).toMatchObject({ notes: 'Sin cebolla', statusHistory: [{ statusId: 'st-received', by: 'u-ana', byName: 'Ana' }] });
+    const event = Array.from(db.docs.entries()).find(([k]) => k.startsWith(`${R}/orders/${order.id}/events/`))?.[1];
+    expect(event).toMatchObject({ type: 'created', summary: 'Pedido creado en el panel', by: 'u-ana', byName: 'Ana' });
+    expect(order.customerMessage).toBeUndefined();
   });
 });

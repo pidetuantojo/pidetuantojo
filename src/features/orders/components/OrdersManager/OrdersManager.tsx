@@ -22,6 +22,7 @@ import { useProducts } from '@/features/products/hooks/useProducts';
 import { useAdicionales } from '@/features/adicionales/hooks/useAdicionales';
 import { useCategories } from '@/features/categories';
 import { useDomiciliarios } from '@/features/delivery-zones/hooks/useDomiciliarios';
+import { useDeliveryZones } from '@/features/delivery-zones/hooks/useDeliveryZones';
 import { useMesas } from '@/features/delivery-methods/hooks/useMesas';
 import { useRestaurant } from '@/features/restaurants/hooks/useRestaurants';
 import type { Order } from '@/types';
@@ -258,6 +259,7 @@ export function OrdersManager() {
   const { data: domiciliarios = [] } = useDomiciliarios(restaurantId);
   const { data: mesas = [] } = useMesas(dineInEnabled ? restaurantId : undefined);
   const { data: restaurant } = useRestaurant(restaurantId || undefined);
+  const { data: deliveryZones = [] } = useDeliveryZones(restaurantId || undefined);
 
   const canDelete = user?.role === 'restaurant_admin' || user?.role === 'super_admin';
 
@@ -639,6 +641,8 @@ export function OrdersManager() {
         mesas={mesas}
         occupiedTableIds={occupiedTableIds}
         dineInEnabled={dineInEnabled}
+        deliveryMode={restaurant?.deliveryMode}
+        deliveryZones={deliveryZones}
       />
 
       {/* Modal eliminar pedido */}
