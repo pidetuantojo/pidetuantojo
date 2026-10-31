@@ -38,3 +38,41 @@ export async function reserveSequence(
 export function formatSequence(prefix: string, n: number, pad = 6): string {
   return `${prefix}-${String(n).padStart(pad, '0')}`;
 }
+
+export interface SequenceAllocator {
+  /** Reserva el siguiente número de `name`; varias reservas del mismo nombre en la transacción avanzan. */
+  reserve: (name: string) => Promise<SequenceReservation>;
+}
+
+/**
+ * Reservas múltiples del mismo consecutivo dentro de UNA transacción (p. ej. dos asientos en el
+ * cierre de caja). Crear uno por intento de transacción: no se comparte entre reintentos.
+ */
+export function createSequenceAllocator(tx: Transaction, restaurantId: string): SequenceAllocator {
+  const state = new Map<string, { latest: number; written: boolean }>();
+  return {
+    reserve: async (name) => {
+      let entry = state.get(name);
+      if (!entry) {
+        const base = await reserveSequence(tx, restaurantId, name);
+        entry = { latest: base.value - 1, written: false };
+        state.set(name, entry);
+      }
+      const current = entry;
+      current.latest += 1;
+      const value = current.latest;
+      return {
+        value,
+        commit: (writeTx) => {
+          // Un solo set con el último valor reservado, sin importar el orden de los commits
+          if (current.written) return;
+          current.written = true;
+          writeTx.set(adminDb.doc(sequencePath(restaurantId, name)), {
+            current: current.latest,
+            updatedAt: new Date().toISOString(),
+          });
+        },
+      };
+    },
+  };
+}

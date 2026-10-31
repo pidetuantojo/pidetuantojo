@@ -5,7 +5,11 @@ import type { DocumentReference, Transaction } from 'firebase-admin/firestore';
 import { adminDb } from '@/lib/firebase/admin';
 import { writeAuditLog, type AuditContext } from '@/lib/shared/audit.server';
 import { checkIdempotency } from '@/lib/shared/idempotency.server';
-import { formatSequence, reserveSequence } from '@/lib/shared/sequence.server';
+import {
+  formatSequence,
+  reserveSequence,
+  type SequenceAllocator,
+} from '@/lib/shared/sequence.server';
 
 import {
   buildReversalDraft,
@@ -21,6 +25,11 @@ import {
   stripUndefined,
 } from './ledger.paths';
 import type { JournalEntry, JournalEntryDraft, JournalLine, LedgerAccount } from './ledger.types';
+
+export interface PostOptions extends ValidateOptions {
+  /** Para varios asientos en la misma transacción: comparten el consecutivo sin pisarse. */
+  sequences?: SequenceAllocator;
+}
 
 export interface PreparedEntry {
   entryId: string;
@@ -47,7 +56,7 @@ export async function preparePostEntry(
   restaurantId: string,
   draft: JournalEntryDraft,
   audit: AuditContext,
-  options: ValidateOptions = {}
+  options: PostOptions = {}
 ): Promise<PreparedEntry> {
   const accounts = await loadAccounts(
     tx,
@@ -55,7 +64,9 @@ export async function preparePostEntry(
     draft.lines.map((l) => l.accountId)
   );
   validateEntry(draft, accounts, options);
-  const sequence = await reserveSequence(tx, restaurantId, JOURNAL_SEQUENCE);
+  const sequence = options.sequences
+    ? await options.sequences.reserve(JOURNAL_SEQUENCE)
+    : await reserveSequence(tx, restaurantId, JOURNAL_SEQUENCE);
   const number = formatSequence(JOURNAL_PREFIX, sequence.value);
   const entryRef = adminDb.collection(ledgerCollectionPath(restaurantId, 'entries')).doc();
 
@@ -124,7 +135,8 @@ export async function prepareReverseEntry(
   restaurantId: string,
   entryId: string,
   meta: ReverseMeta,
-  audit: AuditContext
+  audit: AuditContext,
+  sequences?: SequenceAllocator
 ): Promise<PreparedEntry> {
   const originalRef = adminDb.doc(
     `${ledgerCollectionPath(restaurantId, 'entries')}/${entryId}`
@@ -135,7 +147,10 @@ export async function prepareReverseEntry(
 
   const draft = buildReversalDraft(original, meta);
   // Las cuentas pudieron desactivarse después: la reversión igual debe poder asentarse
-  const prepared = await preparePostEntry(tx, restaurantId, draft, audit, { allowInactive: true });
+  const prepared = await preparePostEntry(tx, restaurantId, draft, audit, {
+    allowInactive: true,
+    sequences,
+  });
 
   return {
     ...prepared,

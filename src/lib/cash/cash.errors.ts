@@ -1,0 +1,56 @@
+// Errores de dominio de caja. Puros: sin Firebase ni Next.
+export type CashErrorCode =
+  | 'REGISTER_NOT_FOUND'
+  | 'SHIFT_NOT_FOUND'
+  | 'MOVEMENT_NOT_FOUND'
+  | 'CLOSING_NOT_FOUND'
+  | 'INVALID_REGISTER'
+  | 'INVALID_LEDGER_ACCOUNT'
+  | 'INVALID_COUNT'
+  | 'INVALID_METHOD'
+  | 'INVALID_AMOUNT'
+  | 'INVALID_SETTINGS'
+  | 'NO_GENERAL_REGISTER'
+  | 'JUSTIFICATION_REQUIRED'
+  | 'REGISTER_HAS_OPEN_SHIFT'
+  | 'CASHIER_HAS_OPEN_SHIFT'
+  | 'INVALID_SHIFT_STATE'
+  | 'PENDING_WITHDRAWALS'
+  | 'MOVEMENT_NOT_PENDING'
+  | 'ALREADY_REVERSED'
+  | 'NOT_REVERSIBLE'
+  | 'SHIFT_CLOSED';
+
+const NOT_FOUND: readonly CashErrorCode[] = [
+  'REGISTER_NOT_FOUND',
+  'SHIFT_NOT_FOUND',
+  'MOVEMENT_NOT_FOUND',
+  'CLOSING_NOT_FOUND',
+];
+const CONFLICT: readonly CashErrorCode[] = [
+  'REGISTER_HAS_OPEN_SHIFT',
+  'CASHIER_HAS_OPEN_SHIFT',
+  'INVALID_SHIFT_STATE',
+  'PENDING_WITHDRAWALS',
+  'MOVEMENT_NOT_PENDING',
+  'ALREADY_REVERSED',
+  'NOT_REVERSIBLE',
+  'SHIFT_CLOSED',
+];
+
+export class CashError extends Error {
+  constructor(
+    readonly code: CashErrorCode,
+    message: string
+  ) {
+    super(message);
+    this.name = 'CashError';
+  }
+
+  /** Código HTTP sugerido para responder desde una ruta. */
+  get status(): 400 | 404 | 409 {
+    if (NOT_FOUND.includes(this.code)) return 404;
+    if (CONFLICT.includes(this.code)) return 409;
+    return 400;
+  }
+}
