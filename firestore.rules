@@ -310,6 +310,40 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      // Cajas, turnos y movimientos: solo lectura desde el cliente; todo se escribe en el servidor.
+      match /cashRegisters/{registerId} {
+        allow read: if hasPerm(restaurantId, 'cash.view');
+        allow write: if false;
+      }
+
+      match /cashSettings/{settingsId} {
+        allow read: if hasPerm(restaurantId, 'cash.view');
+        allow write: if false;
+      }
+
+      // El cajero solo ve lo suyo; el supervisor ve todo
+      match /cashShifts/{shiftId} {
+        allow read: if hasPerm(restaurantId, 'cash.approve')
+          || (hasPerm(restaurantId, 'cash.operate') && resource.data.cashierUid == request.auth.uid);
+        allow write: if false;
+      }
+
+      match /cashMovements/{movementId} {
+        allow read: if hasPerm(restaurantId, 'cash.approve')
+          || (hasPerm(restaurantId, 'cash.operate') && resource.data.cashierUid == request.auth.uid);
+        allow write: if false;
+      }
+
+      // Cierre a ciegas: esperado y diferencias solo para quien aprueba
+      match /cashClosings/{closingId} {
+        allow read: if hasPerm(restaurantId, 'cash.approve');
+        allow write: if false;
+      }
+
+      match /cashShiftLocks/{lockId} {
+        allow read, write: if false;
+      }
+
       match /auditLog/{logId} {
         allow read: if hasPerm(restaurantId, 'ledger.manage');
         allow write: if false;
