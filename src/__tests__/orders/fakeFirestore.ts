@@ -1,11 +1,13 @@
 // Firestore en memoria (Admin SDK) para testear la lógica del servidor sin red.
 // Soporta lo que usan createOrder/promotions.server: doc/collection/get, where(==, in), limit, getAll,
-// runTransaction (get/set/update) y FieldValue.increment.
+// runTransaction (get/set/update), FieldValue.increment y FieldValue.arrayUnion.
 
 type Data = Record<string, unknown>;
 
 export const INC = Symbol('increment');
 export const increment = (n: number) => ({ [INC]: n });
+export const UNION = Symbol('arrayUnion');
+export const arrayUnion = (...items: unknown[]) => ({ [UNION]: items });
 
 let autoId = 0;
 
@@ -41,6 +43,9 @@ export class FakeFirestore {
       const last = parts[parts.length - 1];
       if (value && typeof value === 'object' && INC in value) {
         target[last] = ((target[last] as number) ?? 0) + (value as Record<symbol, number>)[INC];
+      } else if (value && typeof value === 'object' && UNION in value) {
+        const prev = (target[last] as unknown[]) ?? [];
+        target[last] = [...prev, ...(value as Record<symbol, unknown[]>)[UNION].filter((i) => !prev.includes(i))];
       } else {
         target[last] = value;
       }
@@ -61,6 +66,7 @@ export class DocRef {
     return { exists: !!data, id: this.id, ref: this, data: () => (data ? structuredClone(data) : undefined) };
   }
   async set(data: Data) { this.db.set(this.path, data); }
+  async update(data: Data) { this.db.update(this.path, data); }
   async delete() { this.db.docs.delete(this.path); }
 }
 

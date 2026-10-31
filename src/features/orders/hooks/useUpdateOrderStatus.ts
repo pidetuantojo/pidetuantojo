@@ -1,56 +1,27 @@
 import { useState } from 'react';
 
 import { useAuth } from '@/features/auth';
+import { authFetch } from '@/lib/auth/authFetch';
 import { toStatusActor } from '@/lib/orders/statusHistory';
 
 import { ordersService } from '../services/orders.service';
-import {
-  applyTemplate, DEFAULT_TEMPLATES, getWaTemplateStore, STATUS_TO_EVENT, templateBody,
-} from '@/lib/whatsapp/templates';
 
-export interface WaNotifyItem {
-  productName: string;
-  quantity: number;
-}
+type WaEvent = 'status' | 'paid';
 
-export interface WaNotifyData {
-  customerPhone: string;
-  customerName: string;
-  orderNumber: string;
-  statusName: string;
-  statusCode?: string;
-  // Plantilla a usar (statusTemplateId del estado). Sin ella se elige por statusCode
-  templateId?: string;
-  items?: WaNotifyItem[];
-  paymentMethod?: string;
-  total?: number;
-}
-
-async function buildMessage(restaurantId: string, data: WaNotifyData): Promise<string> {
-  const templateId = data.templateId ?? STATUS_TO_EVENT[data.statusCode ?? ''] ?? 'pedido_estado_actualizado';
-  try {
-    const store = await getWaTemplateStore(restaurantId);
-    return applyTemplate(templateBody(store, templateId), data);
-  } catch {
-    return applyTemplate(DEFAULT_TEMPLATES.pedido_estado_actualizado, data);
-  }
-}
-
-/** Envía el mensaje y devuelve 'ok', 'disconnected' o 'error'. */
+/**
+ * Pide al servidor que avise al cliente. Solo viaja qué pedido y qué evento: el servidor verifica
+ * la sesión y el permiso, y saca el teléfono y el texto de Firestore (pedido + plantilla del estado).
+ */
 async function sendWaNotification(
   restaurantId: string,
-  data: WaNotifyData,
+  orderId: string,
+  event: WaEvent,
 ): Promise<'ok' | 'disconnected' | 'error'> {
-  // Normalizar teléfono: solo dígitos. Si queda muy corto, no intentar.
-  const phone = data.customerPhone.replace(/\D/g, '');
-  if (phone.length < 7) return 'error';
-
   try {
-    const message = await buildMessage(restaurantId, data);
-    const res = await fetch('/api/whatsapp/notify', {
+    const res = await authFetch('/api/whatsapp/notify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ restaurantId, phone, message }),
+      body: JSON.stringify({ restaurantId, orderId, event }),
     });
     if (res.ok) return 'ok';
     const body = await res.json().catch(() => ({}));
@@ -73,8 +44,8 @@ export function useUpdateOrderStatus(restaurantId: string) {
   async function updateStatus(
     orderId: string,
     statusId: string,
-    /** Si se pasa notifyData, se intenta enviar WA. Si es undefined, no se notifica. */
-    notifyData?: WaNotifyData,
+    /** true = avisar al cliente por WhatsApp (el servidor vuelve a verificar si corresponde). */
+    notify = false,
   ): Promise<void> {
     setIsPending(true);
     setError(null);
@@ -82,11 +53,10 @@ export function useUpdateOrderStatus(restaurantId: string) {
     try {
       await ordersService.updateStatus(restaurantId, orderId, statusId, toStatusActor(user));
 
-      // Si el estado no avisa, quien llama no pasa notifyData (ver statusTemplateId)
-      if (notifyData?.customerPhone) {
+      if (notify) {
         // No bloquear el flujo principal — enviar en background
-        sendWaNotification(restaurantId, notifyData).then((result) => {
-            if (result === 'disconnected') setWaError('disconnected');
+        sendWaNotification(restaurantId, orderId, 'status').then((result) => {
+          if (result === 'disconnected') setWaError('disconnected');
         });
       }
     } catch (err) {
@@ -98,8 +68,8 @@ export function useUpdateOrderStatus(restaurantId: string) {
   }
 
   /** Envía notificación de pago sin cambiar el estado del pedido. */
-  function notifyPaid(notifyData: WaNotifyData) {
-    sendWaNotification(restaurantId, { ...notifyData, statusCode: 'paid' }).then((result) => {
+  function notifyPaid(orderId: string) {
+    sendWaNotification(restaurantId, orderId, 'paid').then((result) => {
       if (result === 'disconnected') setWaError('disconnected');
     });
   }

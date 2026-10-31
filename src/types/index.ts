@@ -363,6 +363,8 @@ export interface Order {
   statusId: string;
   // Historial de estados (se agrega con arrayUnion). Los pedidos anteriores a esta función no lo tienen
   statusHistory?: OrderStatusChange[];
+  // Avisos de WhatsApp ya enviados ('status:<statusId>' | 'paid'). Solo lo escribe el servidor
+  waNotified?: string[];
   notes?: string;
   internalNote?: string;
   location?: { lat: number; lng: number };

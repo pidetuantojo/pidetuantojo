@@ -150,20 +150,10 @@ function DrawerContent({
 
   async function changeStatus(next: OrderStatus) {
     if (!canChangeStatus || next.id === order.statusId) return;
-    // Solo notificar si autoNotify está activo, NO es una mesa y el estado tiene el aviso encendido
-    const templateId = statusTemplateId(next);
-    const notifyData = (autoNotify && !isMesa && templateId) ? {
-      customerPhone: order.customerPhone,
-      customerName: order.customerName,
-      orderNumber: order.orderNumber,
-      statusName: next.name,
-      statusCode: next.code,
-      templateId,
-      items: order.items.map((i) => ({ productName: i.productName, quantity: i.quantity })),
-      paymentMethod: order.paymentMethod,
-      total: totals.total,
-    } : undefined;
-    await updateStatus(order.id, next.id, notifyData);
+    // Solo notificar si autoNotify está activo, NO es una mesa y el estado tiene el aviso encendido.
+    // Evita llamadas inútiles; el servidor vuelve a verificar todo antes de enviar.
+    const notify = autoNotify && !isMesa && !!order.customerPhone && statusTemplateId(next) !== null;
+    await updateStatus(order.id, next.id, notify);
   }
 
   async function handleCancel() {
@@ -176,14 +166,7 @@ function DrawerContent({
     await run(async () => {
       await ordersService.updateIsPaid(restaurantId, order.id, markAsPaid);
       if (markAsPaid && autoNotify && !isMesa && order.customerPhone) {
-        notifyPaid({
-          customerPhone: order.customerPhone,
-          customerName: order.customerName,
-          orderNumber: order.orderNumber,
-          statusName: 'Pagado',
-          paymentMethod: order.paymentMethod,
-          total: totals.total,
-        });
+        notifyPaid(order.id);
       }
     });
   }

@@ -497,7 +497,6 @@ export function CartDrawer({ primaryColor, secondaryColor, deliveryZones, delive
       } catch { /* si falla el chequeo, caemos al flujo wa.me */ }
     }
 
-    const savedPhone = phone;
     clearCart();
     setName('');
     setPhone('');
@@ -521,15 +520,7 @@ export function CartDrawer({ primaryColor, secondaryColor, deliveryZones, delive
     setSeenPromotionIds({});
 
     if (waConnected && created) {
-      // Mensaje restaurante → cliente: lo arma el servidor con la plantilla del estado "Recibido".
-      // Sin customerMessage, ese estado tiene el aviso apagado.
-      if (created.customerMessage) {
-        fetch('/api/whatsapp/notify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ restaurantId, phone: savedPhone, message: created.customerMessage }),
-        }).catch(() => {});
-      }
+      // El WhatsApp de confirmación al cliente ya lo envió el servidor al crear el pedido
       setCartOpen(false);
       setWaSuccessModal({ orderNumber: created.orderNumber });
     } else {

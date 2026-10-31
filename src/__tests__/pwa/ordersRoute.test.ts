@@ -3,6 +3,8 @@ import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 
 const createPublicOrder = vi.fn();
 const notifyNewOrder = vi.fn();
+const sendWhatsApp = vi.fn();
+const isAutoNotifyOn = vi.fn();
 
 vi.mock('@/lib/orders/createOrder.server', () => ({ createPublicOrder }));
 vi.mock('@/lib/push/push.server', async () => {
@@ -10,6 +12,10 @@ vi.mock('@/lib/push/push.server', async () => {
     Promise.race([task, new Promise<'timeout'>((r) => setTimeout(() => r('timeout'), ms))]);
   return { notifyNewOrder, withTimeout };
 });
+vi.mock('@/lib/whatsapp/send.server', () => ({
+  sendWhatsApp, isAutoNotifyOn,
+  waPhone: (p?: string) => ((p ?? '').replace(/\D/g, '').length >= 7 ? (p ?? '').replace(/\D/g, '') : null),
+}));
 
 let POST: typeof import('@/app/api/orders/route').POST;
 beforeAll(async () => {
@@ -25,13 +31,15 @@ const body = {
   customerAddress: 'Calle 1',
   paymentMethodId: 'efectivo',
 };
-const request = () => new Request('http://localhost/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+const request = (over: Record<string, unknown> = {}) => new Request('http://localhost/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...body, ...over }) });
 const created = { id: 'o1', orderNumber: '#100', total: 30000, items: [] };
 
 describe('POST /api/orders + aviso push', () => {
   beforeEach(() => {
     createPublicOrder.mockReset().mockResolvedValue(created);
     notifyNewOrder.mockReset();
+    sendWhatsApp.mockReset().mockResolvedValue({ ok: true });
+    isAutoNotifyOn.mockReset().mockResolvedValue(true);
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
@@ -55,5 +63,23 @@ describe('POST /api/orders + aviso push', () => {
     const res = await POST(request());
     expect(res.status).toBe(500);
     expect(notifyNewOrder).not.toHaveBeenCalled();
+  });
+
+  it('el WhatsApp al cliente lo envía el servidor y el texto no viaja al navegador', async () => {
+    createPublicOrder.mockResolvedValue({ ...created, customerMessage: 'Hola Juan' });
+    const res = await POST(request());
+    expect(sendWhatsApp).toHaveBeenCalledWith('r1', '3001234567', 'Hola Juan');
+    expect(await res.json()).not.toHaveProperty('customerMessage');
+  });
+
+  it('no envía WhatsApp si está apagado, si es mesa o si el estado no avisa', async () => {
+    createPublicOrder.mockResolvedValue({ ...created, customerMessage: 'Hola Juan' });
+    isAutoNotifyOn.mockResolvedValue(false);
+    await POST(request());
+    isAutoNotifyOn.mockResolvedValue(true);
+    await POST(request({ deliveryType: 'mesa', tableId: 't1', customerAddress: undefined }));
+    createPublicOrder.mockResolvedValue(created);
+    await POST(request());
+    expect(sendWhatsApp).not.toHaveBeenCalled();
   });
 });

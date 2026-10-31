@@ -1,41 +1,33 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
-import { getWhatsAppSession } from '@/lib/whatsapp/session';
+import { errorResponse, requirePermission } from '@/lib/auth/serverAuth';
+import { notifyOrderEvent, OrderNotFoundError } from '@/lib/whatsapp/notifyOrder.server';
 
-const SERVICE_URL = process.env.WHATSAPP_SERVICE_URL;
-const SERVICE_KEY = process.env.WHATSAPP_API_KEY;
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
-function serviceHeaders() {
-  return { 'Content-Type': 'application/json', ...(SERVICE_KEY ? { 'x-api-key': SERVICE_KEY } : {}) };
-}
+// El navegador solo dice QUÉ pedido y QUÉ evento. Nunca manda teléfono ni texto:
+// antes se aceptaban, y cualquiera podía escribir lo que quisiera desde el número del restaurante.
+const schema = z.object({
+  restaurantId: z.string().min(1),
+  orderId: z.string().min(1),
+  event: z.enum(['status', 'paid']),
+});
 
-export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { restaurantId, phone, message } = body as { restaurantId?: string; phone?: string; message?: string };
+// POST /api/whatsapp/notify — requiere sesión y permiso sobre el pedido
+export async function POST(request: Request) {
+  const parsed = schema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) return NextResponse.json({ error: 'Solicitud inválida' }, { status: 400 });
+  const { restaurantId, orderId, event } = parsed.data;
 
-  if (!phone || !message) {
-    return NextResponse.json({ error: 'phone y message son requeridos' }, { status: 400 });
-  }
-
-  if (SERVICE_URL) {
-    const res = await fetch(`${SERVICE_URL}/notify`, {
-      method: 'POST',
-      headers: serviceHeaders(),
-      body: JSON.stringify({ restaurantId, phone, message }),
-    });
-    const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
-  }
-
-  // Dev local — singleton
-  const session = getWhatsAppSession();
   try {
-    await session.sendMessage(phone, message);
-    return NextResponse.json({ ok: true });
-  } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Error al enviar' },
-      { status: 500 },
-    );
+    await requirePermission(request, event === 'paid' ? 'orders.mark_paid' : 'orders.change_status', restaurantId);
+    const result = await notifyOrderEvent(restaurantId, orderId, event);
+    if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
+    return NextResponse.json(result);
+  } catch (error) {
+    if (error instanceof OrderNotFoundError) return NextResponse.json({ error: error.message }, { status: 404 });
+    return errorResponse(error, 'No se pudo enviar el aviso');
   }
 }

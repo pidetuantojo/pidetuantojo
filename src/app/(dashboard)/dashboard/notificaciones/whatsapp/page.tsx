@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/features/auth';
+import { authFetch } from '@/lib/auth/authFetch';
 import { useWaConfig } from '@/lib/whatsapp/useWaConfig';
 
 type WaStatus = 'disconnected' | 'connecting' | 'connected';
@@ -38,7 +39,7 @@ export default function WhatsAppPage() {
 
   async function fetchStatus() {
     try {
-      const res = await fetch(`/api/whatsapp/connect?restaurantId=${restaurantId}`);
+      const res = await authFetch(`/api/whatsapp/connect?restaurantId=${restaurantId}`);
       const data = await res.json();
       setState((prev) => {
         // QR desapareció → fue escaneado
@@ -64,14 +65,14 @@ export default function WhatsAppPage() {
 
   async function handleConnect() {
     setLoading(true);
-    await fetch(`/api/whatsapp/connect?restaurantId=${restaurantId}`, { method: 'POST' });
+    await authFetch(`/api/whatsapp/connect?restaurantId=${restaurantId}`, { method: 'POST' });
     setLoading(false);
     fetchStatus();
   }
 
   async function handleDisconnect() {
     setLoading(true);
-    await fetch(`/api/whatsapp/connect?restaurantId=${restaurantId}`, { method: 'DELETE' });
+    await authFetch(`/api/whatsapp/connect?restaurantId=${restaurantId}`, { method: 'DELETE' });
     setLoading(false);
     fetchStatus();
   }

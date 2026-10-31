@@ -59,7 +59,8 @@ export interface CheckoutResponse {
   tableName?: string;
   paymentLabel: string;
   paymentAccount?: string;
-  // WhatsApp para el cliente, ya armado con la plantilla. Ausente = el estado "Recibido" no avisa
+  // WhatsApp para el cliente, ya armado con la plantilla. Ausente = el estado "Recibido" no avisa.
+  // Lo envía /api/orders y lo quita de la respuesta: nunca llega al navegador
   customerMessage?: string;
 }
 
