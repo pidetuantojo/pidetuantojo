@@ -7,6 +7,7 @@ import type { Restaurant, OpeningHours, RestaurantCategory } from '@/types';
 import { Select } from '@/components/ui/Select';
 import { Logo, LogoMark } from '@/components/ui/Logo';
 import { useTheme } from '@/components/providers/ThemeProvider';
+import { ROUTES } from '@/constants/routes';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -297,6 +298,23 @@ export function HomeClient({ restaurants, restaurantCategories }: HomeClientProp
                 </svg>
               )}
             </button>
+            <Link
+              href={ROUTES.login}
+              style={{
+                fontFamily: sg,
+                fontWeight: 600,
+                fontSize: 13,
+                color: 'var(--t-text-1)',
+                background: 'var(--t-surface)',
+                border: '1.5px solid var(--t-border)',
+                borderRadius: 12,
+                padding: '11px 18px',
+                textDecoration: 'none',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Iniciar sesión
+            </Link>
             <Link
               href="/registrar-local"
               style={{
@@ -641,6 +659,24 @@ export function HomeClient({ restaurants, restaurantCategories }: HomeClientProp
                   </svg>
                 )}
               </button>
+              <Link
+                href={ROUTES.login}
+                style={{
+                  fontFamily: sg,
+                  fontWeight: 700,
+                  fontSize: 12,
+                  color: '#fff',
+                  textDecoration: 'none',
+                  flexShrink: 0,
+                  border: '1px solid rgba(255,255,255,.3)',
+                  background: 'rgba(255,255,255,.2)',
+                  borderRadius: 999,
+                  padding: '8px 14px',
+                  letterSpacing: '.01em',
+                }}
+              >
+                Ingresar
+              </Link>
               <Link
                 href="/registrar-local"
                 style={{

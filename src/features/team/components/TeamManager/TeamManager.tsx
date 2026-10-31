@@ -6,6 +6,7 @@ import { PermissionsEditor } from '@/components/permissions/PermissionsEditor';
 import { PERMISSION_TEMPLATES, type Permission } from '@/constants/permissions';
 import { useAuth } from '@/features/auth';
 import { expandRequires, getPermissionDefinition, normalizePermissions } from '@/lib/permissions/permissions';
+import { useToastStore } from '@/store/toast.store';
 
 import { useTeam, useTeamMutations } from '../../hooks/useTeam';
 import type { TeamData, TeamMember } from '../../services/team.service';
@@ -160,7 +161,7 @@ function accessSummary(m: TeamMember): string {
 
 // ─── Vistas ───────────────────────────────────────────────────────────────────
 
-function CreateView({ restaurantId, team, onBack, onDone }: { restaurantId: string; team: TeamData; onBack: () => void; onDone: () => void }) {
+function CreateView({ restaurantId, team, onBack, onDone }: { restaurantId: string; team: TeamData; onBack: () => void; onDone: (msg: string) => void }) {
   const { create } = useTeamMutations(restaurantId);
   const [form, setForm] = useState({ displayName: '', email: '', password: '' });
   const [access, setAccess] = useState<Access>({ fullAccess: false, permissions: [] });
@@ -174,7 +175,7 @@ function CreateView({ restaurantId, team, onBack, onDone }: { restaurantId: stri
     if (!access.fullAccess && access.permissions.length === 0) { setError('Elige al menos un permiso o "Acceso completo"'); return; }
     try {
       await create.mutateAsync({ restaurantId, ...form, fullAccess: access.fullAccess, grantedPermissions: access.permissions });
-      onDone();
+      onDone(`Usuario ${form.displayName.trim()} creado`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo crear el usuario');
     }
@@ -204,7 +205,7 @@ function CreateView({ restaurantId, team, onBack, onDone }: { restaurantId: stri
 }
 
 function EditView({ restaurantId, team, member, onBack, onDone }: {
-  restaurantId: string; team: TeamData; member: TeamMember; onBack: () => void; onDone: () => void;
+  restaurantId: string; team: TeamData; member: TeamMember; onBack: () => void; onDone: (msg: string) => void;
 }) {
   const { update, remove } = useTeamMutations(restaurantId);
   const canEdit = member.canManage && team.can.update;
@@ -214,13 +215,11 @@ function EditView({ restaurantId, team, member, onBack, onDone }: {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [saved, setSaved] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   async function run(key: string, fn: () => Promise<unknown>, okMessage: string) {
     setErrors((e) => ({ ...e, [key]: '' }));
-    setSaved('');
-    try { await fn(); setSaved(okMessage); } catch (err) { setErrors((e) => ({ ...e, [key]: err instanceof Error ? err.message : 'Error inesperado' })); }
+    try { await fn(); onDone(okMessage); } catch (err) { setErrors((e) => ({ ...e, [key]: err instanceof Error ? err.message : 'Error inesperado' })); }
   }
 
   const saveInfo = () => run('info', () => update.mutateAsync({
@@ -240,12 +239,12 @@ function EditView({ restaurantId, team, member, onBack, onDone }: {
   const savePassword = () => {
     if (password.length < 6) { setErrors((e) => ({ ...e, pass: 'La contraseña debe tener al menos 6 caracteres' })); return; }
     if (password !== confirm) { setErrors((e) => ({ ...e, pass: 'Las contraseñas no coinciden' })); return; }
-    return run('pass', async () => { await update.mutateAsync({ uid: member.uid, password }); setPassword(''); setConfirm(''); }, 'Contraseña actualizada');
+    return run('pass', () => update.mutateAsync({ uid: member.uid, password }), 'Contraseña actualizada');
   };
 
   const toggleActive = () => run('active', () => update.mutateAsync({ uid: member.uid, isActive: !member.isActive }), member.isActive ? 'Usuario desactivado' : 'Usuario activado');
 
-  const doDelete = () => run('delete', async () => { await remove.mutateAsync(member.uid); onDone(); }, '');
+  const doDelete = () => run('delete', () => remove.mutateAsync(member.uid), 'Usuario eliminado');
 
   return (
     <div>
@@ -258,7 +257,6 @@ function EditView({ restaurantId, team, member, onBack, onDone }: {
           Este usuario tiene permisos que tú no tienes: solo puedes verlo.
         </p>
       )}
-      {saved && <p role="status" style={{ fontSize: 13, color: '#065f46', background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 10, padding: '10px 14px', margin: '0 0 16px' }}>{saved}</p>}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <Card title="Datos del usuario">
@@ -327,6 +325,7 @@ export function TeamManager() {
   const restaurantId = user?.restaurantId ?? '';
   const { data: team, isLoading, error } = useTeam(restaurantId || undefined);
   const [view, setView] = useState<View>({ mode: 'list' });
+  const { showToast } = useToastStore();
 
   if (!restaurantId) return null;
   if (isLoading) return <p style={{ fontFamily: sg, color: 'var(--t-text-3)' }}>Cargando equipo…</p>;
@@ -335,13 +334,14 @@ export function TeamManager() {
   }
 
   const back = () => setView({ mode: 'list' });
+  const done = (msg: string) => { showToast(msg); back(); };
   const member = view.mode === 'edit' ? team.employees.find((m) => m.uid === view.uid) : undefined;
   const atLimit = team.limit !== null && team.employees.length >= team.limit;
 
   return (
     <div style={{ fontFamily: sg, maxWidth: 760, margin: '0 auto' }}>
-      {view.mode === 'create' && <CreateView restaurantId={restaurantId} team={team} onBack={back} onDone={back} />}
-      {view.mode === 'edit' && member && <EditView key={member.uid} restaurantId={restaurantId} team={team} member={member} onBack={back} onDone={back} />}
+      {view.mode === 'create' && <CreateView restaurantId={restaurantId} team={team} onBack={back} onDone={done} />}
+      {view.mode === 'edit' && member && <EditView key={member.uid} restaurantId={restaurantId} team={team} member={member} onBack={back} onDone={done} />}
 
       {(view.mode === 'list' || (view.mode === 'edit' && !member)) && (
         <div>

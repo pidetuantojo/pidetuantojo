@@ -34,7 +34,7 @@ export function HelpCenter() {
   }, [can, query]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, fontFamily: sg, maxWidth: 960 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, fontFamily: sg, maxWidth: 960, width: '100%', margin: '0 auto' }}>
       <div>
         <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: 'var(--t-text-1)', letterSpacing: '-.02em' }}>Centro de ayuda</h2>
         <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--t-text-3)', maxWidth: 560 }}>

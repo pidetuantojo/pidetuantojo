@@ -28,7 +28,7 @@ export function HelpGuideShell({ guide, children }: { guide: HelpGuide; children
   const related = visibleGuides(HELP_GUIDES, can).filter((g) => g.section === guide.section && g.slug !== guide.slug);
 
   return (
-    <article style={{ fontFamily: sg, maxWidth: 760, display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <article style={{ fontFamily: sg, maxWidth: 760, width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <Link
           href={ROUTES.dashboard.ayuda}
