@@ -4,6 +4,7 @@ import { getOrderTotals } from '@/features/orders/helpers/totals.helpers';
 import { paymentsByMethod } from '@/features/orders/helpers/payments.helpers';
 import type { Order, OrderStatus } from '@/types';
 import type { AccountingStats, DateRange, PromotionStats } from '../types/accounting.types';
+import { deliveryLabel } from './orderDetail.helpers';
 
 /** Un pedido cancelado no es venta: se muestra en el detalle pero no suma en ningún total. */
 export function isCancelledOrder(order: Order, statuses: OrderStatus[]): boolean {
@@ -100,6 +101,7 @@ export function exportToExcel(orders: Order[], statuses: OrderStatus[]): void {
     Estado: statusById.get(o.statusId)?.name ?? '',
     Cliente: o.customerName,
     Teléfono: o.customerPhone,
+    Entrega: deliveryLabel(o),
     'Método de pago': o.paymentMethod,
     Items: o.items.length,
     Productos: o.subtotal,

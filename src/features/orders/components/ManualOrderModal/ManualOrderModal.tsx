@@ -8,6 +8,8 @@ import type { Product, Adicional, OrderItem, Additional, Category, Mesa, OrderDe
 import { PaymentMethodPicker } from '@/features/payment-methods/components/PaymentMethodPicker';
 import { getActivePaymentMethods, toOrderPayment } from '@/features/payment-methods/helpers/payment-methods.helpers';
 import { normalizePhone } from '@/lib/customers/phone';
+import { statusChange, toStatusActor } from '@/lib/orders/statusHistory';
+import { useAuth } from '@/features/auth';
 
 import { ordersService } from '../../services/orders.service';
 
@@ -56,6 +58,7 @@ export function ManualOrderModal({
   occupiedTableIds,
   dineInEnabled = false,
 }: ManualOrderModalProps) {
+  const { user } = useAuth();
   const activePaymentMethods = getActivePaymentMethods(paymentMethods);
   const [search, setSearch] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
@@ -172,6 +175,7 @@ export function ManualOrderModal({
       await ordersService.create({
         restaurantId,
         statusId: receivedStatusId,
+        statusHistory: [statusChange(receivedStatusId, toStatusActor(user))],
         customerName: customerName.trim() || selectedTable?.name || '',
         customerPhone: customerPhone.trim(),
         ...(phoneKey ? { customerPhoneKey: phoneKey } : {}),

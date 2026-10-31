@@ -313,6 +313,14 @@ export interface OrderPayment {
   paidBy?: string;
 }
 
+/** Un cambio de estado del pedido (línea de tiempo). Sin `by` = lo hizo el sistema o el cliente desde la carta. */
+export interface OrderStatusChange {
+  statusId: string;
+  at: string;
+  by?: string;
+  byName?: string;
+}
+
 export interface Order {
   id: string;
   restaurantId: string;
@@ -349,6 +357,8 @@ export interface Order {
   // El cliente canjeó su premio de fidelidad en este pedido
   loyaltyRedeemed?: boolean;
   statusId: string;
+  // Historial de estados (se agrega con arrayUnion). Los pedidos anteriores a esta función no lo tienen
+  statusHistory?: OrderStatusChange[];
   notes?: string;
   internalNote?: string;
   location?: { lat: number; lng: number };

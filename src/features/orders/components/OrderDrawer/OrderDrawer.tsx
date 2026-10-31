@@ -9,6 +9,7 @@ import {
 
 import { formatCurrency } from '@/lib/utils';
 import { toWhatsAppNumber } from '@/lib/customers/phone';
+import { toStatusActor } from '@/lib/orders/statusHistory';
 import { useAuth } from '@/features/auth';
 import { formatScheduledDate } from '@/features/menu/helpers/schedule.helpers';
 import { PrintOrderButton } from '@/features/printers/components/PrintOrderButton';
@@ -87,7 +88,7 @@ export function OrderDrawer(props: OrderDrawerProps) {
 function DrawerContent({
   order, orders, statuses, restaurantId, domiciliarios, mesas, paymentMethods, canDelete, onClose, onEdit, onDelete,
 }: OrderDrawerProps & { order: Order }) {
-  const { can } = useAuth();
+  const { can, user } = useAuth();
   const canEdit = can('orders.edit');
   const canChangeStatus = can('orders.change_status');
   const canSetFee = can('orders.set_delivery_fee');
@@ -186,7 +187,7 @@ function DrawerContent({
 
   async function handleRelease() {
     await run(() => ordersService.releaseTable(
-      restaurantId, order.id, status?.code === 'delivered' ? undefined : deliveredStatus?.id,
+      restaurantId, order.id, status?.code === 'delivered' ? undefined : deliveredStatus?.id, toStatusActor(user),
     ));
     setConfirm(null);
     onClose();

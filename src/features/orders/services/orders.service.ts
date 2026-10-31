@@ -2,6 +2,7 @@ import { arrayUnion, collection, deleteField, doc, updateDoc, setDoc, writeBatch
 
 import { db } from '@/lib/firebase/config';
 import { generateOrderNumber } from '@/lib/orders/orderNumber';
+import { statusChange, type StatusActor } from '@/lib/orders/statusHistory';
 import type { AssignedDriver, CreateOrderData, Mesa, Order, OrderItem, OrderPayment } from '@/types';
 
 import { applyManualDiscount, lineSubtotal, recalcAmounts } from '../helpers/amounts.helpers';
@@ -23,16 +24,19 @@ export const ordersService = {
       ...data,
       id: ref.id,
       orderNumber,
+      statusHistory: data.statusHistory ?? [statusChange(data.statusId, null, now)],
       createdAt: now,
       updatedAt: now,
     });
     return { id: ref.id, orderNumber };
   },
 
-  async updateStatus(restaurantId: string, id: string, statusId: string): Promise<void> {
+  async updateStatus(restaurantId: string, id: string, statusId: string, actor?: StatusActor | null): Promise<void> {
+    const now = new Date().toISOString();
     await updateDoc(doc(ordersRef(restaurantId), id), {
       statusId,
-      updatedAt: new Date().toISOString(),
+      statusHistory: arrayUnion(statusChange(statusId, actor, now)),
+      updatedAt: now,
     });
   },
 
@@ -185,11 +189,13 @@ export const ordersService = {
   },
 
   /** Libera la mesa: el pedido sale del tablero (y queda entregado si aún no lo estaba). */
-  async releaseTable(restaurantId: string, orderId: string, deliveredStatusId?: string): Promise<void> {
+  async releaseTable(restaurantId: string, orderId: string, deliveredStatusId?: string, actor?: StatusActor | null): Promise<void> {
     const now = new Date().toISOString();
     await updateDoc(doc(ordersRef(restaurantId), orderId), {
       tableReleasedAt: now,
-      ...(deliveredStatusId ? { statusId: deliveredStatusId } : {}),
+      ...(deliveredStatusId
+        ? { statusId: deliveredStatusId, statusHistory: arrayUnion(statusChange(deliveredStatusId, actor, now)) }
+        : {}),
       updatedAt: now,
     });
   },

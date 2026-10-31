@@ -1,5 +1,8 @@
 import { useState } from 'react';
 
+import { useAuth } from '@/features/auth';
+import { toStatusActor } from '@/lib/orders/statusHistory';
+
 import { ordersService } from '../services/orders.service';
 import { getWaTemplates, applyTemplate, DEFAULT_TEMPLATES } from '@/lib/whatsapp/templates';
 import type { WaEventCode } from '@/lib/whatsapp/templates';
@@ -74,6 +77,7 @@ async function sendWaNotification(
 }
 
 export function useUpdateOrderStatus(restaurantId: string) {
+  const { user } = useAuth();
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [waError, setWaError] = useState<'disconnected' | null>(null);
@@ -88,7 +92,7 @@ export function useUpdateOrderStatus(restaurantId: string) {
     setError(null);
     setWaError(null);
     try {
-      await ordersService.updateStatus(restaurantId, orderId, statusId);
+      await ordersService.updateStatus(restaurantId, orderId, statusId, toStatusActor(user));
 
       if (notifyData?.customerPhone && !SKIP_WA_CODES.has(notifyData.statusCode ?? '')) {
         // No bloquear el flujo principal — enviar en background

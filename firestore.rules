@@ -262,10 +262,10 @@ service cloud.firestore {
       function orderUpdateAllowed() {
         let printKeys = ['printStatus', 'printJobId', 'printQueuedAt', 'printError',
                          'printingStartedAt', 'printedAt', 'printCount'];
-        let groupedKeys = ['updatedAt', 'statusId', 'tableReleasedAt', 'isPaid', 'payments',
+        let groupedKeys = ['updatedAt', 'statusId', 'statusHistory', 'tableReleasedAt', 'isPaid', 'payments',
                            'internalNote', 'assignedDriver', 'deliveryFee', 'total', 'freeDelivery'].concat(printKeys);
         return isMember(restaurantId)
-          && guard(restaurantId, ['statusId', 'tableReleasedAt'], ['orders.change_status'])
+          && guard(restaurantId, ['statusId', 'statusHistory', 'tableReleasedAt'], ['orders.change_status'])
           && guard(restaurantId, ['isPaid', 'payments'], ['orders.mark_paid'])
           && guard(restaurantId, ['internalNote'], ['orders.manage_notes'])
           && guard(restaurantId, ['assignedDriver'], ['orders.assign_driver'])

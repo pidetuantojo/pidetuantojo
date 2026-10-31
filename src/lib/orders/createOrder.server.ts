@@ -17,6 +17,7 @@ import type { Adicional, Additional, Customer, DeliveryZone, Mesa, Order, OrderI
 
 import { CheckoutError, type CheckoutData, type CheckoutResponse } from './checkout.schema';
 import { generateOrderNumber } from './orderNumber';
+import { statusChange } from './statusHistory';
 
 // Pedidos programados: mismo rango que el checkout (unos minutos de tolerancia por relojes desfasados)
 const SCHEDULE_PAST_TOLERANCE_MS = 10 * 60_000;
@@ -232,6 +233,7 @@ export async function createPublicOrder(input: CheckoutData, now: Date = new Dat
     couponCode: appliedCoupon,
     loyaltyRedeemed: loyaltyRedeemed || undefined,
     statusId: receivedStatusId,
+    statusHistory: [statusChange(receivedStatusId, null, nowIso)],
     createdAt: nowIso,
     updatedAt: nowIso,
   });
