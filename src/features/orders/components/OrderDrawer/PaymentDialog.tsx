@@ -5,6 +5,7 @@ import { Check, Minus, Plus } from 'lucide-react';
 
 import { formatCurrency } from '@/lib/utils';
 import { useAuth } from '@/features/auth';
+import { useCurrentShift } from '@/features/cash/hooks/useCashQueries';
 import { useCashModule } from '@/features/cash/hooks/useCashModule';
 import { useCashOrderActions } from '@/features/cash/hooks/useCashOrderActions';
 import { useToastStore } from '@/store/toast.store';
@@ -58,6 +59,9 @@ export function PaymentDialog({ order, restaurantId, paymentMethods, mode: initi
   // Con caja activa el cobro pasa por la API (turno, comprobante, asiento); si no, Firestore directo
   const { enabled: cashEnabled } = useCashModule(restaurantId);
   const cash = useCashOrderActions();
+  // Con caja activa, el efectivo exige un turno abierto (el servidor sigue siendo la fuente de verdad)
+  const shiftQuery = useCurrentShift(restaurantId, cashEnabled);
+  const noOpenShift = cashEnabled && shiftQuery.isSuccess && shiftQuery.data?.status !== 'ABIERTO';
   const showToast = useToastStore((s) => s.showToast);
   const methods = getActivePaymentMethods(paymentMethods);
   const remaining = remainingAmount(order);
@@ -72,6 +76,11 @@ export function PaymentDialog({ order, restaurantId, paymentMethods, mode: initi
   const method = methods.find((m) => m.id === methodId);
   const isCash = method?.type === 'efectivo';
   const payValue = toInt(amount);
+  const cashDisabledIds = useMemo(
+    () => new Set(noOpenShift ? methods.filter((m) => m.type === 'efectivo').map((m) => m.id) : []),
+    [noOpenShift, methods]
+  );
+  const cashBlocked = isCash && noOpenShift;
 
   // — Dividir — (sobre lo pendiente al abrir: al cobrar cada parte el pendiente en vivo baja)
   const [splitBase] = useState(remaining);
@@ -146,7 +155,7 @@ export function PaymentDialog({ order, restaurantId, paymentMethods, mode: initi
         mode === 'pay' ? (
           <>
             <DialogButton tone="ghost" onClick={onClose}>Cancelar</DialogButton>
-            <DialogButton tone="success" onClick={handlePay} disabled={busy || !method || payValue <= 0}>
+            <DialogButton tone="success" onClick={handlePay} disabled={busy || !method || payValue <= 0 || cashBlocked}>
               {busy ? 'Guardando...' : `Cobrar ${formatCurrency(payValue)}`}
             </DialogButton>
           </>
@@ -185,7 +194,13 @@ export function PaymentDialog({ order, restaurantId, paymentMethods, mode: initi
           </div>
           <div>
             <p className="mb-1.5 text-xs font-semibold text-[var(--t-text-2)]">Método de pago</p>
-            <PaymentMethodPicker methods={methods} value={methodId} onChange={setMethodId} />
+            <PaymentMethodPicker
+              methods={methods}
+              value={methodId}
+              onChange={setMethodId}
+              disabledIds={cashDisabledIds}
+              disabledHint="Abrí un turno para cobrar en efectivo"
+            />
           </div>
           {isCash && (
             <div>
@@ -234,10 +249,10 @@ export function PaymentDialog({ order, restaurantId, paymentMethods, mode: initi
                     className="w-full rounded-xl border border-[var(--t-input-border)] bg-[var(--t-input-bg)] px-3 py-2 text-sm text-[var(--t-text-1)] outline-none"
                   >
                     {methods.map((m) => (
-                      <option key={m.id} value={m.id}>{getPaymentLabel(m)}{m.account ? ` · ${m.account}` : ''}</option>
+                      <option key={m.id} value={m.id} disabled={cashDisabledIds.has(m.id)}>{getPaymentLabel(m)}{m.account ? ` · ${m.account}` : ''}</option>
                     ))}
                   </select>
-                  <DialogButton tone="success" className="w-full" onClick={() => handlePayRow(i)} disabled={busy || toInt(row.amount) <= 0}>
+                  <DialogButton tone="success" className="w-full" onClick={() => handlePayRow(i)} disabled={busy || toInt(row.amount) <= 0 || cashDisabledIds.has(row.methodId)}>
                     Cobrar {formatCurrency(toInt(row.amount))}
                   </DialogButton>
                 </>

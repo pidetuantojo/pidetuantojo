@@ -252,6 +252,11 @@ export const ROUTE_PERMISSIONS: readonly { path: string; permission: Permission;
   { path: '/dashboard/configuracion', permission: 'settings.view' },
   { path: '/dashboard/estacion-impresion', permission: 'print_station.run' },
   { path: '/dashboard/equipo', permission: 'team.view' },
+  { path: '/dashboard/caja/configuracion', permission: 'cash.registers.manage' },
+  { path: '/dashboard/caja/aprobaciones', permission: 'cash.approve' },
+  { path: '/dashboard/caja/general', permission: 'cash.approve' },
+  { path: '/dashboard/caja/cierre', permission: 'cash.operate' },
+  { path: '/dashboard/caja', permission: 'cash.operate' },
   { path: '/dashboard', permission: 'dashboard.view', exact: true },
 ];
 
@@ -286,5 +291,6 @@ const LANDING_ROUTES: readonly { path: string; permission: Permission }[] = [
 
 /** Primera ruta a la que el usuario tiene acceso (o null si no tiene ninguna). */
 export function firstAllowedRoute(perms: readonly string[]): string | null {
-  return LANDING_ROUTES.find((r) => can(perms, r.permission))?.path ?? null;
+  // Además del permiso del módulo, la ruta puede exigir otro (p. ej. /caja exige cash.operate)
+  return LANDING_ROUTES.find((r) => can(perms, r.permission) && canAccessPath(perms, r.path))?.path ?? null;
 }

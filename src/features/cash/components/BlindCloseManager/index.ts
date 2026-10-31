@@ -1,0 +1,1 @@
+export { BlindCloseManager } from './BlindCloseManager';

@@ -5,6 +5,7 @@ import { METHODS, orderFixture, payment } from './orderFixture';
 
 const mocks = vi.hoisted(() => ({
   cashEnabled: { value: true },
+  shift: { value: { id: 's1', status: 'ABIERTO' } as { id: string; status: string } | null },
   payOrder: vi.fn(),
   reversePayment: vi.fn(),
   refund: vi.fn(),
@@ -17,6 +18,9 @@ vi.mock('@/features/auth', () => ({
 }));
 vi.mock('@/features/cash/hooks/useCashModule', () => ({
   useCashModule: () => ({ enabled: mocks.cashEnabled.value }),
+}));
+vi.mock('@/features/cash/hooks/useCashQueries', () => ({
+  useCurrentShift: () => ({ isSuccess: true, data: mocks.shift.value }),
 }));
 vi.mock('@/features/cash/services/cash.api', () => {
   class CashApiError extends Error {
@@ -51,6 +55,7 @@ import { useToastStore } from '@/store/toast.store';
 beforeEach(() => {
   Object.values(mocks).forEach((m) => 'mockReset' in m && m.mockReset());
   mocks.cashEnabled.value = true;
+  mocks.shift.value = { id: 's1', status: 'ABIERTO' };
   useToastStore.setState({ toasts: [] });
 });
 
@@ -90,6 +95,20 @@ describe('PaymentDialog', () => {
         onClose={vi.fn()}
       />
     );
+
+  it('con caja activa y sin turno abierto deshabilita el efectivo y muestra la pista', () => {
+    mocks.shift.value = null;
+    renderDialog();
+    expect(screen.getByRole('button', { name: /Efectivo/ })).toBeDisabled();
+    expect(screen.getByText('Abrí un turno para cobrar en efectivo')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Nequi/ })).toBeEnabled();
+  });
+
+  it('con un turno abierto el efectivo se puede elegir', () => {
+    renderDialog();
+    expect(screen.getByRole('button', { name: /Efectivo/ })).toBeEnabled();
+    expect(screen.queryByText('Abrí un turno para cobrar en efectivo')).not.toBeInTheDocument();
+  });
 
   it('con caja activa cobra por cashApi.payOrder (no por Firestore) y muestra el cambio', async () => {
     mocks.payOrder.mockResolvedValue({ orderId: 'o1', isPaid: true, payments: [], change: 5000 });

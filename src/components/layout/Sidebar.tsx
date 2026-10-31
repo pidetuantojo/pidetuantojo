@@ -17,7 +17,7 @@ const sm = "var(--font-mono, monospace)";
 // ─── Nav types ────────────────────────────────────────────────────────────────
 
 type NavLink = { type: 'link'; href: string; label: string; icon: React.ReactNode };
-type NavGroup = { type: 'group'; id: string; label: string; icon: React.ReactNode; children: { href: string; label: string; icon: React.ReactNode }[] };
+type NavGroup = { type: 'group'; id: string; label: string; icon: React.ReactNode; children: { href: string; label: string; icon: React.ReactNode; requires?: string }[] };
 type NavItem = NavLink | NavGroup;
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -67,6 +67,15 @@ const RESTAURANT_NAV: NavItem[] = [
     ],
   },
   {
+    type: 'group', id: 'caja', label: 'Caja', icon: <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="2" /><circle cx="12" cy="12" r="2.5" /><path d="M6 12h.01M18 12h.01" /></svg>,
+    children: [
+      { href: ROUTES.dashboard.caja.root, label: 'Turno', requires: 'features.cash', icon: <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg> },
+      { href: ROUTES.dashboard.caja.aprobaciones, label: 'Aprobaciones', requires: 'features.cash', icon: <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg> },
+      { href: ROUTES.dashboard.caja.general, label: 'Caja general', requires: 'features.cash', icon: <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6" /></svg> },
+      { href: ROUTES.dashboard.caja.configuracion, label: 'Configuración', requires: 'features.cash', icon: <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg> },
+    ],
+  },
+  {
     type: 'group', id: 'entrega', label: 'Gestión de entrega', icon: IcoEntrega,
     children: [
       { href: ROUTES.dashboard.entrega, label: 'Métodos de entrega', icon: <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg> },
@@ -112,7 +121,10 @@ const ALL_NAV_HREFS = RESTAURANT_NAV.flatMap((item) =>
 function filterNavByPermissions(items: NavItem[], permissions: readonly string[]): NavItem[] {
   return items.flatMap((item): NavItem[] => {
     if (item.type === 'link') return canAccessPath(permissions, item.href) ? [item] : [];
-    const children = item.children.filter((c) => canAccessPath(permissions, c.href));
+    // Los hijos con `requires` (p. ej. features.cash) solo aparecen si el plan incluye esa funcionalidad
+    const children = item.children.filter(
+      (c) => canAccessPath(permissions, c.href) && (!c.requires || permissions.includes(c.requires))
+    );
     return children.length ? [{ ...item, children }] : [];
   });
 }

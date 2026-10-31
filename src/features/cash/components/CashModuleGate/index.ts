@@ -1,0 +1,1 @@
+export { CashModuleGate } from './CashModuleGate';

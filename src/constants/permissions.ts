@@ -106,7 +106,7 @@ export const PERMISSION_MODULES = [
     ],
   },
   {
-    id: 'cash', label: 'Caja', kind: 'user',
+    id: 'cash', label: 'Caja', kind: 'user', route: '/dashboard/caja',
     permissions: [
       { key: 'cash.view', label: 'Ver caja', description: 'Cajas, turnos y movimientos', requires: ['features.cash'] },
       { key: 'cash.operate', label: 'Operar caja', description: 'Abrir y cerrar turno, registrar ingresos y egresos', requires: ['cash.view'] },
