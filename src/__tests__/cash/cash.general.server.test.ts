@@ -42,7 +42,7 @@ beforeEach(async () => {
   });
 });
 
-const BASE = { BILLETE_100000: 1 };
+const BASE: Record<string, number> = { BILLETE_100000: 1 };
 const allMovs = () => collectionDocs(db, 'cashMovements');
 const entries = () => collectionDocs(db, 'journalEntries');
 const lines = () => collectionDocs(db, 'journalLines');
