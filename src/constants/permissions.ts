@@ -98,7 +98,7 @@ export const PERMISSION_MODULES = [
     ],
   },
   {
-    id: 'ledger', label: 'Libro contable', kind: 'user',
+    id: 'ledger', label: 'Libro contable', kind: 'user', route: '/dashboard/libros',
     permissions: [
       { key: 'ledger.view', label: 'Ver libro contable', description: 'Plan de cuentas, reglas contables y asientos', requires: ['features.cash'] },
       { key: 'ledger.manage', label: 'Administrar plan de cuentas y reglas', description: 'Crear cuentas, editar reglas contables y reversar asientos', requires: ['ledger.view'] },

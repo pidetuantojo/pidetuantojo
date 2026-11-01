@@ -252,6 +252,8 @@ export const ROUTE_PERMISSIONS: readonly { path: string; permission: Permission;
   { path: '/dashboard/configuracion', permission: 'settings.view' },
   { path: '/dashboard/estacion-impresion', permission: 'print_station.run' },
   { path: '/dashboard/equipo', permission: 'team.view' },
+  { path: '/dashboard/libros', permission: 'ledger.view' },
+  { path: '/dashboard/caja/reportes', permission: 'cash.approve' },
   { path: '/dashboard/caja/configuracion', permission: 'cash.registers.manage' },
   { path: '/dashboard/caja/aprobaciones', permission: 'cash.approve' },
   { path: '/dashboard/caja/general', permission: 'cash.approve' },

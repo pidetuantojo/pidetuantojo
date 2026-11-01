@@ -60,4 +60,17 @@ export const QUERY_KEYS = {
   cashPettyCategories: (restaurantId: string) =>
     ['cash', 'petty-categories', restaurantId] as const,
   ledgerAccounts: (restaurantId: string) => ['ledger', 'accounts', restaurantId] as const,
+  ledgerRules: (restaurantId: string) => ['ledger', 'rules', restaurantId] as const,
+  ledgerJournal: (restaurantId: string, from: string, to: string) =>
+    ['ledger', 'journal', restaurantId, from, to] as const,
+  ledgerBook: (restaurantId: string, accountId: string, from: string, to: string) =>
+    ['ledger', 'book', restaurantId, accountId, from, to] as const,
+  ledgerTrialBalance: (restaurantId: string, from: string, to: string) =>
+    ['ledger', 'trial-balance', restaurantId, from, to] as const,
+  cashReportDaily: (restaurantId: string, date: string) =>
+    ['cash-reports', 'daily', restaurantId, date] as const,
+  cashReportShift: (restaurantId: string, shiftId: string) =>
+    ['cash-reports', 'shift', restaurantId, shiftId] as const,
+  cashReportPetty: (restaurantId: string, registerId: string, from: string, to: string) =>
+    ['cash-reports', 'petty', restaurantId, registerId, from, to] as const,
 } as const;

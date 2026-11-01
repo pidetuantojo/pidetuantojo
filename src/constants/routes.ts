@@ -40,6 +40,14 @@ export const ROUTES = {
       general: '/dashboard/caja/general',
       menor: '/dashboard/caja/menor',
       configuracion: '/dashboard/caja/configuracion',
+      reportes: '/dashboard/caja/reportes',
+    },
+    libros: {
+      root: '/dashboard/libros',
+      mayor: '/dashboard/libros/mayor',
+      balance: '/dashboard/libros/balance',
+      planDeCuentas: '/dashboard/libros/plan-de-cuentas',
+      reglas: '/dashboard/libros/reglas',
     },
     notificaciones: {
       root: '/dashboard/notificaciones',
