@@ -15,3 +15,4 @@ export { useCashOrderActions } from './hooks/useCashOrderActions';
 export { useCashSettings } from './hooks/useCashSettings';
 export { useIdempotencyKey } from './hooks/useIdempotencyKey';
 export { CashApiError, cashApi } from './services/cash.api';
+export { CashReports } from './components/CashReports';
