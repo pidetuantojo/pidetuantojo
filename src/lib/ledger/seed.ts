@@ -136,7 +136,7 @@ export const SEED_RULES: readonly SeedRule[] = [
   { event: 'BANK_DEPOSIT', methodType: null, debit: fixed('1110'), credit: SRC },
   { event: 'CASH_SURPLUS', methodType: null, debit: SRC, credit: fixed('4295') },
   { event: 'CASH_SHORTAGE', methodType: null, debit: fixed('1365'), credit: SRC },
-  { event: 'PETTY_CASH_EXPENSE', methodType: null, debit: CAT, credit: fixed('110510') },
-  { event: 'PETTY_CASH_REPLENISH', methodType: null, debit: fixed('110510'), credit: SRC },
+  { event: 'PETTY_CASH_EXPENSE', methodType: null, debit: CAT, credit: SRC },
+  { event: 'PETTY_CASH_REPLENISH', methodType: null, debit: TGT, credit: SRC },
   { event: 'GATEWAY_SETTLEMENT', methodType: null, debit: fixed('1110'), credit: fixed('1380') },
 ];

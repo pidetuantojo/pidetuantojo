@@ -34,6 +34,11 @@ beforeEach(async () => {
   w = await seedPettyWorld(db, m);
 });
 
+const useCustomPettyAccount = async () => {
+  db.docs.clear();
+  w = await seedPettyWorld(db, m, { customPettyAccount: true });
+};
+
 const lines = () => collectionDocs(db, 'journalLines');
 const net = (accountId: string) =>
   lines()
@@ -48,6 +53,7 @@ const generalCash = () =>
 
 describe('integración caja menor', () => {
   it('constituir -> 3 gastos (1 anulado) -> legalizar 2 -> reembolsar -> aprobar', async () => {
+    await useCustomPettyAccount();
     await m.fund.setPettyFund(
       RID,
       w.petty.register,

@@ -124,10 +124,14 @@ async function readReimbursementExpenses(
 function expenseDraft(
   ctx: MovementContext,
   expense: PettyExpense,
+  pettyAccountId: string,
   accountingDate: string
 ): JournalEntryDraft {
   const rule = resolveRule(ctx.rules, 'PETTY_CASH_EXPENSE', null);
-  const resolution = { expenseCategoryAccountId: expense.ledgerAccountId };
+  const resolution = {
+    expenseCategoryAccountId: expense.ledgerAccountId,
+    sourceCashBoxAccountId: pettyAccountId,
+  };
   return {
     accountingDate,
     event: 'PETTY_CASH_EXPENSE',
@@ -203,7 +207,7 @@ export async function approveReimbursement(
     }
     const registerId = reimbursement.registerId;
     const ctx = await createMovementContext(tx, restaurantId, { ...audit, registerId });
-    await requirePettyRegister(ctx, registerId);
+    const pettyRegister = await requirePettyRegister(ctx, registerId);
     const expenses = await readReimbursementExpenses(ctx, reimbursement);
     const resolved = await resolveReplenishSource(ctx, input.source, reimbursement.total);
 
@@ -214,7 +218,7 @@ export async function approveReimbursement(
         await preparePostEntry(
           tx,
           restaurantId,
-          expenseDraft(ctx, expense, audit.accountingDate),
+          expenseDraft(ctx, expense, pettyRegister.ledgerAccountId, audit.accountingDate),
           ctx.audit,
           { sequences: ctx.sequences }
         )

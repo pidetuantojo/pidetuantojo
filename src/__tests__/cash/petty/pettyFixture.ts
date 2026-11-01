@@ -47,10 +47,28 @@ export async function loadPettyMods(): Promise<PettyMods> {
 }
 
 /** Mundo de caja + caja menor (fondo $200.000, máx. $50.000) con dos categorías; caja general con $1.000.000. */
-export async function seedPettyWorld(db: FakeFirestore, m: PettyMods): Promise<PettyWorld> {
+export async function seedPettyWorld(
+  db: FakeFirestore,
+  m: PettyMods,
+  options: { customPettyAccount?: boolean } = {}
+): Promise<PettyWorld> {
   const world = await seedCashWorld(db, m);
   const accounts = await m.accounts.listAccounts(RID);
-  const accPetty = accounts.find((a) => a.code === '110510')!.id;
+  const accPetty = options.customPettyAccount
+    ? (
+        await m.accounts.createAccount(
+          RID,
+          {
+            code: '110511',
+            name: 'Caja menor sucursal',
+            class: 'ACTIVO',
+            parentCode: '1105',
+            allowsMovements: true,
+          },
+          metaFor('admin')
+        )
+      ).id
+    : accounts.find((a) => a.code === '110510')!.id;
   const mkAccount = (code: string, name: string) =>
     m.accounts.createAccount(
       RID,
