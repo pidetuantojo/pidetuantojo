@@ -51,5 +51,13 @@ export const QUERY_KEYS = {
     ['cash', 'closing', restaurantId, shiftId] as const,
   cashOwnPendingClose: (restaurantId: string, uid: string) =>
     ['cash', 'own-pending-close', restaurantId, uid] as const,
+  cashPettyStatus: (restaurantId: string, registerId: string) =>
+    ['cash', 'petty-status', restaurantId, registerId] as const,
+  cashPettyExpenses: (restaurantId: string, registerId: string, status: string) =>
+    ['cash', 'petty-expenses', restaurantId, registerId, status] as const,
+  cashPettyReimbursements: (restaurantId: string, registerId: string) =>
+    ['cash', 'petty-reimbursements', restaurantId, registerId] as const,
+  cashPettyCategories: (restaurantId: string) =>
+    ['cash', 'petty-categories', restaurantId] as const,
   ledgerAccounts: (restaurantId: string) => ['ledger', 'accounts', restaurantId] as const,
 } as const;

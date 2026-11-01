@@ -14,6 +14,13 @@ const MESSAGES: Record<string, string> = {
   PAYMENT_NOT_FOUND: 'El pago ya no existe en el pedido',
   INSUFFICIENT_CASH: 'La caja no tiene efectivo suficiente',
   ACTIVATION_PREREQUISITES: 'Faltan requisitos para activar la caja',
+  EXPENSE_LIMIT_EXCEEDED: 'El gasto supera el máximo permitido por la caja menor',
+  FUND_NOT_CONSTITUTED: 'Primero constituí el fondo de la caja menor',
+  ATTACHMENT_REQUIRED: 'Adjuntá el soporte antes de legalizar el gasto',
+  INVALID_EXPENSE_STATE: 'El gasto cambió de estado: actualizá la lista',
+  INVALID_REIMBURSEMENT_STATE: 'El reembolso ya fue resuelto',
+  TOO_MANY_EXPENSES: 'Demasiados gastos en un solo reembolso',
+  PETTY_CATEGORY_NOT_FOUND: 'La categoría no existe o está inactiva',
 };
 
 const FORBIDDEN = 'No tenés permiso para realizar esta acción';

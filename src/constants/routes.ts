@@ -38,6 +38,7 @@ export const ROUTES = {
       cierre: '/dashboard/caja/cierre',
       aprobaciones: '/dashboard/caja/aprobaciones',
       general: '/dashboard/caja/general',
+      menor: '/dashboard/caja/menor',
       configuracion: '/dashboard/caja/configuracion',
     },
     notificaciones: {

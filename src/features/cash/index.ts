@@ -5,6 +5,7 @@ export { CurrentShiftManager } from './components/CurrentShiftManager';
 export { DenominationCounter } from './components/DenominationCounter';
 export { GeneralBoxManager } from './components/GeneralBoxManager';
 export { MoneyInput } from './components/MoneyInput';
+export { PettyCashManager } from './components/PettyCashManager';
 export { cashErrorMessage } from './helpers/cash-errors.helpers';
 export { countTotal } from './helpers/count.helpers';
 export { useCurrentShift } from './hooks/useCashQueries';

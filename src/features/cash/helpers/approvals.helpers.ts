@@ -30,6 +30,11 @@ export function postableAccounts(accounts: readonly LedgerAccount[]): LedgerAcco
   return accounts.filter((a) => a.isActive && a.allowsMovements);
 }
 
+/** Cuentas de gasto o costo donde la caja menor contabiliza sus gastos. */
+export function expenseAccounts(accounts: readonly LedgerAccount[]): LedgerAccount[] {
+  return postableAccounts(accounts).filter((a) => a.class === 'GASTO' || a.class === 'COSTO');
+}
+
 /** Cuentas de banco/caja (clase ACTIVO) donde se puede consignar o liquidar. */
 export function bankAccounts(accounts: readonly LedgerAccount[]): LedgerAccount[] {
   return postableAccounts(accounts).filter((a) => a.class === 'ACTIVO');

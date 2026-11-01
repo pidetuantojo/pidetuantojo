@@ -255,6 +255,8 @@ export const ROUTE_PERMISSIONS: readonly { path: string; permission: Permission;
   { path: '/dashboard/caja/configuracion', permission: 'cash.registers.manage' },
   { path: '/dashboard/caja/aprobaciones', permission: 'cash.approve' },
   { path: '/dashboard/caja/general', permission: 'cash.approve' },
+  // `petty_cash.approve` exige `petty_cash.manage` en el catálogo: basta con manage para entrar
+  { path: '/dashboard/caja/menor', permission: 'petty_cash.manage' },
   { path: '/dashboard/caja/cierre', permission: 'cash.operate' },
   { path: '/dashboard/caja', permission: 'cash.operate' },
   { path: '/dashboard', permission: 'dashboard.view', exact: true },

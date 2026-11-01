@@ -129,6 +129,9 @@ export interface CreateRegisterInput {
   name: string;
   ledgerAccountId: string;
   diffThreshold: Money;
+  /** Solo MENOR: fondo previsto y tope por gasto. */
+  fundAmount?: Money;
+  maxExpense?: Money;
 }
 
 export interface UpdateRegisterInput {
@@ -136,6 +139,8 @@ export interface UpdateRegisterInput {
   isActive?: boolean;
   diffThreshold?: Money;
   ledgerAccountId?: string;
+  /** Solo MENOR. */
+  maxExpense?: Money;
 }
 
 export interface GeneralMovementInput {

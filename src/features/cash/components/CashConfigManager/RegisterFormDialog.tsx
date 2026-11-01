@@ -10,6 +10,7 @@ import type { Money } from '@/lib/shared/money';
 
 import { accountLabel, postableAccounts } from '../../helpers/approvals.helpers';
 import { validateRegister } from '../../helpers/cash-forms.helpers';
+import { validatePettyRegister } from '../../helpers/petty-forms.helpers';
 import { useCashConfigActions } from '../../hooks/useCashConfigActions';
 import type { CashRegister, LedgerAccount, RegisterType } from '../../types/cash.types';
 import { MoneyInput } from '../MoneyInput';
@@ -17,6 +18,7 @@ import { MoneyInput } from '../MoneyInput';
 const TYPE_OPTIONS: { value: RegisterType; label: string }[] = [
   { value: 'REGISTRADORA', label: 'Registradora (turnos de cajero)' },
   { value: 'GENERAL', label: 'General (saldo del negocio)' },
+  { value: 'MENOR', label: 'Caja menor (fondo fijo)' },
 ];
 
 interface RegisterFormDialogProps {
@@ -39,8 +41,19 @@ export function RegisterFormDialog({
   const [name, setName] = useState(register?.name ?? '');
   const [ledgerAccountId, setLedgerAccountId] = useState(register?.ledgerAccountId ?? '');
   const [threshold, setThreshold] = useState<Money | null>(register?.diffThreshold ?? 0);
+  const [fundAmount, setFundAmount] = useState<Money | null>(register?.fundAmount ?? null);
+  const [maxExpense, setMaxExpense] = useState<Money | null>(register?.maxExpense ?? null);
   const [touched, setTouched] = useState(false);
-  const { errors, valid } = validateRegister({ name, ledgerAccountId });
+  const effectiveType = register ? register.type : type;
+  const isPetty = effectiveType === 'MENOR';
+  const base = validateRegister({ name, ledgerAccountId });
+  const petty = validatePettyRegister({
+    isPetty,
+    fundAmount: register ? (register.fundAmount ?? null) : fundAmount,
+    maxExpense,
+  });
+  const errors = { ...base.errors, ...petty.errors };
+  const valid = base.valid && petty.valid;
   const cashAccounts = postableAccounts(accounts).filter((a) => a.class === 'ACTIVO');
   const pending = createRegister.isPending || updateRegister.isPending;
 
@@ -51,9 +64,21 @@ export function RegisterFormDialog({
     const result = register
       ? await updateRegister.run({
           registerId: register.id,
-          input: { name: name.trim(), ledgerAccountId, diffThreshold },
+          input: {
+            name: name.trim(),
+            ledgerAccountId,
+            ...(isPetty ? { maxExpense: maxExpense ?? undefined } : { diffThreshold }),
+          },
         })
-      : await createRegister.run({ type, name: name.trim(), ledgerAccountId, diffThreshold });
+      : await createRegister.run({
+          type,
+          name: name.trim(),
+          ledgerAccountId,
+          diffThreshold: isPetty ? 0 : diffThreshold,
+          ...(isPetty
+            ? { fundAmount: fundAmount ?? undefined, maxExpense: maxExpense ?? undefined }
+            : {}),
+        });
     if (result.ok) onClose();
   }
 
@@ -83,7 +108,31 @@ export function RegisterFormDialog({
           options={cashAccounts.map((a) => ({ value: a.id, label: accountLabel(a) }))}
           searchable
         />
-        {(register ? register.type : type) === 'REGISTRADORA' && (
+        {isPetty && (
+          <>
+            {register ? (
+              <p className="text-xs text-[var(--t-text-3)]">
+                El fondo se ajusta desde la pantalla de caja menor.
+              </p>
+            ) : (
+              <MoneyInput
+                id="register-fund"
+                label="Fondo fijo"
+                value={fundAmount}
+                onChange={setFundAmount}
+                error={touched ? errors.fundAmount : undefined}
+              />
+            )}
+            <MoneyInput
+              id="register-max-expense"
+              label="Máximo por gasto"
+              value={maxExpense}
+              onChange={setMaxExpense}
+              error={touched ? errors.maxExpense : undefined}
+            />
+          </>
+        )}
+        {effectiveType === 'REGISTRADORA' && (
           <MoneyInput
             id="register-threshold"
             label="Diferencia tolerada al cierre"
