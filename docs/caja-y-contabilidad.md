@@ -71,7 +71,23 @@ Sin huecos: el incremento y el documento que lo usa comparten transacción.
 
 ## 3. Reglas de negocio vigentes
 
-### Defaults de operación
+### Defaults aprobados por el negocio (2026-10-31)
+
+1. Montos en **pesos enteros COP**, sin centavos.
+2. Precios con impuesto **incluido**, sin desglose por ahora. Ingresos a **4140 Hoteles y restaurantes** (a validar por el contador).
+3. **Un asiento por movimiento**.
+4. Datáfono → **cuenta por cobrar a la pasarela** (1380). Nequi, Daviplata, Bre-B y transferencias → **Bancos** (cuenta mapeada por medio de pago).
+5. Domicilios en efectivo: entran al turno de la caja **cuando se registra el pago**.
+6. Sin turno abierto **no se cobra en efectivo**; los medios electrónicos sí.
+7. Faltante → **1365**, sobrante → **4295**; el supervisor puede reclasificar el faltante.
+8. **Cierre ciego**: el cajero no ve los totales de efectivo durante el turno ni el esperado al cerrar.
+9. **No se reversa un reverso**. Una devolución de una venta de un turno anterior afecta el **turno actual**.
+10. **Propinas** fuera de alcance.
+11. **Facturación electrónica DIAN** fuera de alcance; solo se guarda `externalRef`.
+12. Tests con el `FakeFirestore` en memoria, **sin emulador**.
+13. El módulo se activa **por restaurante** con la plan-feature `features.cash`.
+
+### Reglas operativas derivadas (implementación)
 
 1. Dinero en pesos enteros; nunca decimales.
 2. Día contable = día calendario de Bogotá del hecho real (no el de apertura del turno).
