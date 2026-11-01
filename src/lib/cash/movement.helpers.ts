@@ -11,7 +11,7 @@ import type {
   ShiftStatus,
 } from './cash.types';
 
-export type SequenceFamily = 'RC' | 'CE' | 'TR' | 'RV';
+export type SequenceFamily = 'RC' | 'CE' | 'TR' | 'RV' | 'VCM';
 
 interface MovementMeta {
   /** null = depende del movimiento original (reverso). */
@@ -56,6 +56,19 @@ export const MOVEMENT_META: Record<MovementType, MovementMeta> = {
     shiftStatuses: CLOSING_PHASE,
   },
   CONSIGNACION: { direction: 'OUT', family: 'TR', event: 'BANK_DEPOSIT', shiftStatuses: [] },
+  GASTO_CAJA_MENOR: { direction: 'OUT', family: 'VCM', event: null, shiftStatuses: [] },
+  REPOSICION_CAJA_MENOR: {
+    direction: 'IN',
+    family: 'TR',
+    event: 'PETTY_CASH_REPLENISH',
+    shiftStatuses: [],
+  },
+  DEVOLUCION_FONDO: {
+    direction: 'OUT',
+    family: 'TR',
+    event: 'PETTY_CASH_REPLENISH',
+    shiftStatuses: [],
+  },
   REVERSO: { direction: null, family: 'RV', event: null, shiftStatuses: ['ABIERTO', 'EN_CIERRE'] },
 };
 
@@ -65,6 +78,12 @@ export const REVERSIBLE_TYPES: readonly MovementType[] = [
   'INGRESO_VARIO',
   'EGRESO',
   'RETIRO_PARCIAL',
+];
+
+/** Movimientos del fondo de la caja menor: espejo en la caja general solo si el origen es una caja. */
+export const PETTY_FUND_TYPES: readonly MovementType[] = [
+  'REPOSICION_CAJA_MENOR',
+  'DEVOLUCION_FONDO',
 ];
 
 /** Movimientos que mueven efectivo entre dos cajas (usan CASH_TRANSFER). */
@@ -134,5 +153,5 @@ export function needsMirror(
 ): boolean {
   if (input.status !== 'APLICADO') return false;
   if (input.type === 'REVERSO') return Boolean(reverses?.transferId);
-  return TRANSFER_TYPES.includes(input.type);
+  return TRANSFER_TYPES.includes(input.type) || PETTY_FUND_TYPES.includes(input.type);
 }

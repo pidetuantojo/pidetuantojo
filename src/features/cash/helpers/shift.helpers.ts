@@ -16,6 +16,9 @@ const MOVEMENT_LABELS: Record<MovementType, string> = {
   BASE_APERTURA: 'Base de apertura',
   TRASLADO_CIERRE: 'Traslado de cierre',
   CONSIGNACION: 'Consignación',
+  GASTO_CAJA_MENOR: 'Gasto de caja menor',
+  REPOSICION_CAJA_MENOR: 'Reposición de caja menor',
+  DEVOLUCION_FONDO: 'Devolución de fondo',
 };
 
 const STATUS_LABELS: Record<MovementStatus, string> = {

@@ -370,6 +370,22 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      // Caja menor: se escribe solo en el servidor
+      match /pettyCashExpenses/{docId} {
+        allow read: if hasAnyPerm(restaurantId, ['petty_cash.manage', 'petty_cash.approve']);
+        allow write: if false;
+      }
+
+      match /pettyCashReimbursements/{docId} {
+        allow read: if hasAnyPerm(restaurantId, ['petty_cash.manage', 'petty_cash.approve']);
+        allow write: if false;
+      }
+
+      match /pettyCashCategories/{docId} {
+        allow read: if hasAnyPerm(restaurantId, ['petty_cash.manage', 'petty_cash.approve']);
+        allow write: if false;
+      }
+
       match /cashShiftLocks/{lockId} {
         allow read, write: if false;
       }

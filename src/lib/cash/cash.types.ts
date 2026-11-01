@@ -17,6 +17,8 @@ export interface CashRegister {
   /** Solo MENOR (fase 4). */
   fundAmount?: Money;
   maxExpense?: Money;
+  /** Solo MENOR: instante en que se constituyó el fondo (sin esto el fondo aún no existe). */
+  fundConstitutedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -55,7 +57,10 @@ export type MovementType =
   | 'REVERSO'
   | 'BASE_APERTURA'
   | 'TRASLADO_CIERRE'
-  | 'CONSIGNACION';
+  | 'CONSIGNACION'
+  | 'GASTO_CAJA_MENOR'
+  | 'REPOSICION_CAJA_MENOR'
+  | 'DEVOLUCION_FONDO';
 
 export type MovementDirection = 'IN' | 'OUT';
 export type MovementStatus = 'APLICADO' | 'PENDIENTE_APROBACION' | 'RECHAZADO';
@@ -87,7 +92,7 @@ export interface CashMovement {
   /** Día contable de Bogotá del hecho (no el de apertura del turno). */
   accountingDate: string;
   journalEntryId: string | null;
-  journalSkippedReason?: 'SAME_ACCOUNT';
+  journalSkippedReason?: 'SAME_ACCOUNT' | 'RECOGNIZED_ON_REIMBURSEMENT';
   reversesMovementId?: string;
   reversedByMovementId?: string;
   approvedBy?: string;

@@ -72,6 +72,40 @@
         { "fieldPath": "registerId", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "pettyCashExpenses",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "registerId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pettyCashExpenses",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "registerId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pettyCashReimbursements",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "registerId", "order": "ASCENDING" },
+        { "fieldPath": "requestedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pettyCashReimbursements",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "registerId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "requestedAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

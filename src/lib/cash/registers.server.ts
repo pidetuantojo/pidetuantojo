@@ -27,6 +27,8 @@ export interface UpdateRegisterInput {
   isActive?: boolean;
   diffThreshold?: number;
   ledgerAccountId?: string;
+  /** Solo MENOR. El fondo no se edita aquí: se ajusta con el endpoint del fondo. */
+  maxExpense?: number;
 }
 
 export async function listRegisters(restaurantId: string): Promise<CashRegister[]> {
@@ -56,6 +58,19 @@ export async function assertCashLedgerAccount(
   }
 }
 
+/** Caja menor: fondo > 0 y 0 < gasto máximo <= fondo. */
+function assertPettyFields(fundAmount: number | undefined, maxExpense: number | undefined) {
+  if (!fundAmount || fundAmount <= 0) {
+    throw new CashError('INVALID_FUND', 'Indica el fondo de la caja menor');
+  }
+  if (!maxExpense || maxExpense <= 0 || maxExpense > fundAmount) {
+    throw new CashError(
+      'INVALID_FUND',
+      'El gasto máximo debe ser mayor a cero y no superar el fondo'
+    );
+  }
+}
+
 export async function createRegister(
   restaurantId: string,
   input: CreateRegisterInput,
@@ -73,6 +88,7 @@ export async function createRegister(
     if (idem.status === 'replay') return idem.result;
 
     await assertCashLedgerAccount(tx, restaurantId, input.ledgerAccountId);
+    if (input.type === 'MENOR') assertPettyFields(input.fundAmount, input.maxExpense);
     const ref = adminDb.collection(cashCollectionPath(restaurantId, 'registers')).doc();
     const register: CashRegister = stripUndefined({
       id: ref.id,
@@ -121,6 +137,13 @@ export async function updateRegister(
     ) as DocumentReference;
     const snap = await tx.get(ref);
     if (!snap.exists) throw new CashError('REGISTER_NOT_FOUND', 'La caja no existe');
+    if (input.maxExpense !== undefined) {
+      const current = snap.data() as CashRegister;
+      if (current.type !== 'MENOR') {
+        throw new CashError('INVALID_REGISTER', 'El gasto máximo solo aplica a la caja menor');
+      }
+      assertPettyFields(current.fundAmount, input.maxExpense);
+    }
     if (input.ledgerAccountId) {
       const current = snap.data() as CashRegister;
       if (input.ledgerAccountId !== current.ledgerAccountId) {

@@ -50,7 +50,20 @@ export const createRegisterSchema = z
     fundAmount: moneySchema.optional(),
     maxExpense: moneySchema.optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((v, ctx) => {
+    if (v.type !== 'MENOR') return;
+    if (!v.fundAmount || v.fundAmount <= 0) {
+      ctx.addIssue({ code: 'custom', path: ['fundAmount'], message: 'Indica el fondo de la caja menor' });
+    }
+    if (!v.maxExpense || v.maxExpense <= 0 || (v.fundAmount && v.maxExpense > v.fundAmount)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['maxExpense'],
+        message: 'El gasto máximo debe ser mayor a cero y no superar el fondo',
+      });
+    }
+  });
 
 export const updateRegisterSchema = z
   .object({
@@ -58,6 +71,7 @@ export const updateRegisterSchema = z
     isActive: z.boolean().optional(),
     diffThreshold: moneySchema.optional(),
     ledgerAccountId: id.optional(),
+    maxExpense: moneySchema.positive().optional(),
   })
   .strict()
   .refine((v) => Object.keys(v).length > 0, 'No hay cambios');

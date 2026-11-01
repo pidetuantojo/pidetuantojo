@@ -11,7 +11,8 @@ import type { JournalEntryDraft, ResolutionContext } from '@/lib/ledger/ledger.t
 import { CashError } from './cash.errors';
 import type { CashMovement } from './cash.types';
 import type { MovementContext } from './movement.context.server';
-import { MOVEMENT_META, TRANSFER_TYPES } from './movement.helpers';
+import { MOVEMENT_META, PETTY_FUND_TYPES, TRANSFER_TYPES } from './movement.helpers';
+import { preparePettyFundEntry } from './movement.petty.entry.server';
 
 export type MovementForEntry = Pick<
   CashMovement,
@@ -40,7 +41,7 @@ export interface EntryOptions {
 
 export interface PreparedMovementEntry {
   entry: PreparedEntry | null;
-  skippedReason?: 'SAME_ACCOUNT';
+  skippedReason?: 'SAME_ACCOUNT' | 'RECOGNIZED_ON_REIMBURSEMENT';
 }
 
 const describe = (m: MovementForEntry) => `Caja ${m.type}${m.reason ? `: ${m.reason}` : ''}`;
@@ -111,6 +112,14 @@ export async function prepareEntryForMovement(
       sequences
     );
     return { entry };
+  }
+
+  // El gasto de caja menor se reconoce al reembolsarse, no cuando sale el efectivo
+  if (movement.type === 'GASTO_CAJA_MENOR') {
+    return { entry: null, skippedReason: 'RECOGNIZED_ON_REIMBURSEMENT' };
+  }
+  if (PETTY_FUND_TYPES.includes(movement.type)) {
+    return { entry: await preparePettyFundEntry(ctx, movement, options) };
   }
 
   const event = MOVEMENT_META[movement.type].event;

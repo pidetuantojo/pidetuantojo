@@ -29,4 +29,6 @@ export const MOVEMENT_SEQUENCES = {
   CE: 'cash_ce',
   TR: 'cash_tr',
   RV: 'cash_rv',
+  /** Vale de caja menor (gastos de la caja menor, pendientes de reembolso). */
+  VCM: 'cash_vcm',
 } as const;
