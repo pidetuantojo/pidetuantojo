@@ -89,7 +89,7 @@ describe('integración caja menor', () => {
 
     // Libro: Σ débitos de las cuentas de gasto = total reembolsado
     const expenseDebits = lines()
-      .filter((l) => l.event === 'PETTY_CASH_EXPENSE' && l.debit > 0)
+      .filter((l) => l.event === 'PETTY_CASH_EXPENSE' && (l.debit as number) > 0)
       .reduce((t, l) => t + (l.debit as number), 0);
     expect(expenseDebits).toBe(53000);
     expect(net(w.petty.accAseo) + net(w.petty.accTransporte)).toBe(53000);
