@@ -39,7 +39,14 @@ function request(file?: File) {
   }) as never;
 }
 
-const png = (size = 10) => new File([new Uint8Array(size)], 'a.png', { type: 'image/png' });
+const withHeader = (header: number[], size: number) => {
+  const bytes = new Uint8Array(Math.max(size, header.length));
+  bytes.set(header);
+  return bytes;
+};
+const PNG_HEADER = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+const PDF_HEADER = [0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x34];
+const png = (size = 10) => new File([withHeader(PNG_HEADER, size)], 'a.png', { type: 'image/png' });
 
 describe('POST /api/cloudinary/upload', () => {
   beforeEach(() => {
@@ -66,8 +73,29 @@ describe('POST /api/cloudinary/upload', () => {
   });
 
   it('PDF mayor a 10 MB da 413', async () => {
-    const big = new File([new Uint8Array(10 * 1024 * 1024 + 1)], 'a.pdf', { type: 'application/pdf' });
+    const big = new File([withHeader(PDF_HEADER, 10 * 1024 * 1024 + 1)], 'a.pdf', { type: 'application/pdf' });
     expect((await POST(request(big))).status).toBe(413);
+  });
+
+  it('contenido que no coincide con el tipo declarado da 415 y no sube nada', async () => {
+    const fakePng = new File([new Uint8Array(20)], 'a.png', { type: 'image/png' });
+    expect((await POST(request(fakePng))).status).toBe(415);
+    const pdfAsPng = new File([withHeader(PDF_HEADER, 20)], 'a.png', { type: 'image/png' });
+    expect((await POST(request(pdfAsPng))).status).toBe(415);
+    const pngAsPdf = new File([withHeader(PNG_HEADER, 20)], 'a.pdf', { type: 'application/pdf' });
+    expect((await POST(request(pngAsPdf))).status).toBe(415);
+    expect(upload).not.toHaveBeenCalled();
+  });
+
+  it('acepta JPEG y WebP con su firma real', async () => {
+    const jpeg = new File([withHeader([0xff, 0xd8, 0xff, 0xe0], 20)], 'a.jpg', { type: 'image/jpeg' });
+    const webp = new File(
+      [withHeader([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50], 20)],
+      'a.webp',
+      { type: 'image/webp' }
+    );
+    expect((await POST(request(jpeg))).status).toBe(200);
+    expect((await POST(request(webp))).status).toBe(200);
   });
 
   it('sin archivo da 400', async () => {
@@ -82,7 +110,7 @@ describe('POST /api/cloudinary/upload', () => {
   });
 
   it('sube un PDF como raw', async () => {
-    const pdf = new File([new Uint8Array(100)], 'f.pdf', { type: 'application/pdf' });
+    const pdf = new File([withHeader(PDF_HEADER, 100)], 'f.pdf', { type: 'application/pdf' });
     const res = await POST(request(pdf));
     expect(res.status).toBe(200);
     expect(upload.mock.calls[0][1]).toEqual({ folder: 'antojo-app/r1', resource_type: 'raw' });

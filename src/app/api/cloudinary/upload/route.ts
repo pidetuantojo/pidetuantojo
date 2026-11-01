@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
 
 import { AuthError, errorResponse, getCaller } from '@/lib/auth/serverAuth';
-import { checkUpload, uploadFolder } from '@/lib/cloudinary/uploadPolicy';
+import { checkUpload, matchesMagicBytes, uploadFolder } from '@/lib/cloudinary/uploadPolicy';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -30,6 +30,9 @@ export async function POST(request: NextRequest) {
     if (!check.ok) return NextResponse.json({ error: check.error }, { status: check.status });
 
     const buffer = Buffer.from(await file.arrayBuffer());
+    if (!matchesMagicBytes(file.type, buffer)) {
+      return NextResponse.json({ error: 'El contenido del archivo no coincide con su tipo.' }, { status: 415 });
+    }
     const dataUri = `data:${file.type};base64,${buffer.toString('base64')}`;
 
     // PDF → "raw" (se guarda y entrega tal cual, sin transformaciones de imagen)
