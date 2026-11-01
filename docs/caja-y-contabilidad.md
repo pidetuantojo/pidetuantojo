@@ -39,7 +39,7 @@ Las cajas **no conocen cuentas**: un movimiento le pide al motor un asiento y la
 | `cashRegisterBalances` | Saldo materializado por caja y medio |
 | `cashSettings` | Denominaciones, cuenta por medio de pago, caja general por defecto |
 | `pettyCashExpenses`, `pettyCashReimbursements`, `pettyCashCategories` | Caja menor |
-| `sequences`, `idempotency`, `auditLog` | Consecutivos, llaves de idempotencia y bitácora |
+| `sequences`, `idempotencyKeys`, `auditLog` | Consecutivos, llaves de idempotencia y bitácora |
 
 ### Transacciones e idempotencia
 
