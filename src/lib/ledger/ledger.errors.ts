@@ -22,7 +22,8 @@ export type LedgerErrorCode =
   | 'ACCOUNT_IMMUTABLE'
   | 'ACCOUNT_USED_BY_RULE'
   | 'DUPLICATE_RULE'
-  | 'RULE_INACTIVE';
+  | 'RULE_INACTIVE'
+  | 'INVALID_CURSOR';
 
 const NOT_FOUND: readonly LedgerErrorCode[] = ['ENTRY_NOT_FOUND', 'RULE_NOT_FOUND'];
 const CONFLICT: readonly LedgerErrorCode[] = [

@@ -106,6 +106,39 @@
         { "fieldPath": "status", "order": "ASCENDING" },
         { "fieldPath": "requestedAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "journalEntries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "accountingDate", "order": "ASCENDING" },
+        { "fieldPath": "sequence", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "journalLines",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "accountId", "order": "ASCENDING" },
+        { "fieldPath": "accountingDate", "order": "ASCENDING" },
+        { "fieldPath": "entryNumber", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pettyCashExpenses",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "registerId", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pettyCashReimbursements",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "registerId", "order": "ASCENDING" },
+        { "fieldPath": "requestedAt", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

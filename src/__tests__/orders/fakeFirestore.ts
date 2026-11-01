@@ -130,25 +130,86 @@ export class DocRef {
   async delete() { this.db.delete(this.path); }
 }
 
+type Op = '==' | 'in' | '>=' | '<=' | '>' | '<';
+type Filter = { field: string; op: Op; value: unknown };
+type Order = { field: string; dir: 'asc' | 'desc' };
+type QueryState = { filters: Filter[]; orders: Order[]; after?: unknown[]; max: number };
+
+const compare = (a: unknown, b: unknown) => ((a as number) < (b as number) ? -1 : (a as number) > (b as number) ? 1 : 0);
+
+function matches(d: Data, f: Filter): boolean {
+  const v = d[f.field];
+  if (f.op === '==') return v === f.value;
+  if (f.op === 'in') return (f.value as unknown[]).includes(v);
+  if (v === undefined || v === null) return false;
+  const c = compare(v, f.value);
+  if (f.op === '>=') return c >= 0;
+  if (f.op === '<=') return c <= 0;
+  if (f.op === '>') return c > 0;
+  return c < 0;
+}
+
 export class Query {
   constructor(
     protected readonly db: FakeFirestore,
     readonly path: string,
-    private readonly filters: { field: string; op: '==' | 'in'; value: unknown }[] = [],
-    private readonly max = Infinity,
+    private readonly state: QueryState = { filters: [], orders: [], max: Infinity },
   ) {}
-  where(field: string, op: '==' | 'in', value: unknown) {
-    return new Query(this.db, this.path, [...this.filters, { field, op, value }], this.max);
+  private next(patch: Partial<QueryState>) { return new Query(this.db, this.path, { ...this.state, ...patch }); }
+  where(field: string, op: Op, value: unknown) { return this.next({ filters: [...this.state.filters, { field, op, value }] }); }
+  limit(n: number) { return this.next({ max: n }); }
+  orderBy(field?: string, dir: 'asc' | 'desc' = 'asc') {
+    return field ? this.next({ orders: [...this.state.orders, { field, dir }] }) : this;
   }
-  limit(n: number) { return new Query(this.db, this.path, this.filters, n); }
-  orderBy() { return this; }
-  async get() {
-    const docs = Array.from(this.db.docs.entries())
+  startAfter(...values: unknown[]) { return this.next({ after: values }); }
+
+  private select() {
+    const { filters, orders, after } = this.state;
+    let rows = Array.from(this.db.docs.entries())
       .filter(([p]) => p.startsWith(`${this.path}/`) && !p.slice(this.path.length + 1).includes('/'))
-      .filter(([, d]) => this.filters.every((f) => (f.op === '==' ? d[f.field] === f.value : (f.value as unknown[]).includes(d[f.field]))))
-      .slice(0, this.max)
-      .map(([p, d]) => ({ id: p.split('/').pop()!, ref: new DocRef(this.db, p), data: () => structuredClone(d) }));
+      .filter(([, d]) => filters.every((f) => matches(d, f)));
+    if (orders.length > 0) {
+      rows = rows.sort(([pa, a], [pb, b]) => {
+        for (const o of orders) {
+          const c = compare(a[o.field], b[o.field]);
+          if (c !== 0) return o.dir === 'asc' ? c : -c;
+        }
+        return compare(pa, pb);
+      });
+    }
+    if (after) {
+      rows = rows.filter(([, d]) => {
+        for (let i = 0; i < after.length; i++) {
+          const o = orders[i];
+          const c = compare(d[o.field], after[i]);
+          if (c !== 0) return o.dir === 'asc' ? c > 0 : c < 0;
+        }
+        return false;
+      });
+    }
+    return rows.slice(0, this.state.max);
+  }
+
+  async get() {
+    const docs = this.select().map(([p, d]) => ({ id: p.split('/').pop()!, ref: new DocRef(this.db, p), data: () => structuredClone(d) }));
     return { empty: docs.length === 0, docs };
+  }
+
+  /** Agregaciones del Admin SDK: soporta AggregateField.sum y count(). */
+  aggregate(spec: Record<string, { aggregateType: string; _field?: string }>) {
+    return {
+      get: async () => {
+        const rows = this.select().map(([, d]) => d);
+        const out: Record<string, number> = {};
+        for (const [key, agg] of Object.entries(spec)) {
+          out[key] =
+            agg.aggregateType === 'count'
+              ? rows.length
+              : rows.reduce((t, d) => t + ((d[agg._field as string] as number) ?? 0), 0);
+        }
+        return { data: () => out };
+      },
+    };
   }
 }
 
