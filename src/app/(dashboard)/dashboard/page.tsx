@@ -146,37 +146,46 @@ export default function DashboardHomePage() {
             <p style={{ fontSize: 13, color: 'var(--t-text-3)', margin: 0 }}>{desc}</p>
           </Link>
         ))}
+      </div>
 
-        {/* Ver carta pública */}
-        {slug && (
-          <a
-            href={`/${slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
+      {/* Ver carta pública */}
+      {slug && (
+        <a
+          href={`/${slug}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            background: 'linear-gradient(135deg, #1B1512, #3a2417)', border: '1px solid #2a1f17',
+            borderRadius: 20, padding: '28px 24px', marginTop: 24, textDecoration: 'none',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 10,
+            transition: 'transform .18s, box-shadow .18s',
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)';
+            (e.currentTarget as HTMLElement).style.boxShadow = '0 18px 40px -22px rgba(27,21,18,.5)';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.transform = '';
+            (e.currentTarget as HTMLElement).style.boxShadow = '';
+          }}
+        >
+          <div style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-.01em', color: '#fff' }}>
+            Ver mi carta pública
+          </div>
+          <p style={{ fontFamily: sm, fontSize: 13, color: '#b8aaa0', margin: 0, overflowWrap: 'anywhere' }}>
+            pidetuantojo.com/{slug}
+          </p>
+          <span
             style={{
-              background: 'linear-gradient(135deg, #1B1512, #3a2417)', border: '1px solid #2a1f17',
-              borderRadius: 16, padding: 22, textDecoration: 'none',
-              display: 'flex', flexDirection: 'column', justifyContent: 'center',
-              transition: 'transform .18s, box-shadow .18s',
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)';
-              (e.currentTarget as HTMLElement).style.boxShadow = '0 18px 40px -22px rgba(27,21,18,.5)';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.transform = '';
-              (e.currentTarget as HTMLElement).style.boxShadow = '';
+              marginTop: 6, padding: '10px 22px', borderRadius: 999,
+              background: 'linear-gradient(120deg, #FF8A2B, #EA3B2E)', color: '#fff',
+              fontWeight: 600, fontSize: 14, boxShadow: '0 8px 18px -8px rgba(234,59,46,.6)',
             }}
           >
-            <div style={{ fontWeight: 700, fontSize: 16, color: '#fff', marginBottom: 6 }}>
-              Ver mi carta pública →
-            </div>
-            <p style={{ fontFamily: sm, fontSize: 12, color: '#b8aaa0', margin: 0 }}>
-              pidetuantojo.com/{slug}
-            </p>
-          </a>
-        )}
-      </div>
+            Abrir carta →
+          </span>
+        </a>
+      )}
     </div>
   );
 }

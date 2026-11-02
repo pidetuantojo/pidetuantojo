@@ -36,6 +36,8 @@ export const ROUTES = {
     notificaciones: {
       root: '/dashboard/notificaciones',
       plantillas: '/dashboard/notificaciones/plantillas',
+      plantillaNueva: '/dashboard/notificaciones/plantillas/nueva',
+      plantilla: (id: string) => `/dashboard/notificaciones/plantillas/${encodeURIComponent(id)}`,
       whatsapp: '/dashboard/notificaciones/whatsapp',
     },
     ayuda: '/dashboard/ayuda',
