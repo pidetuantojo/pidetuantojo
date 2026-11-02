@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { QUERY_KEYS } from '@/constants/query-keys';
 import { useCategories } from '@/features/categories/hooks/useCategories';
+import { invalidatePublicMenu } from '@/lib/menu/invalidatePublicMenu';
 import { useProducts } from '../../hooks/useProducts';
 import { productsService } from '../../services/products.service';
 import {
@@ -119,6 +120,7 @@ export function ProductsImport({ restaurantId, restaurantSlug, onClose }: Props)
         setProgressTotal(total);
       });
       await qc.invalidateQueries({ queryKey: QUERY_KEYS.products(restaurantId) });
+      invalidatePublicMenu(restaurantId);
       const skipped = (skipDuplicates ? duplicateRows.length : 0) + errorRows.length;
       setImportResult({ created: toImport, skipped });
     } catch (e) {

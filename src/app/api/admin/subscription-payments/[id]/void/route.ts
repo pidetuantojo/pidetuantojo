@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 
 import { errorResponse, requireRole } from '@/lib/auth/serverAuth';
+import { revalidatePublicMenu } from '@/lib/menu/menuCache.server';
 import { voidPaymentSchema } from '@/lib/subscription/payment.schema';
 import { voidSubscriptionPayment } from '@/lib/subscription/payments.server';
 
@@ -13,7 +14,8 @@ export async function POST(request: Request, { params }: { params: { id: string 
   try {
     const caller = await requireRole(request, ['super_admin']);
     const { reason } = voidPaymentSchema.parse(await request.json().catch(() => ({})));
-    await voidSubscriptionPayment(params.id, reason, { uid: caller.uid, name: caller.name });
+    const { restaurantId } = await voidSubscriptionPayment(params.id, reason, { uid: caller.uid, name: caller.name });
+    await revalidatePublicMenu(restaurantId).catch(() => undefined);
     return NextResponse.json({ ok: true });
   } catch (error) {
     if (error instanceof ZodError) return NextResponse.json({ error: error.issues[0]?.message ?? 'Datos inválidos' }, { status: 400 });

@@ -21,17 +21,27 @@ const promotionsRef = (restaurantId: string) => adminDb.collection('restaurants'
 const customersRef = (restaurantId: string) => adminDb.collection('restaurants').doc(restaurantId).collection('customers');
 const ordersRef = (restaurantId: string) => adminDb.collection('restaurants').doc(restaurantId).collection('orders');
 
-/** Promociones activas (no pausadas) que el plan permite, sin las vencidas ni las agotadas. */
-export async function loadActivePromotions(restaurant: Restaurant, now = new Date()): Promise<Promotion[]> {
+/** Promociones no pausadas, tal como están guardadas (la carta las guarda en caché). */
+export async function fetchActivePromotions(restaurantId: string): Promise<Promotion[]> {
+  const snap = await promotionsRef(restaurantId).where('isActive', '==', true).get();
+  return snap.docs.map((d) => ({ ...(d.data() as Promotion), id: d.id }));
+}
+
+/** De esas, las que el plan permite, sin las vencidas ni las agotadas (depende de la fecha: no se guarda en caché). */
+export function selectActivePromotions(restaurant: Restaurant, promotions: Promotion[], now = new Date()): Promotion[] {
   const features = promotionFeatures(restaurant);
   if (!features.promotions) return [];
-  const snap = await promotionsRef(restaurant.id).where('isActive', '==', true).get();
   const today = zonedParts(now, RESTAURANT_TIMEZONE).date;
-  return snap.docs
-    .map((d) => ({ ...(d.data() as Promotion), id: d.id }))
+  return promotions
     .filter((p) => features.advanced || !requiresAdvancedPlan(p))
     .filter((p) => !p.schedule?.endDate || p.schedule.endDate >= today)
     .filter((p) => !p.maxUses || (p.usesCount ?? 0) < p.maxUses);
+}
+
+/** Promociones activas (no pausadas) que el plan permite, sin las vencidas ni las agotadas. */
+export async function loadActivePromotions(restaurant: Restaurant, now = new Date()): Promise<Promotion[]> {
+  if (!promotionFeatures(restaurant).promotions) return [];
+  return selectActivePromotions(restaurant, await fetchActivePromotions(restaurant.id), now);
 }
 
 /**

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { AuthError, errorResponse, requireRole } from '@/lib/auth/serverAuth';
+import { revalidateAllMenus, revalidatePublicMenu } from '@/lib/menu/menuCache.server';
 import { syncPlanPermissions, syncRestaurantPermissions } from '@/lib/permissions/server';
 
 export const runtime = 'nodejs';
@@ -18,10 +19,13 @@ export async function POST(request: NextRequest) {
 
     if (planId) {
       const result = await syncPlanPermissions(planId);
+      // Cambian las funciones del plan (planFeatures) de todos sus restaurantes
+      revalidateAllMenus();
       return NextResponse.json({ ok: true, ...result });
     }
     if (restaurantId) {
       const users = await syncRestaurantPermissions(restaurantId);
+      await revalidatePublicMenu(restaurantId);
       return NextResponse.json({ ok: true, restaurants: 1, users });
     }
     throw new AuthError('Indica planId o restaurantId', 400);

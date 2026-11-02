@@ -8,9 +8,11 @@ const db = new FakeFirestore();
 const verifyIdToken = vi.fn();
 const uploadPrivateFile = vi.fn();
 const deletePrivateFile = vi.fn();
+const revalidateTag = vi.fn();
 
 vi.mock('@/lib/firebase/admin', () => ({ adminDb: db, adminAuth: { verifyIdToken } }));
 vi.mock('firebase-admin/firestore', () => ({ FieldValue: { delete: deleteField } }));
+vi.mock('next/cache', () => ({ revalidateTag }));
 vi.mock('@/lib/cloudinary/cloudinary.server', () => ({
   uploadPrivateFile,
   deletePrivateFile,
@@ -80,6 +82,8 @@ describe('pagos de suscripción', () => {
     });
     expect(db.get(`subscriptionPayments/${payment.id}`)).toBeDefined();
     expect(db.get('restaurants/r1')).toMatchObject({ subscriptionEndDate: '2026-11-15', subscriptionAnchorDay: 15, lastSubscriptionPaymentId: payment.id });
+    // Si estaba suspendido, la carta debe volver a verse sin esperar la caché
+    expect(revalidateTag).toHaveBeenCalledWith('menu:r1');
   });
 
   it('valida los datos y el comprobante sin tocar nada', async () => {

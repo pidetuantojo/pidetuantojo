@@ -1,22 +1,17 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 
-import { categoriesService } from '@/features/categories/services/categories.service';
-import { adicionalesService } from '@/features/adicionales/services/adicionales.service';
 import { MenuPage } from '@/features/menu/components/MenuPage';
 import { ComingSoon } from '@/features/menu/components/ComingSoon';
-import { productsService } from '@/features/products/services/products.service';
-import { restaurantsService } from '@/features/restaurants/services/restaurants.service';
-import { orderStatusesService } from '@/features/order-statuses/services/order-statuses.service';
-import { deliveryZonesService } from '@/features/delivery-zones/services/delivery-zones.service';
-import { mesasService } from '@/features/delivery-methods/services/mesas.service';
 import { MESA_QUERY_PARAM, resolveMesaParam } from '@/features/delivery-methods/helpers/mesaQr.helpers';
+import { getMenuCatalog, getMenuPlanBillingPeriod, getMenuRestaurant } from '@/lib/menu/publicMenu.server';
 import { applyPlanFeatures } from '@/lib/permissions/planFeatures';
-import { loadActivePromotions, menuPromotions, promotionFeatures } from '@/lib/promotions/promotions.server';
-import { isRestaurantSuspended } from '@/lib/restaurants/restaurant.server';
+import { menuPromotions, promotionFeatures, selectActivePromotions } from '@/lib/promotions/promotions.server';
+import { isSuspendedWith } from '@/lib/restaurants/restaurant.server';
 import { getMissingRestaurantFields } from '@/features/restaurants/helpers/getMissingRestaurantFields';
 
-// Promociones con horario, productos agotados y precios: siempre lo último (sin caché estática)
+// La página se arma en cada visita (QR de mesa, promociones según la hora), pero los datos salen de la caché
+// de la carta (src/lib/menu/publicMenu.server.ts): se leen de Firestore solo cuando el restaurante cambia algo.
 export const dynamic = 'force-dynamic';
 
 interface Props {
@@ -26,7 +21,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const restaurant = await restaurantsService.getBySlug(params.slug);
+  const restaurant = await getMenuRestaurant(params.slug);
   if (!restaurant) return { title: 'Restaurante no encontrado' };
   if (getMissingRestaurantFields(restaurant).length > 0) {
     return {
@@ -41,14 +36,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function RestaurantMenuPage({ params, searchParams }: Props) {
-  const stored = await restaurantsService.getBySlug(params.slug);
+  const stored = await getMenuRestaurant(params.slug);
 
   if (!stored || !stored.isActive) {
     notFound();
   }
 
   // Bloquear menú si la suscripción está suspendida
-  if (await isRestaurantSuspended(stored)) notFound();
+  if (isSuspendedWith(stored, await getMenuPlanBillingPeriod(stored.planId))) notFound();
 
   // Lo que el plan no incluye no se ofrece en el menú (mesa, programados, zonas, cuentas de pago)
   const restaurant = applyPlanFeatures(stored);
@@ -60,22 +55,13 @@ export default async function RestaurantMenuPage({ params, searchParams }: Props
 
   const mesaMethodActive = restaurant.deliveryMethods?.mesa?.isActive ?? false;
 
-  const [categories, products, adicionales, statuses, allZones, allMesas, promotions] = await Promise.all([
-    categoriesService.getAll(restaurant.id),
-    productsService.getAll(restaurant.id),
-    adicionalesService.getAll(restaurant.id),
-    orderStatusesService.getAll(restaurant.id),
-    restaurant.deliveryMode === 'zones'
-      ? deliveryZonesService.getAll(restaurant.id)
-      : Promise.resolve([]),
-    mesaMethodActive ? mesasService.getAll(restaurant.id) : Promise.resolve([]),
-    // Sin cupones (no se revela el código) y solo lo que el plan incluye
-    // Si fallan, el menú se muestra igual (sin promociones)
-    loadActivePromotions(restaurant).then(menuPromotions).catch((err) => {
-      console.error('[menu] No se pudieron cargar las promociones:', err);
-      return [];
-    }),
-  ]);
+  const { categories, products, adicionales, statuses, zones: allZones, mesas: allMesas, promotions: storedPromotions } = await getMenuCatalog(restaurant.id, {
+    zones: restaurant.deliveryMode === 'zones',
+    mesas: mesaMethodActive,
+    promotions: promotionFeatures(restaurant).promotions,
+  });
+  // Vigentes a esta hora, sin cupones (no se revela el código) y solo lo que el plan incluye
+  const promotions = menuPromotions(selectActivePromotions(restaurant, storedPromotions));
 
   const activeCategories = categories.filter((c) => c.isActive);
   const activeProducts = products.filter((p) => p.isActive);

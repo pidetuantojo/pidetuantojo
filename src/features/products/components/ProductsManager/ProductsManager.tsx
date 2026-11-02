@@ -14,6 +14,7 @@ import { QUERY_KEYS } from '@/constants/query-keys';
 import { useToastStore } from '@/store/toast.store';
 import { useConfirmStore } from '@/store/confirm.store';
 import type { Category, Product } from '@/types';
+import { invalidatePublicMenu } from '@/lib/menu/invalidatePublicMenu';
 
 import { useProducts } from '../../hooks/useProducts';
 import { useToggleProductAvailable, useDeleteProduct } from '../../hooks/useProductMutations';
@@ -115,6 +116,7 @@ export function ProductsManager() {
         changes.map((c) => productsService.update(restaurantId, c.id, { sortOrder: c.sortOrder })),
       );
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.products(restaurantId) });
+      invalidatePublicMenu(restaurantId);
       showToast('Orden actualizado');
     } finally {
       setMovingId(null);

@@ -3,6 +3,7 @@ import { ZodError } from 'zod';
 
 import { errorResponse, requireRole } from '@/lib/auth/serverAuth';
 import { deletePrivateFile, uploadPrivateFile } from '@/lib/cloudinary/cloudinary.server';
+import { revalidatePublicMenu } from '@/lib/menu/menuCache.server';
 import { RECEIPT_MAX_BYTES, RECEIPT_TYPES, registerPaymentSchema } from '@/lib/subscription/payment.schema';
 import { registerSubscriptionPayment } from '@/lib/subscription/payments.server';
 
@@ -30,6 +31,8 @@ export async function POST(request: Request) {
     }
 
     const payment = await registerSubscriptionPayment(input, { uid: caller.uid, name: caller.name }, receipt);
+    // Cambió el vencimiento: si estaba suspendido, la carta vuelve a mostrarse ya
+    await revalidatePublicMenu(input.restaurantId).catch(() => undefined);
     return NextResponse.json(payment, { status: 201 });
   } catch (error) {
     // Si el pago no se guardó, no dejamos el comprobante huérfano

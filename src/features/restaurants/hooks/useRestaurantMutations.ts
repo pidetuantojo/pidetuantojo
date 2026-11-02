@@ -6,6 +6,7 @@ import { QUERY_KEYS } from '@/constants/query-keys';
 import type { AppUser, CreateRestaurantData, Restaurant, UpdateRestaurantData } from '@/types';
 import { authFetch } from '@/lib/auth/authFetch';
 import { BASE_ORDER_STATUSES } from '@/types';
+import { publicMenuMeta } from '@/lib/menu/invalidatePublicMenu';
 
 import { restaurantsService } from '../services/restaurants.service';
 
@@ -94,6 +95,7 @@ export function useUpdateRestaurant() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateRestaurantData }) =>
       restaurantsService.update(id, data),
+    meta: publicMenuMeta(({ id }: { id: string }) => id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.restaurants });
     },
@@ -106,6 +108,7 @@ export function useToggleRestaurantActive() {
   return useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
       restaurantsService.toggleActive(id, isActive),
+    meta: publicMenuMeta(({ id }: { id: string }) => id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.restaurants });
     },
@@ -117,6 +120,7 @@ export function useDeleteRestaurant() {
 
   return useMutation({
     mutationFn: (id: string) => restaurantsService.delete(id),
+    meta: publicMenuMeta((id: string) => id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.restaurants });
     },

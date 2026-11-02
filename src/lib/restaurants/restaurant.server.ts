@@ -4,13 +4,24 @@ import { applyPlanFeatures } from '@/lib/permissions/planFeatures';
 import { getSubscriptionInfo } from '@/lib/subscription/subscription';
 import type { Plan, Restaurant } from '@/types';
 
+/** Sin lecturas: ¿suspendida, sabiendo ya el período del plan? (la carta lo usa con datos en caché). */
+export function isSuspendedWith(restaurant: Restaurant, billingPeriod?: 'monthly' | 'yearly'): boolean {
+  if (!restaurant.planId || (!restaurant.subscriptionEndDate && !restaurant.subscriptionStartDate)) return false;
+  return getSubscriptionInfo(restaurant, billingPeriod).status === 'suspended';
+}
+
+/** Período de cobro del plan (mensual / anual). */
+export async function getPlanBillingPeriod(planId: string | undefined): Promise<'monthly' | 'yearly' | undefined> {
+  if (!planId) return undefined;
+  const planSnap = await adminDb.collection('plans').doc(planId).get();
+  return planSnap.exists ? (planSnap.data() as Plan).billingPeriod : undefined;
+}
+
 /** ¿La suscripción del restaurante está suspendida? (el menú y el checkout se bloquean). */
 export async function isRestaurantSuspended(restaurant: Restaurant): Promise<boolean> {
-  if (!restaurant.planId || (!restaurant.subscriptionEndDate && !restaurant.subscriptionStartDate)) return false;
-  let billingPeriod: 'monthly' | 'yearly' | undefined;
-  const planSnap = await adminDb.collection('plans').doc(restaurant.planId).get();
-  if (planSnap.exists) billingPeriod = (planSnap.data() as Plan).billingPeriod;
-  return getSubscriptionInfo(restaurant, billingPeriod).status === 'suspended';
+  // Mensual es el vencimiento más temprano: si así no está suspendido, no hace falta leer el plan
+  if (!isSuspendedWith(restaurant, 'monthly')) return false;
+  return isSuspendedWith(restaurant, await getPlanBillingPeriod(restaurant.planId));
 }
 
 /**

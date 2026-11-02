@@ -79,10 +79,10 @@ export async function registerSubscriptionPayment(
  * Anula el último pago vigente del restaurante y deja el vencimiento como estaba antes de ese pago.
  * Solo el último: anular uno del medio dejaría los períodos siguientes calculados sobre una fecha falsa.
  */
-export async function voidSubscriptionPayment(paymentId: string, reason: string, actor: Actor): Promise<void> {
+export async function voidSubscriptionPayment(paymentId: string, reason: string, actor: Actor): Promise<{ restaurantId: string }> {
   const paymentRef = paymentsCol().doc(paymentId);
 
-  await adminDb.runTransaction(async (tx) => {
+  return adminDb.runTransaction(async (tx) => {
     const paymentSnap = await tx.get(paymentRef);
     if (!paymentSnap.exists) throw new AuthError('El pago no existe', 404);
     const payment = paymentSnap.data() as Omit<SubscriptionPayment, 'id'>;
@@ -108,6 +108,7 @@ export async function voidSubscriptionPayment(paymentId: string, reason: string,
       lastSubscriptionPaymentId: payment.previousPaymentId ?? FieldValue.delete(),
       updatedAt: now,
     });
+    return { restaurantId: payment.restaurantId };
   });
 }
 
