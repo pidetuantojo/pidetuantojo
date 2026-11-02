@@ -34,7 +34,7 @@ function seed() {
   db.set(`${R}/orderStatuses/st-pack`, { code: 'empacado', name: 'Empacado', waTemplateId: 'c1' });
   db.set(`${R}/orderStatuses/st-prep`, { code: 'preparing', name: 'Preparando', notifyCustomer: false });
   db.set(ORDER, {
-    orderNumber: '1042', customerName: 'Ana', customerPhone: '300 123 4567', deliveryType: 'domicilio',
+    orderNumber: '#1042', customerName: 'Ana', customerPhone: '300 123 4567', deliveryType: 'domicilio',
     paymentMethod: 'Nequi', items: [], subtotal: 20000, total: 20000, statusId: 'st-pack', isPaid: false,
   });
 }
@@ -76,7 +76,7 @@ describe('POST /api/whatsapp/notify', () => {
   it('arma el mensaje con la plantilla del estado y el teléfono del pedido guardado', async () => {
     const res = await call(statusBody);
     expect(res.status).toBe(200);
-    expect(sendWhatsApp).toHaveBeenCalledWith('r1', '3001234567', 'Hola Ana, pedido 1042: Empacado');
+    expect(sendWhatsApp).toHaveBeenCalledWith('r1', '3001234567', 'Hola Ana, pedido #1042: Empacado');
   });
 
   it('deja en la auditoría el WhatsApp enviado o fallido', async () => {

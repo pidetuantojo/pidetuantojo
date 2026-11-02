@@ -97,6 +97,20 @@ describe('plantillas guardadas por cada restaurante', () => {
     expect(isCustomizedSystemTemplate('pedido_nuevo', LEGACY_NUEVO.replace(/\n/g, '\r\n'))).toBe(false);
   });
 
+  it('una plantilla que solo quitó el "#" del número (caso real) también recibe el texto nuevo', () => {
+    const sinNumeral = LEGACY_NUEVO.replace('*#{{numeroPedido}}*', '*{{numeroPedido}}*');
+    expect(isCustomizedSystemTemplate('pedido_nuevo', sinNumeral)).toBe(false);
+    expect(parseTemplateStore({ pedido_nuevo: sinNumeral }).system.pedido_nuevo).toBe(DEFAULT_TEMPLATES.pedido_nuevo);
+    // Espacios al final de línea o variantes invisibles de emoji tampoco cuentan como personalización
+    expect(isCustomizedSystemTemplate('pedido_nuevo', sinNumeral.replace('✅', '✅️').replace('\n', '  \n'))).toBe(false);
+  });
+
+  it('el número de pedido sale con un solo "#", aunque la plantilla lo tenga', () => {
+    expect(applyTemplate('Pedido *#{{numeroPedido}}*', { orderNumber: '#541989' })).toBe('Pedido *#541989*');
+    expect(applyTemplate('Pedido *{{numeroPedido}}*', { orderNumber: '#541989' })).toBe('Pedido *#541989*');
+    expect(DEFAULT_TEMPLATES.pedido_nuevo).not.toContain('#{{numeroPedido}}');
+  });
+
   it('lo personalizado de verdad se respeta', () => {
     const mine = 'Hola {{nombreCliente}}, recibimos tu pedido 🍔';
     expect(parseTemplateStore({ pedido_nuevo: mine }).system.pedido_nuevo).toBe(mine);

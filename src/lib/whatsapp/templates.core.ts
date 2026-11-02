@@ -89,12 +89,12 @@ export const WA_EVENTS: WaEventMeta[] = [
 // ─── Plantillas por defecto ───────────────────────────────────────────────────
 
 export const DEFAULT_TEMPLATES: WaTemplates = {
-  pedido_nuevo: `Hola {{nombreCliente}}! 👋\nTu pedido *#{{numeroPedido}}* fue recibido ✅\n\n*🛒 Productos:*\n{{productos}}\n\n{{resumenPago}}\n*💳 Pago:* {{metodoPago}}`,
-  pedido_confirmado: `Hola {{nombreCliente}}! 👋\nTu pedido *#{{numeroPedido}}* fue *confirmado* ✅\n\n*🛒 Productos:*\n{{productos}}\n\n{{resumenPago}}\n*💳 Pago:* {{metodoPago}}`,
-  pedido_en_camino: `Hola {{nombreCliente}}! 🚀\nTu pedido *#{{numeroPedido}}* está *en camino* 🛵\n\n¡Prepárate para recibirlo!`,
-  pedido_entregado: `Hola {{nombreCliente}}! ✔️\nTu pedido *#{{numeroPedido}}* fue *entregado*.\n\n¡Gracias por tu pedido! 🙌`,
-  pedido_estado_actualizado: `Hola {{nombreCliente}}! 📦\nTu pedido *#{{numeroPedido}}* ahora está: *{{estadoPedido}}*`,
-  pedido_pagado: `Hola {{nombreCliente}}! 💳\nTu pedido *#{{numeroPedido}}* ya fue *pagado* ✅\n\n{{resumenPago}}\n*💳 Pago:* {{metodoPago}}\n\n¡Gracias por tu pedido! 🙌`,
+  pedido_nuevo: `Hola {{nombreCliente}}! 👋\nTu pedido *{{numeroPedido}}* fue recibido ✅\n\n*🛒 Productos:*\n{{productos}}\n\n{{resumenPago}}\n*💳 Pago:* {{metodoPago}}`,
+  pedido_confirmado: `Hola {{nombreCliente}}! 👋\nTu pedido *{{numeroPedido}}* fue *confirmado* ✅\n\n*🛒 Productos:*\n{{productos}}\n\n{{resumenPago}}\n*💳 Pago:* {{metodoPago}}`,
+  pedido_en_camino: `Hola {{nombreCliente}}! 🚀\nTu pedido *{{numeroPedido}}* está *en camino* 🛵\n\n¡Prepárate para recibirlo!`,
+  pedido_entregado: `Hola {{nombreCliente}}! ✔️\nTu pedido *{{numeroPedido}}* fue *entregado*.\n\n¡Gracias por tu pedido! 🙌`,
+  pedido_estado_actualizado: `Hola {{nombreCliente}}! 📦\nTu pedido *{{numeroPedido}}* ahora está: *{{estadoPedido}}*`,
+  pedido_pagado: `Hola {{nombreCliente}}! 💳\nTu pedido *{{numeroPedido}}* ya fue *pagado* ✅\n\n{{resumenPago}}\n*💳 Pago:* {{metodoPago}}\n\n¡Gracias por tu pedido! 🙌`,
 };
 
 /**
@@ -107,10 +107,28 @@ const LEGACY_DEFAULTS: Partial<Record<WaEventCode, string[]>> = {
   pedido_pagado: [`Hola {{nombreCliente}}! 💳\nTu pedido *#{{numeroPedido}}* ya fue *pagado* ✅\n\n*💰 Total:* {{total}}\n*💳 Pago:* {{metodoPago}}\n\n¡Gracias por tu pedido! 🙌`],
 };
 
-// Compara sin importar saltos de línea \r\n ni espacios al final
+/**
+ * Normaliza para comparar sin diferencias que no son una personalización: saltos \r\n, espacios al final
+ * de línea, variantes invisibles de emoji (U+FE0F) y el "#" antes del número (el número ya lo trae:
+ * las plantillas por defecto viejas decían "#{{numeroPedido}}" y salía "##123456"; varios restaurantes
+ * solo quitaron ese "#").
+ */
+function normalizeTemplate(s: string): string {
+  return s
+    .replace(/\r\n/g, '\n')
+    .replace(/\uFE0F/g, '')
+    .replace(/#\{\{numeroPedido\}\}/g, '{{numeroPedido}}')
+    .replace(/[ \t]+$/gm, '')
+    .trim();
+}
+
 function sameText(a: string, b: string): boolean {
-  const norm = (s: string) => s.replace(/\r\n/g, '\n').trim();
-  return norm(a) === norm(b);
+  return normalizeTemplate(a) === normalizeTemplate(b);
+}
+
+/** ¿Este texto es el por defecto (actual) de esa plantilla? Al guardarlo no se "congela". */
+export function isDefaultTemplateText(code: WaEventCode, text: string): boolean {
+  return sameText(text, DEFAULT_TEMPLATES[code]);
 }
 
 /** ¿El restaurante personalizó esta plantilla del sistema? (un texto igual al por defecto, actual o viejo, no cuenta) */
@@ -226,6 +244,12 @@ function formatCOP(amount: number): string {
   return `$${amount.toLocaleString('es-CO')}`;
 }
 
+/** "#123456" siempre con un solo "#". */
+function orderNumberText(orderNumber: string | undefined): string {
+  if (!orderNumber) return '';
+  return orderNumber.startsWith('#') ? orderNumber : `#${orderNumber}`;
+}
+
 /** Valor del domicilio para el cliente; vacío si el pedido no es a domicilio. */
 function deliveryText(data: WaTemplateData): string {
   if (data.deliveryType !== 'domicilio') return '';
@@ -256,7 +280,8 @@ export function applyTemplate(template: string, data: WaTemplateData): string {
   }).join('\n') ?? '';
   return template
     .replace(/{{nombreCliente}}/g, data.customerName ?? '')
-    .replace(/{{numeroPedido}}/g, data.orderNumber ?? '')
+    // El número ya trae "#": "#{{numeroPedido}}" (plantillas viejas) no debe salir "##123456"
+    .replace(/#?{{numeroPedido}}/g, orderNumberText(data.orderNumber))
     .replace(/{{resumenPago}}/g, paymentSummary(data))
     .replace(/{{valorProductos}}/g, data.subtotal !== undefined ? formatCOP(data.subtotal) : '')
     .replace(/{{descuento}}/g, data.discount ? `−${formatCOP(data.discount)}` : formatCOP(0))
