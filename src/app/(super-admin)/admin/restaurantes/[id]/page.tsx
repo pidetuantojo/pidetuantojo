@@ -7,6 +7,7 @@ import { ArrowLeft, KeyRound } from 'lucide-react';
 import { useRestaurant } from '@/features/restaurants/hooks/useRestaurants';
 import { RestaurantForm } from '@/features/restaurants/components/RestaurantForm';
 import { MenuPreview } from '@/features/restaurants/components/RestaurantForm/MenuPreview';
+import { SubscriptionPanel } from '@/features/subscriptions/components/SubscriptionPanel';
 import { Modal } from '@/components/ui/Modal';
 import { authFetch } from '@/lib/auth/authFetch';
 import type { RestaurantColorsPayload } from '@/features/restaurants/components/RestaurantForm/RestaurantForm.types';
@@ -165,6 +166,8 @@ export default function EditarRestaurantePage() {
             <p style={{ fontSize: 14, color: '#9a8f86' }}>Restaurante no encontrado.</p>
           </div>
         ) : (
+          <>
+          <SubscriptionPanel restaurant={restaurant} />
           <div style={{ overflow: 'hidden', borderRadius: 18, border: '1px solid #EFE7DF', background: '#fff', flexShrink: 0 }}>
             <RestaurantForm
               restaurant={restaurant}
@@ -174,6 +177,7 @@ export default function EditarRestaurantePage() {
               showPlanSelector
             />
           </div>
+          </>
         )}
       </div>
 

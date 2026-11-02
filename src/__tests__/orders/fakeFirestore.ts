@@ -1,6 +1,6 @@
 // Firestore en memoria (Admin SDK) para testear la lógica del servidor sin red.
 // Soporta lo que usan createOrder/promotions.server: doc/collection/get, where(==, in), limit, getAll,
-// runTransaction (get/set/update), FieldValue.increment y FieldValue.arrayUnion.
+// runTransaction (get/set/update), FieldValue.increment, FieldValue.arrayUnion y FieldValue.delete.
 
 type Data = Record<string, unknown>;
 
@@ -8,6 +8,8 @@ export const INC = Symbol('increment');
 export const increment = (n: number) => ({ [INC]: n });
 export const UNION = Symbol('arrayUnion');
 export const arrayUnion = (...items: unknown[]) => ({ [UNION]: items });
+export const DELETE = Symbol('delete');
+export const deleteField = () => ({ [DELETE]: true });
 // La hora del servidor se guarda como marcador (los tests no dependen del valor)
 export const serverTimestamp = () => 'SERVER_TIMESTAMP';
 
@@ -43,7 +45,9 @@ export class FakeFirestore {
       let target = current as Data;
       parts.slice(0, -1).forEach((p) => { target[p] = (target[p] as Data) ?? {}; target = target[p] as Data; });
       const last = parts[parts.length - 1];
-      if (value && typeof value === 'object' && INC in value) {
+      if (value && typeof value === 'object' && DELETE in value) {
+        delete target[last];
+      } else if (value && typeof value === 'object' && INC in value) {
         target[last] = ((target[last] as number) ?? 0) + (value as Record<symbol, number>)[INC];
       } else if (value && typeof value === 'object' && UNION in value) {
         const prev = (target[last] as unknown[]) ?? [];

@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Upload, X, ZoomIn } from 'lucide-react';
 
+import { authFetch } from '@/lib/auth/authFetch';
 import { cn } from '@/lib/utils';
 import type { ImageUploadProps } from './ImageUpload.types';
 
@@ -121,7 +122,7 @@ export function ImageUpload({
     try {
       const formData = new FormData();
       formData.append('file', new File([blob], 'product.webp', { type: 'image/webp' }));
-      const res = await fetch('/api/cloudinary/upload', { method: 'POST', body: formData });
+      const res = await authFetch('/api/cloudinary/upload', { method: 'POST', body: formData });
       if (!res.ok) throw new Error();
       const data = (await res.json()) as { url: string };
       onChange(data.url);
@@ -160,7 +161,7 @@ export function ImageUpload({
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch('/api/cloudinary/upload', { method: 'POST', body: formData });
+      const res = await authFetch('/api/cloudinary/upload', { method: 'POST', body: formData });
       if (!res.ok) throw new Error('Error al subir la imagen');
       const data = (await res.json()) as { url: string };
       onChange(data.url);

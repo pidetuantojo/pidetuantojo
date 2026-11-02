@@ -6,7 +6,7 @@ import type { Plan, Restaurant } from '@/types';
 
 /** ¿La suscripción del restaurante está suspendida? (el menú y el checkout se bloquean). */
 export async function isRestaurantSuspended(restaurant: Restaurant): Promise<boolean> {
-  if (!restaurant.planId || !restaurant.subscriptionStartDate) return false;
+  if (!restaurant.planId || (!restaurant.subscriptionEndDate && !restaurant.subscriptionStartDate)) return false;
   let billingPeriod: 'monthly' | 'yearly' | undefined;
   const planSnap = await adminDb.collection('plans').doc(restaurant.planId).get();
   if (planSnap.exists) billingPeriod = (planSnap.data() as Plan).billingPeriod;

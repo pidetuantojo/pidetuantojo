@@ -13,6 +13,8 @@ export const ROUTES = {
     categorias: '/admin/categorias',
     categoriaNueva: '/admin/categorias/nueva',
     categoria: (id: string) => `/admin/categorias/${id}`,
+    pagos: '/admin/pagos',
+    restaurant: (id: string) => `/admin/restaurantes/${id}`,
   },
   // Restaurant dashboard
   dashboard: {

@@ -41,6 +41,44 @@ export interface Plan {
 
 export type SavePlanData = Pick<Plan, 'name' | 'description' | 'price' | 'billingPeriod' | 'permissions' | 'isActive' | 'sortOrder' | 'limits'>;
 
+// ===== PAGOS DE SUSCRIPCIÓN =====
+
+export type SubscriptionPaymentMethod = 'nequi' | 'daviplata' | 'bancolombia' | 'transferencia' | 'efectivo' | 'otro';
+
+/**
+ * subscriptionPayments/{id} — lo crea solo el servidor cuando el super admin registra un pago.
+ * No se borra: se anula (y el vencimiento del restaurante vuelve al anterior).
+ */
+export interface SubscriptionPayment {
+  id: string;
+  restaurantId: string;
+  restaurantName: string;
+  planId: string;
+  planName: string;
+  billingPeriod: 'monthly' | 'yearly';
+  amount: number; // COP
+  paidAt: string; // YYYY-MM-DD
+  method: SubscriptionPaymentMethod;
+  reference?: string;
+  note?: string;
+  // Cuántos meses (o años, si el plan es anual) cubre
+  periods: number;
+  periodStart: string; // YYYY-MM-DD
+  periodEnd: string; // YYYY-MM-DD: nuevo vencimiento
+  // Cómo estaba el restaurante antes, para poder anular
+  previousEndDate: string | null;
+  previousAnchorDay: number | null;
+  previousPaymentId: string | null;
+  // Comprobante privado en Cloudinary (se ve con una URL temporal que firma el servidor)
+  receipt?: { publicId: string; format: string };
+  status: 'registered' | 'voided';
+  createdAt: string;
+  createdBy: { uid: string; name?: string };
+  voidedAt?: string;
+  voidedBy?: { uid: string; name?: string };
+  voidReason?: string;
+}
+
 // ===== CATEGORÍAS DE RESTAURANTE =====
 
 /** restaurantCategories/{id} — administradas solo por el super admin. */
@@ -153,6 +191,15 @@ export interface Restaurant {
   planName?: string;
   planAssignedAt?: string;
   subscriptionStartDate?: string; // ISO 8601 — when plan was last activated/renewed
+  // Hasta cuándo está pagado (YYYY-MM-DD, Colombia). Lo mueve el servidor al registrar o anular un pago.
+  // Sin este campo (restaurantes anteriores) el vencimiento es subscriptionStartDate + 30/365 días.
+  subscriptionEndDate?: string;
+  // Día de corte mensual, para que los vencimientos no se corran (31 → 30 nov → 31 dic)
+  subscriptionAnchorDay?: number;
+  // Fin de los días gratis de prueba (solo restaurantes nuevos)
+  subscriptionTrialEndDate?: string;
+  // Último pago vigente: solo ese se puede anular
+  lastSubscriptionPaymentId?: string;
   // Funcionalidades del plan (features.*), copiadas por el servidor: el menú público las lee sin sesión
   planFeatures?: string[];
   // Programa de fidelidad ("cada N pedidos, un premio"). Requiere features.promotions_advanced

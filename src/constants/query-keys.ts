@@ -31,6 +31,8 @@ export const QUERY_KEYS = {
 
   plans: ['plans'] as const,
   plan: (id: string) => ['plans', id] as const,
+  subscriptionPayments: (restaurantId: string) => ['subscription-payments', restaurantId] as const,
+  subscriptionPaymentsAll: ['subscription-payments', '_all'] as const,
 
   restaurantCategories: ['restaurant-categories'] as const,
   restaurantCategory: (id: string) => ['restaurant-categories', id] as const,

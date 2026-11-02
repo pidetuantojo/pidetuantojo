@@ -95,6 +95,15 @@ service cloud.firestore {
       allow write: if isSuperAdmin();
     }
 
+    // ─── Pagos de suscripción ──────────────────────────────────────────────────
+    // Los crea y anula solo el servidor (/api/admin/subscription-payments), junto con el vencimiento
+    // del restaurante. Nadie los escribe desde el navegador.
+
+    match /subscriptionPayments/{paymentId} {
+      allow read: if isSuperAdmin();
+      allow write: if false;
+    }
+
     // ─── Restaurants ───────────────────────────────────────────────────────────
 
     // Campos que el restaurante puede cambiar; el resto (slug, isActive, plan*, adminUserId…)

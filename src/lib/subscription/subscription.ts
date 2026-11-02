@@ -1,5 +1,7 @@
 import type { Restaurant } from '@/types';
 
+import { currentEndYmd, graceEndYmd, ymdToDate } from './billing';
+
 export type SubscriptionStatus = 'active' | 'grace_period' | 'suspended' | 'no_plan';
 
 export interface SubscriptionInfo {
@@ -8,18 +10,8 @@ export interface SubscriptionInfo {
   gracePeriodEnd: Date | null;
   daysUntilEnd: number | null; // negative = past due
   graceDaysLeft: number | null; // business days left in grace period
-}
-
-/** Add N business days (Mon–Fri) to a date */
-function addBusinessDays(date: Date, days: number): Date {
-  const result = new Date(date);
-  let added = 0;
-  while (added < days) {
-    result.setDate(result.getDate() + 1);
-    const day = result.getDay();
-    if (day !== 0 && day !== 6) added++;
-  }
-  return result;
+  // En los días gratis de prueba (restaurante nuevo que todavía no pagó)
+  inTrial: boolean;
 }
 
 /** Count remaining business days between now and a future date */
@@ -36,44 +28,33 @@ function businessDaysUntil(target: Date): number {
   return count;
 }
 
+/**
+ * Estado de la suscripción. El vencimiento sale de `subscriptionEndDate` (lo mueve cada pago registrado);
+ * los restaurantes anteriores al registro de pagos lo calculan como inicio + 30 o 365 días.
+ */
 export function getSubscriptionInfo(
   restaurant: Restaurant,
   billingPeriod?: 'monthly' | 'yearly',
 ): SubscriptionInfo {
-  if (!restaurant.planId || !restaurant.subscriptionStartDate) {
-    return {
-      status: 'no_plan',
-      endDate: null,
-      gracePeriodEnd: null,
-      daysUntilEnd: null,
-      graceDaysLeft: null,
-    };
+  const endYmd = restaurant.planId ? currentEndYmd(restaurant, billingPeriod) : null;
+  if (!endYmd) {
+    return { status: 'no_plan', endDate: null, gracePeriodEnd: null, daysUntilEnd: null, graceDaysLeft: null, inTrial: false };
   }
 
-  const start = new Date(restaurant.subscriptionStartDate);
-  const days = billingPeriod === 'yearly' ? 365 : 30;
-  const endDate = new Date(start);
-  endDate.setDate(endDate.getDate() + days);
-
-  const gracePeriodEnd = addBusinessDays(endDate, 5);
+  const endDate = ymdToDate(endYmd);
+  // La gracia cubre hasta el final de su último día hábil
+  const gracePeriodEnd = ymdToDate(graceEndYmd(endYmd));
+  gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 1);
   const now = new Date();
 
-  const daysUntilEnd = Math.ceil(
-    (endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-  );
+  const daysUntilEnd = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  const inTrial = !!restaurant.subscriptionTrialEndDate && !restaurant.lastSubscriptionPaymentId;
 
   if (now < endDate) {
-    return { status: 'active', endDate, gracePeriodEnd, daysUntilEnd, graceDaysLeft: null };
+    return { status: 'active', endDate, gracePeriodEnd, daysUntilEnd, graceDaysLeft: null, inTrial };
   }
   if (now < gracePeriodEnd) {
-    const graceDaysLeft = businessDaysUntil(gracePeriodEnd);
-    return { status: 'grace_period', endDate, gracePeriodEnd, daysUntilEnd, graceDaysLeft };
+    return { status: 'grace_period', endDate, gracePeriodEnd, daysUntilEnd, graceDaysLeft: businessDaysUntil(gracePeriodEnd), inTrial };
   }
-  return {
-    status: 'suspended',
-    endDate,
-    gracePeriodEnd,
-    daysUntilEnd: null,
-    graceDaysLeft: 0,
-  };
+  return { status: 'suspended', endDate, gracePeriodEnd, daysUntilEnd: null, graceDaysLeft: 0, inTrial };
 }

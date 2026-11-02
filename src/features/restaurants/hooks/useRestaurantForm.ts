@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { z } from 'zod';
 
+import { trialSubscriptionFields } from '@/lib/subscription/billing';
 import { slugify } from '@/lib/utils';
 import type { Restaurant, UpdateRestaurantData, CreateRestaurantData, OpeningHours } from '@/types';
 
@@ -224,7 +225,13 @@ export function useRestaurantForm(restaurant?: Restaurant, variant?: 'create-min
       deliveryMode: data.deliveryMode,
       ...(hasAnyHours ? { openingHours: hours } : {}),
       allowScheduledWhenClosed: data.allowScheduledWhenClosed,
-      ...(data.planId ? { planId: data.planId, planAssignedAt: new Date().toISOString(), subscriptionStartDate: new Date(data.subscriptionStartDate).toISOString() } : {}),
+      // Restaurante nuevo: arranca con los días gratis de prueba (su primer pago sigue desde ahí)
+      ...(data.planId ? {
+        planId: data.planId,
+        planAssignedAt: new Date().toISOString(),
+        subscriptionStartDate: new Date(data.subscriptionStartDate).toISOString(),
+        ...trialSubscriptionFields(data.subscriptionStartDate),
+      } : {}),
       adminEmail: data.adminEmail,
       adminPassword: data.adminPassword,
       adminName: data.adminName,
@@ -262,8 +269,9 @@ export function useRestaurantForm(restaurant?: Restaurant, variant?: 'create-min
       deliveryMode: data.deliveryMode,
       ...(hasAnyHours ? { openingHours: hours } : {}),
       allowScheduledWhenClosed: data.allowScheduledWhenClosed,
-      // Solo si el super admin cambió el plan (el admin del restaurante nunca lo envía)
-      ...(data.planId ? { planId: data.planId, planAssignedAt: new Date().toISOString(), subscriptionStartDate: new Date(data.subscriptionStartDate).toISOString() } : {}),
+      // Solo si el super admin cambió el plan (el admin del restaurante nunca lo envía).
+      // El vencimiento no se toca acá: lo mueven los pagos registrados.
+      ...(planChanged ? { planId: data.planId, planAssignedAt: new Date().toISOString() } : {}),
     };
   }
 
