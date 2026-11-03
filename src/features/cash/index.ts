@@ -1,18 +1,10 @@
+// Barrel consumido por las páginas (Server Components) de /dashboard/caja.
+// Solo exporta componentes con "use client": re-exportar hooks o servicios acá hace que Next
+// los evalúe en el servidor y rompa el build. Hooks y helpers se importan por su ruta directa.
 export { ApprovalsManager } from './components/ApprovalsManager';
 export { BlindCloseManager } from './components/BlindCloseManager';
 export { CashConfigManager } from './components/CashConfigManager';
-export { CurrentShiftManager } from './components/CurrentShiftManager';
-export { DenominationCounter } from './components/DenominationCounter';
-export { GeneralBoxManager } from './components/GeneralBoxManager';
-export { MoneyInput } from './components/MoneyInput';
-export { PettyCashManager } from './components/PettyCashManager';
-export { cashErrorMessage } from './helpers/cash-errors.helpers';
-export { countTotal } from './helpers/count.helpers';
-export { useCurrentShift } from './hooks/useCashQueries';
-export { useCashActivation } from './hooks/useCashActivation';
-export { useCashModule } from './hooks/useCashModule';
-export { useCashOrderActions } from './hooks/useCashOrderActions';
-export { useCashSettings } from './hooks/useCashSettings';
-export { useIdempotencyKey } from './hooks/useIdempotencyKey';
-export { CashApiError, cashApi } from './services/cash.api';
 export { CashReports } from './components/CashReports';
+export { CurrentShiftManager } from './components/CurrentShiftManager';
+export { GeneralBoxManager } from './components/GeneralBoxManager';
+export { PettyCashManager } from './components/PettyCashManager';
